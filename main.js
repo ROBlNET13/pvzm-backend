@@ -618,31 +618,6 @@ app.get("/api/config", (_req, res) => {
 	});
 });
 
-// admin endpoint to test moderation without uploading a level
-/*
-app.post("/api/admin/moderate", async (req, res) => {
-	try {
-		const { text } = req.body;
-
-		if (!text) {
-			return res.status(400).json({
-				error: "Text to moderate is required",
-			});
-		}
-
-		if (!useOpenAIModeration) {
-			return res.status(400).json({ error: "Moderation is not enabled" });
-		}
-
-		const moderationResult = await moderateContent(text);
-		res.json(moderationResult);
-	} catch (error) {
-		console.error("Error in moderation endpoint:", error);
-		res.status(500).json({ error: "Failed to moderate content" });
-	}
-});
-*/
-
 // check if SSL is enabled
 const useSSL = Deno.env.get("USE_SSL") === "true";
 
