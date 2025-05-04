@@ -1,0 +1,25 @@
+{
+	"deno.enable": true,
+	"deno.disablePaths": ["public"],
+	"[javascript]": {
+		"editor.defaultFormatter": "denoland.vscode-deno"
+	},
+	"[ejs]": {
+		"editor.defaultFormatter": "denoland.vscode-deno"
+	},
+	"[html]": {
+		"editor.defaultFormatter": "denoland.vscode-deno"
+	},
+	"[css]": {
+		"editor.defaultFormatter": "denoland.vscode-deno"
+	},
+	"[markdown]": {
+		"editor.defaultFormatter": "denoland.vscode-deno"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "denoland.vscode-deno"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "denoland.vscode-deno"
+	}
+}

@@ -1,0 +1,4 @@
+data/
+ssl/
+*.db
+.env

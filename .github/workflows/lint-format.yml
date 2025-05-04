@@ -1,0 +1,47 @@
+name: Lint & Format
+
+on: [push]
+
+jobs:
+    format:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Deno
+              uses: denoland/setup-deno@v2
+              with:
+                  deno-version: v2.x.x
+
+            - name: Format code
+              run: deno fmt
+
+            - name: Get commit message
+              id: get_commit_message
+              run: |
+                  COMMIT_MSG=$(git log -1 --pretty=format:%s)
+                  echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+
+            - name: Commit changes
+              run: |
+                  git config user.name github-actions
+                  git config user.email github-actions@github.com
+                  git add .
+                  git commit -m "${{ github.actor }} - ${{ steps.get_commit_message.outputs.message }}
+                  Original commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}" || exit 0
+                  git push
+
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Deno
+              uses: denoland/setup-deno@v2
+              with:
+                  deno-version: v2.x.x
+
+            - name: Lint code
+              run: deno lint

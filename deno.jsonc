@@ -1,0 +1,30 @@
+{
+	"tasks": {
+		"dev": "deno run --watch --allow-env --allow-read --allow-write --allow-net --allow-ffi --env-file main.js"
+	},
+	"imports": {
+		"@db/sqlite": "jsr:@db/sqlite@^0.12.0",
+		"@mathis/turnstile-verify": "jsr:@mathis/turnstile-verify@^1.2.0",
+		"@openai/openai": "jsr:@openai/openai@^4.97.0",
+		"cors": "npm:cors@^2.8.5",
+		"express": "npm:express@^5.1.0"
+	},
+	"fmt": {
+		"useTabs": true,
+		"lineWidth": 80,
+		"indentWidth": 4,
+		"semiColons": true,
+		"singleQuote": false,
+		"proseWrap": "preserve",
+		"include": [
+			"**/*.js",
+			"**/*.ts",
+			"**/*.json",
+			"**/*.jsonc",
+			"**/*.md",
+			"**/*.css",
+			"**/*.html",
+			"**/*.ejs"
+		]
+	}
+}
