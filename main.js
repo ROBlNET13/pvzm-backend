@@ -1,4 +1,4 @@
-import express from "npm:express@4";
+import express from "npm:express";
 import { Database } from "jsr:@db/sqlite";
 import { TurnstileVerify } from "jsr:@mathis/turnstile-verify";
 import OpenAI from "jsr:@openai/openai";
