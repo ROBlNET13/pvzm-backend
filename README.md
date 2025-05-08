@@ -81,13 +81,13 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
 
   ```json
   {
-    "name": "Level Name",
-    "author": "Author Name",
-    "is_water": true,
-    "sun": 100,
-    "version": 1,
-    "level_data": "base64-encoded level data",
-    "turnstileResponse": "captcha-token"
+  	"name": "Level Name",
+  	"author": "Author Name",
+  	"is_water": true,
+  	"sun": 100,
+  	"version": 1,
+  	"level_data": "base64-encoded level data",
+  	"turnstileResponse": "captcha-token"
   }
   ```
 
@@ -97,13 +97,13 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
 
   ```json
   {
-    "id": 123,
-    "name": "Level Name",
-    "author": "Author Name",
-    "created_at": 1714680000,
-    "is_water": 1,
-    "sun": 100,
-    "version": 1
+  	"id": 123,
+  	"name": "Level Name",
+  	"author": "Author Name",
+  	"created_at": 1714680000,
+  	"is_water": 1,
+  	"sun": 100,
+  	"version": 1
   }
   ```
 
@@ -136,26 +136,26 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
 
   ```json
   {
-    "levels": [
-      {
-        "id": 123,
-        "name": "Level Name",
-        "author": "Author Name",
-        "created_at": 1714680000,
-        "sun": 100,
-        "is_water": 1,
-        "likes": 5,
-        "dislikes": 0,
-        "plays": 10,
-        "version": 1
-      }
-    ],
-    "pagination": {
-      "total": 50,
-      "page": 1,
-      "limit": 10,
-      "pages": 5
-    }
+  	"levels": [
+  		{
+  			"id": 123,
+  			"name": "Level Name",
+  			"author": "Author Name",
+  			"created_at": 1714680000,
+  			"sun": 100,
+  			"is_water": 1,
+  			"likes": 5,
+  			"dislikes": 0,
+  			"plays": 10,
+  			"version": 1
+  		}
+  	],
+  	"pagination": {
+  		"total": 50,
+  		"page": 1,
+  		"limit": 10,
+  		"pages": 5
+  	}
   }
   ```
 
@@ -175,16 +175,16 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
 
   ```json
   {
-    "id": 123,
-    "name": "Level Name",
-    "author": "Author Name",
-    "created_at": 1714680000,
-    "sun": 100,
-    "is_water": 1,
-    "likes": 5,
-    "dislikes": 0,
-    "plays": 10,
-    "version": 1
+  	"id": 123,
+  	"name": "Level Name",
+  	"author": "Author Name",
+  	"created_at": 1714680000,
+  	"sun": 100,
+  	"is_water": 1,
+  	"likes": 5,
+  	"dislikes": 0,
+  	"plays": 10,
+  	"version": 1
   }
   ```
 
@@ -254,9 +254,9 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
 
   ```json
   {
-    "turnstileEnabled": true,
-    "turnstileSiteKey": "0x0000000000000000000000",
-    "moderationEnabled": true
+  	"turnstileEnabled": true,
+  	"turnstileSiteKey": "0x0000000000000000000000",
+  	"moderationEnabled": true
   }
   ```
 
@@ -265,7 +265,7 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
 The server can be configured using the following environment variables in a `.env` file:
 
 | Variable              | Description                             | Default        |
-|-----------------------|-----------------------------------------|----------------|
+| --------------------- | --------------------------------------- | -------------- |
 | PORT                  | Server port                             | 3000           |
 | DB_PATH               | Path to SQLite database                 | ./database.db  |
 | DATA_FOLDER_PATH      | Path to level data storage              | ./data         |
