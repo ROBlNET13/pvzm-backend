@@ -1,6 +1,6 @@
 # PVZM Backend
 
-A Deno-powered backend service for [Plants vs. Zombies: MODDED](https://github.com/roblnet13.pvz). This service provides APIs for uploading, downloading, listing, and rating user-created *I, Zombie* levels.
+A Deno-powered backend service for [Plants vs. Zombies: MODDED](https://github.com/roblnet13.pvz). This service provides APIs for uploading, downloading, listing, and rating user-created _I, Zombie_ levels.
 
 ## Features
 
