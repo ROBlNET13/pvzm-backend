@@ -515,9 +515,9 @@ app.get("/api/levels/:id", (req: any, res: any) => {
 	try {
 		const levelId = parseInt(req.params.id);
 
-		 (isNaN(levelId)) {
-			urn res.status(400).json({ error: "Invalid level ID" });
-		
+		if (isNaN(levelId)) {
+			return res.status(400).json({ error: "Invalid level ID" });
+		}
 
 		const level = db
 			.prepare(
