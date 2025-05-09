@@ -31,10 +31,8 @@
 			"**/*.ts",
 			"**/*.json",
 			"**/*.jsonc",
-			"**/*.md",
 			"**/*.css",
-			"**/*.html",
-			"**/*.ejs"
+			"**/*.html"
 		]
 	},
 	"compilerOptions": {

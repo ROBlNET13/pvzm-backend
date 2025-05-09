@@ -148,7 +148,8 @@ if (useOpenAIModeration) {
 
 // initialize database tables
 // create levels table
-db.prepare(`
+db.prepare(
+	`
   CREATE TABLE IF NOT EXISTS levels (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -163,10 +164,12 @@ db.prepare(`
     author_id INTEGER,
     version INTEGER DEFAULT 1
   )
-`).run();
+`,
+).run();
 
 // create authors table
-db.prepare(`
+db.prepare(
+	`
   CREATE TABLE IF NOT EXISTS authors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     names TEXT NOT NULL, 
@@ -175,10 +178,12 @@ db.prepare(`
     level_ids TEXT NOT NULL, 
     origin_ip TEXT NOT NULL
   )
-`).run();
+`,
+).run();
 
 // create ratings table
-db.prepare(`
+db.prepare(
+	`
   CREATE TABLE IF NOT EXISTS ratings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     level_id INTEGER NOT NULL,
@@ -187,7 +192,8 @@ db.prepare(`
     created_at INTEGER NOT NULL, 
     UNIQUE(level_id, ip_address)
   )
-`).run();
+`,
+).run();
 
 // define interfaces for responses
 interface TurnstileResponse {
@@ -208,8 +214,9 @@ function getClientIP(req: any): string {
 	const forwardedIp = req.headers?.["x-forwarded-for"];
 	const remoteIp = req.socket?.remoteAddress || "";
 
-	return cfIp || (typeof forwardedIp === "string" ? forwardedIp : "") ||
-		remoteIp;
+	return (
+		cfIp || (typeof forwardedIp === "string" ? forwardedIp : "") || remoteIp
+	);
 }
 
 // helper function to validate turnstile captcha
@@ -262,14 +269,14 @@ app.post("/api/levels", async (req: any, res: any) => {
 		// fixed version to 2 for izl2 only
 		const version = 2;
 		let author: string;
-		let is_water: boolean;
+		let _is_water: boolean;
 		let turnstileResponse: string;
 		let levelBinary: Uint8Array;
 		const contentType = req.headers["content-type"] || "";
 
 		if (contentType.includes("application/octet-stream")) {
 			author = req.query.author as string;
-			is_water = (req.query.is_water as string) === "true";
+			_is_water = (req.query.is_water as string) === "true";
 			turnstileResponse = req.query.turnstileResponse as string;
 			levelBinary = req.body;
 		} else {
@@ -347,13 +354,16 @@ app.post("/api/levels", async (req: any, res: any) => {
 			// store in database
 			const now = Math.floor(Date.now() / 1000);
 			// execute the insert statement (result not used)
-			db.prepare(`
+			db.prepare(
+				`
         INSERT INTO levels (name, author, created_at, sun, is_water, version)
         VALUES (?, ?, ?, ?, ?, ?)
-      `).run(name, author, now, sun, is_water ? 1 : 0, version);
+      `,
+			).run(name, author, now, sun, is_water ? 1 : 0, version);
 
 			// get the last insert id
-			const queryResult = db.prepare("SELECT last_insert_rowid() as id")
+			const queryResult = db
+				.prepare("SELECT last_insert_rowid() as id")
 				.get();
 			const levelId = queryResult
 				? (queryResult as { id: number }).id
@@ -382,17 +392,21 @@ app.post("/api/levels", async (req: any, res: any) => {
 				const levelIds = JSON.parse(authorRecord.level_ids);
 				levelIds.push(levelId);
 
-				db.prepare(`
+				db.prepare(
+					`
           UPDATE authors
           SET level_ids = ?
           WHERE id = ?
-        `).run(JSON.stringify(levelIds), authorRecord.id);
+        `,
+				).run(JSON.stringify(levelIds), authorRecord.id);
 			} else {
 				// create new author
-				db.prepare(`
+				db.prepare(
+					`
           INSERT INTO authors (names, first_level_id, first_level_created_at, level_ids, origin_ip)
           VALUES (?, ?, ?, ?, ?)
-        `).run(
+        `,
+				).run(
 					author,
 					levelId,
 					now,
@@ -501,14 +515,18 @@ app.get("/api/levels/:id", (req: any, res: any) => {
 	try {
 		const levelId = parseInt(req.params.id);
 
-		if (isNaN(levelId)) {
-			return res.status(400).json({ error: "Invalid level ID" });
-		}
+		 (isNaN(levelId)) {
+			urn res.status(400).json({ error: "Invalid level ID" });
+		
 
-		const level = db.prepare(`
+		const level = db
+			.prepare(
+				`
       SELECT id, name, author, created_at, sun, is_water, likes, dislikes, plays, version
       FROM levels WHERE id = ?
-    `).get(levelId);
+    `,
+			)
+			.get(levelId);
 
 		if (!level) {
 			return res.status(404).json({ error: "Level not found" });
@@ -533,9 +551,9 @@ app.get("/api/levels/:id/download", (req: any, res: any) => {
 			return res.status(400).json({ error: "Invalid level ID" });
 		}
 
-		const level = db.prepare("SELECT * FROM levels WHERE id = ?").get(
-			levelId,
-		);
+		const level = db
+			.prepare("SELECT * FROM levels WHERE id = ?")
+			.get(levelId);
 
 		if (!level) {
 			return res.status(404).json({ error: "Level not found" });
@@ -566,7 +584,10 @@ app.get("/api/levels/:id/download", (req: any, res: any) => {
 			res.setHeader(
 				"Content-Disposition",
 				`attachment; filename="${
-					typedLevel.name.replace(/[^a-zA-Z0-9]/g, "_")
+					typedLevel.name.replace(
+						/[^a-zA-Z0-9]/g,
+						"_",
+					)
 				}.izl2"`,
 			);
 			res.send(Buffer.from(fileContent));
@@ -591,10 +612,11 @@ interface RatingRequest {
 }
 
 // rate a level
-app.post("/api/levels/:id/rate", async (req: any, res: any) => {
+app.post("/api/levels/:id/rate", (req: any, res: any) => {
 	try {
 		const levelId = parseInt(req.params.id);
-		const { rating, turnstileResponse } = req.body as RatingRequest;
+		const { rating, turnstileResponse: _turnstileResponse } = req
+			.body as RatingRequest;
 
 		if (isNaN(levelId)) {
 			return res.status(400).json({ error: "Invalid level ID" });
@@ -604,9 +626,9 @@ app.post("/api/levels/:id/rate", async (req: any, res: any) => {
 			return res.status(400).json({ error: "Invalid rating" });
 		}
 
-		const level = db.prepare("SELECT * FROM levels WHERE id = ?").get(
-			levelId,
-		);
+		const level = db
+			.prepare("SELECT * FROM levels WHERE id = ?")
+			.get(levelId);
 
 		if (!level) {
 			return res.status(404).json({ error: "Level not found" });
@@ -638,10 +660,14 @@ app.post("/api/levels/:id/rate", async (req: any, res: any) => {
     */
 
 		// check if the user has already rated this level
-		const existingRating = db.prepare(`
+		const existingRating = db
+			.prepare(
+				`
       SELECT * FROM ratings 
       WHERE level_id = ? AND ip_address = ?
-    `).get(levelId, clientIP);
+    `,
+			)
+			.get(levelId, clientIP);
 
 		type RatingRecord = {
 			id: number;
@@ -660,11 +686,13 @@ app.post("/api/levels/:id/rate", async (req: any, res: any) => {
 			}
 
 			// update the rating
-			db.prepare(`
+			db.prepare(
+				`
         UPDATE ratings 
         SET rating = ?, created_at = ? 
         WHERE level_id = ? AND ip_address = ?
-      `).run(rating, Math.floor(Date.now() / 1000), levelId, clientIP);
+      `,
+			).run(rating, Math.floor(Date.now() / 1000), levelId, clientIP);
 
 			// update the level likes/dislikes
 			const updateLikesQuery = rating === "like"
@@ -674,10 +702,12 @@ app.post("/api/levels/:id/rate", async (req: any, res: any) => {
 			db.prepare(updateLikesQuery).run(levelId);
 		} else {
 			// insert new rating
-			db.prepare(`
+			db.prepare(
+				`
         INSERT INTO ratings (level_id, ip_address, rating, created_at)
         VALUES (?, ?, ?, ?)
-      `).run(levelId, clientIP, rating, Math.floor(Date.now() / 1000));
+      `,
+			).run(levelId, clientIP, rating, Math.floor(Date.now() / 1000));
 
 			// update the level likes/dislikes
 			const columnToUpdate = rating === "like" ? "likes" : "dislikes";
@@ -687,10 +717,14 @@ app.post("/api/levels/:id/rate", async (req: any, res: any) => {
 		}
 
 		// get the updated level
-		const updatedLevel = db.prepare(`
+		const updatedLevel = db
+			.prepare(
+				`
       SELECT id, name, author, likes, dislikes
       FROM levels WHERE id = ?
-    `).get(levelId);
+    `,
+			)
+			.get(levelId);
 
 		res.json({ success: true, level: updatedLevel });
 	} catch (error) {
@@ -737,8 +771,8 @@ if (useSSL) {
 		// create https server using modern deno api
 		try {
 			// read ssl certificate and key
-			const cert = Deno.readTextFileSync(sslCertPath);
-			const key = Deno.readTextFileSync(sslKeyPath);
+			const _cert = Deno.readTextFileSync(sslCertPath);
+			const _key = Deno.readTextFileSync(sslKeyPath);
 
 			// start an express server with https
 			app.listen(Number(port), () => {

@@ -130,51 +130,35 @@
 			let turnstileWidgetId = null;
 
 			function formatDate(timestamp) {
-				return new Date(timestamp * 1000)
-					.toLocaleString();
+				return new Date(timestamp * 1000).toLocaleString();
 			}
 
 			async function fetchConfig() {
 				try {
 					const response = await fetch("/api/config");
 					config = await response.json();
-					document.getElementById("settings")
-						.textContent = JSON.stringify(
-							config,
-							null,
-							2,
-						);
+					document.getElementById("settings").textContent =
+						JSON.stringify(config, null, 2);
 
-					if (
-						config.turnstileEnabled &&
-						config.turnstileSiteKey
-					) {
-						loadTurnstileWidget(
-							config.turnstileSiteKey,
-						);
+					if (config.turnstileEnabled && config.turnstileSiteKey) {
+						loadTurnstileWidget(config.turnstileSiteKey);
 					} else {
-						const turnstileContainer = document
-							.getElementById(
-								"turnstile-container",
-							);
+						const turnstileContainer = document.getElementById(
+							"turnstile-container"
+						);
 						if (turnstileContainer) {
-							turnstileContainer.closest("label")
-								.style.display = "none";
+							turnstileContainer.closest("label").style.display =
+								"none";
 						}
 					}
 				} catch (error) {
-					console.error(
-						"Error fetching config:",
-						error,
-					);
+					console.error("Error fetching config:", error);
 				}
 			}
 
 			function loadTurnstileWidget(siteKey) {
 				if (!window.turnstile) {
-					const script = document.createElement(
-						"script",
-					);
+					const script = document.createElement("script");
 					script.src =
 						"https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 					script.async = true;
@@ -192,7 +176,7 @@
 
 			function renderTurnstileWidget(siteKey) {
 				const container = document.getElementById(
-					"turnstile-container",
+					"turnstile-container"
 				);
 				container.innerHTML = "";
 
@@ -204,7 +188,7 @@
 							callback: function (token) {
 								turnstileToken = token;
 							},
-						},
+						}
 					);
 				}
 			}
@@ -212,19 +196,16 @@
 			async function loadLevels(page = 1, limit = 10) {
 				try {
 					const response = await fetch(
-						`/api/levels?page=${page}&limit=${limit}`,
+						`/api/levels?page=${page}&limit=${limit}`
 					);
 					const data = await response.json();
 
-					if (
-						data.levels &&
-						Array.isArray(data.levels)
-					) {
-						const levelsListElement = document
-							.getElementById("levelsList");
+					if (data.levels && Array.isArray(data.levels)) {
+						const levelsListElement =
+							document.getElementById("levelsList");
 						levelsListElement.innerHTML = "";
-						const template = document
-							.getElementById("level-template");
+						const template =
+							document.getElementById("level-template");
 
 						if (data.levels.length === 0) {
 							levelsListElement.innerHTML =
@@ -233,78 +214,64 @@
 						}
 
 						data.levels.forEach((level) => {
-							const levelElement = template
-								.content
+							const levelElement = template.content
 								.cloneNode(true)
 								.querySelector(".level-item");
 
 							levelElement.querySelector(
-								".level-name",
+								".level-name"
 							).textContent = level.name;
 							levelElement.querySelector(
-								".level-id",
+								".level-id"
 							).textContent = level.id;
 							levelElement.querySelector(
-								".level-author",
+								".level-author"
 							).textContent = level.author;
 							levelElement.querySelector(
-								".level-created-at",
-							).textContent = formatDate(
-								level.created_at,
-							);
+								".level-created-at"
+							).textContent = formatDate(level.created_at);
 							levelElement.querySelector(
-								".level-sun",
+								".level-sun"
 							).textContent = level.sun;
 							levelElement.querySelector(
-								".level-is-water",
+								".level-is-water"
 							).checked = level.is_water;
 							levelElement.querySelector(
-								".level-likes",
+								".level-likes"
 							).textContent = level.likes;
 							levelElement.querySelector(
-								".level-dislikes",
+								".level-dislikes"
 							).textContent = level.dislikes;
 							levelElement.querySelector(
-								".level-plays",
+								".level-plays"
 							).textContent = level.plays;
 							levelElement.querySelector(
-								".level-version",
+								".level-version"
 							).textContent = level.version;
 
-							const buttons = levelElement
-								.querySelectorAll("button");
+							const buttons =
+								levelElement.querySelectorAll("button");
 							buttons.forEach((btn) => {
-								btn.setAttribute(
-									"data-id",
-									level.id,
-								);
+								btn.setAttribute("data-id", level.id);
 							});
 
-							levelsListElement.appendChild(
-								levelElement,
-							);
+							levelsListElement.appendChild(levelElement);
 						});
 
 						setupLevelButtonListeners();
 
-						createPaginationControls(
-							data.pagination,
-						);
+						createPaginationControls(data.pagination);
 					}
 				} catch (error) {
-					console.error(
-						"Error loading levels:",
-						error,
-					);
-					document.getElementById("levelsList")
-						.innerHTML =
-							"<p>Error loading levels.</p>";
+					console.error("Error loading levels:", error);
+					document.getElementById("levelsList").innerHTML =
+						"<p>Error loading levels.</p>";
 				}
 			}
 
 			function createPaginationControls(pagination) {
-				const paginationElement = document
-					.getElementById("levelsPagination");
+				const paginationElement =
+					document.getElementById("levelsPagination");
 				paginationElement.innerHTML = "";
 
 				if (!pagination || pagination.pages <= 1) {
@@ -314,9 +281,7 @@
 				const totalPages = pagination.pages;
 				const currentPage = pagination.page;
 
-				const template = document.getElementById(
-					"pagination-template",
-				);
+				const template = document.getElementById("pagination-template");
 				const nav = template.content
 					.cloneNode(true)
 					.querySelector(".pagination");
@@ -324,201 +289,120 @@
 				const prevBtn = nav.querySelector(".prev-page");
 				prevBtn.disabled = currentPage <= 1;
 				prevBtn.onclick = () =>
-					loadLevels(
-						currentPage - 1,
-						pagination.limit,
-					);
+					loadLevels(currentPage - 1, pagination.limit);
 
-				const pageInfo = nav.querySelector(
-					".page-info",
-				);
-				pageInfo.textContent =
-					`Page ${currentPage} of ${totalPages}`;
+				const pageInfo = nav.querySelector(".page-info");
+				pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
 
 				const nextBtn = nav.querySelector(".next-page");
 				nextBtn.disabled = currentPage >= totalPages;
 				nextBtn.onclick = () =>
-					loadLevels(
-						currentPage + 1,
-						pagination.limit,
-					);
+					loadLevels(currentPage + 1, pagination.limit);
 
 				paginationElement.appendChild(nav);
 			}
 
 			function setupLevelButtonListeners() {
-				document.querySelectorAll(".details-btn")
-					.forEach((btn) => {
-						btn.addEventListener(
-							"click",
-							async () => {
-								document
-									.getElementById(
-										"levelDetailsSection",
-									)
-									.scrollIntoView({
-										behavior: "smooth",
-									});
-								const levelId = btn
-									.getAttribute("data-id");
-								await getLevelDetails(levelId);
-							},
-						);
+				document.querySelectorAll(".details-btn").forEach((btn) => {
+					btn.addEventListener("click", async () => {
+						document
+							.getElementById("levelDetailsSection")
+							.scrollIntoView({
+								behavior: "smooth",
+							});
+						const levelId = btn.getAttribute("data-id");
+						await getLevelDetails(levelId);
 					});
+				});
 
-				document.querySelectorAll(".download-btn")
-					.forEach((btn) => {
-						btn.addEventListener(
-							"click",
-							async () => {
-								const levelId = btn
-									.getAttribute("data-id");
-								await downloadLevel(levelId);
-							},
-						);
+				document.querySelectorAll(".download-btn").forEach((btn) => {
+					btn.addEventListener("click", async () => {
+						const levelId = btn.getAttribute("data-id");
+						await downloadLevel(levelId);
 					});
+				});
 
-				document.querySelectorAll(".like-btn").forEach(
-					(btn) => {
-						btn.addEventListener(
-							"click",
-							async () => {
-								const levelId = btn
-									.getAttribute("data-id");
-								await rateLevel(
-									levelId,
-									"like",
-								);
-							},
-						);
-					},
-				);
-
-				document.querySelectorAll(".dislike-btn")
-					.forEach((btn) => {
-						btn.addEventListener(
-							"click",
-							async () => {
-								const levelId = btn
-									.getAttribute("data-id");
-								await rateLevel(
-									levelId,
-									"dislike",
-								);
-							},
-						);
+				document.querySelectorAll(".like-btn").forEach((btn) => {
+					btn.addEventListener("click", async () => {
+						const levelId = btn.getAttribute("data-id");
+						await rateLevel(levelId, "like");
 					});
+				});
+
+				document.querySelectorAll(".dislike-btn").forEach((btn) => {
+					btn.addEventListener("click", async () => {
+						const levelId = btn.getAttribute("data-id");
+						await rateLevel(levelId, "dislike");
+					});
+				});
 			}
 
 			async function getLevelDetails(id) {
 				try {
-					const response = await fetch(
-						`/api/levels/${id}`,
-					);
+					const response = await fetch(`/api/levels/${id}`);
 					const data = await response.json();
-					document.getElementById("levelDetails")
-						.textContent = JSON.stringify(
-							data,
-							null,
-							2,
-						);
+					document.getElementById("levelDetails").textContent =
+						JSON.stringify(data, null, 2);
 
-					const getLevelForm = document
-						.getElementById("getLevelForm");
+					const getLevelForm =
+						document.getElementById("getLevelForm");
 					if (getLevelForm) {
-						getLevelForm.querySelector(
-							'input[name="id"]',
-						).value = id;
+						getLevelForm.querySelector('input[name="id"]').value =
+							id;
 					}
 				} catch (error) {
-					console.error(
-						"Error getting level details:",
-						error,
-					);
-					document.getElementById("levelDetails")
-						.textContent = JSON.stringify(
-							{ error: error.message },
-							null,
-							2,
-						);
+					console.error("Error getting level details:", error);
+					document.getElementById("levelDetails").textContent =
+						JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
 			async function downloadLevel(id) {
 				try {
-					window.location.href =
-						`/api/levels/${id}/download`;
-					document.getElementById("downloadResponse")
-						.textContent = "Download initiated...";
+					window.location.href = `/api/levels/${id}/download`;
+					document.getElementById("downloadResponse").textContent =
+						"Download initiated...";
 
-					const downloadForm = document
-						.getElementById("downloadForm");
+					const downloadForm =
+						document.getElementById("downloadForm");
 					if (downloadForm) {
-						downloadForm.querySelector(
-							'input[name="id"]',
-						).value = id;
+						downloadForm.querySelector('input[name="id"]').value =
+							id;
 					}
 				} catch (error) {
-					console.error(
-						"Error downloading level:",
-						error,
-					);
-					document.getElementById("downloadResponse")
-						.textContent = JSON.stringify(
-							{ error: error.message },
-							null,
-							2,
-						);
+					console.error("Error downloading level:", error);
+					document.getElementById("downloadResponse").textContent =
+						JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
 			async function rateLevel(id, rating) {
 				try {
 					// no captcha verification needed for rating
-					const response = await fetch(
-						`/api/levels/${id}/rate`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type":
-									"application/json",
-							},
-							body: JSON.stringify({ rating }),
+					const response = await fetch(`/api/levels/${id}/rate`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
 						},
-					);
+						body: JSON.stringify({ rating }),
+					});
 
 					const data = await response.json();
-					document.getElementById("rateResponse")
-						.textContent = JSON.stringify(
-							data,
-							null,
-							2,
-						);
+					document.getElementById("rateResponse").textContent =
+						JSON.stringify(data, null, 2);
 
 					if (data.success) {
 						loadLevels();
 					}
 
-					const rateForm = document.getElementById(
-						"rateForm",
-					);
+					const rateForm = document.getElementById("rateForm");
 					if (rateForm) {
-						rateForm.querySelector(
-							'input[name="id"]',
-						).value = id;
-						const ratingSelect = rateForm
-							.querySelector(
-								'select[name="rating"]',
-							);
-						for (
-							let i = 0;
-							i < ratingSelect.options.length;
-							i++
-						) {
-							if (
-								ratingSelect.options[i]
-									.value === rating
-							) {
+						rateForm.querySelector('input[name="id"]').value = id;
+						const ratingSelect = rateForm.querySelector(
+							'select[name="rating"]'
+						);
+						for (let i = 0; i < ratingSelect.options.length; i++) {
+							if (ratingSelect.options[i].value === rating) {
 								ratingSelect.selectedIndex = i;
 								break;
 							}
@@ -526,35 +410,23 @@
 					}
 				} catch (error) {
 					console.error("Error rating level:", error);
-					document.getElementById("rateResponse")
-						.textContent = JSON.stringify(
-							{ error: error.message },
-							null,
-							2,
-						);
+					document.getElementById("rateResponse").textContent =
+						JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
 			async function uploadLevel(formData) {
 				try {
 					const fileInput = document.querySelector(
-						'input[name="levelFile"]',
+						'input[name="levelFile"]'
 					);
-					if (
-						!fileInput.files ||
-						fileInput.files.length === 0
-					) {
-						throw new Error(
-							"Please select a level file",
-						);
+					if (!fileInput.files || fileInput.files.length === 0) {
+						throw new Error("Please select a level file");
 					}
 
-					if (
-						config.turnstileEnabled &&
-						!turnstileToken
-					) {
+					if (config.turnstileEnabled && !turnstileToken) {
 						throw new Error(
-							"Please complete the CAPTCHA verification",
+							"Please complete the CAPTCHA verification"
 						);
 					}
 
@@ -569,46 +441,31 @@
 						});
 
 						if (turnstileToken) {
-							params.append(
-								"turnstileResponse",
-								turnstileToken,
-							);
+							params.append("turnstileResponse", turnstileToken);
 						}
 
-						const response = await fetch(
-							`/api/levels?${params}`,
-							{
-								method: "POST",
-								headers: {
-									"Content-Type":
-										"application/octet-stream",
-								},
-								body: new Uint8Array(fileData),
+						const response = await fetch(`/api/levels?${params}`, {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/octet-stream",
 							},
-						);
+							body: new Uint8Array(fileData),
+						});
 
 						const data = await response.json();
-						document.getElementById("response")
-							.textContent = JSON.stringify(
-								data,
-								null,
-								2,
-							);
+						document.getElementById("response").textContent =
+							JSON.stringify(data, null, 2);
 
 						if (response.ok) {
 							loadLevels();
 
-							document.getElementById(
-								"uploadForm",
-							).reset();
+							document.getElementById("uploadForm").reset();
 							if (
 								config.turnstileEnabled &&
 								window.turnstile &&
 								turnstileWidgetId
 							) {
-								window.turnstile.reset(
-									turnstileWidgetId,
-								);
+								window.turnstile.reset(turnstileWidgetId);
 								turnstileToken = null;
 							}
 						}
@@ -616,95 +473,62 @@
 
 					reader.readAsArrayBuffer(file);
 				} catch (error) {
-					console.error(
-						"Error uploading level:",
-						error,
-					);
-					document.getElementById("response")
-						.textContent = JSON.stringify(
-							{ error: error.message },
-							null,
-							2,
-						);
+					console.error("Error uploading level:", error);
+					document.getElementById("response").textContent =
+						JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
-			document.addEventListener(
-				"DOMContentLoaded",
-				() => {
-					fetchConfig();
-					loadLevels();
+			document.addEventListener("DOMContentLoaded", () => {
+				fetchConfig();
+				loadLevels();
 
-					const uploadForm = document.getElementById(
-						"uploadForm",
-					);
-					if (uploadForm) {
-						uploadForm.addEventListener(
-							"submit",
-							(e) => {
-								e.preventDefault();
-								const formData = new FormData(
-									uploadForm,
-								);
-								uploadLevel(formData);
-							},
-						);
-					}
+				const uploadForm = document.getElementById("uploadForm");
+				if (uploadForm) {
+					uploadForm.addEventListener("submit", (e) => {
+						e.preventDefault();
+						const formData = new FormData(uploadForm);
+						uploadLevel(formData);
+					});
+				}
 
-					const getLevelForm = document
-						.getElementById("getLevelForm");
-					if (getLevelForm) {
-						getLevelForm.addEventListener(
-							"submit",
-							(e) => {
-								e.preventDefault();
-								const levelId =
-									getLevelForm.querySelector(
-										'input[name="id"]',
-									).value;
-								getLevelDetails(levelId);
-							},
-						);
-					}
+				const getLevelForm = document.getElementById("getLevelForm");
+				if (getLevelForm) {
+					getLevelForm.addEventListener("submit", (e) => {
+						e.preventDefault();
+						const levelId =
+							getLevelForm.querySelector(
+								'input[name="id"]'
+							).value;
+						getLevelDetails(levelId);
+					});
+				}
 
-					const downloadForm = document
-						.getElementById("downloadForm");
-					if (downloadForm) {
-						downloadForm.addEventListener(
-							"submit",
-							(e) => {
-								e.preventDefault();
-								const levelId =
-									downloadForm.querySelector(
-										'input[name="id"]',
-									).value;
-								downloadLevel(levelId);
-							},
-						);
-					}
+				const downloadForm = document.getElementById("downloadForm");
+				if (downloadForm) {
+					downloadForm.addEventListener("submit", (e) => {
+						e.preventDefault();
+						const levelId =
+							downloadForm.querySelector(
+								'input[name="id"]'
+							).value;
+						downloadLevel(levelId);
+					});
+				}
 
-					const rateForm = document.getElementById(
-						"rateForm",
-					);
-					if (rateForm) {
-						rateForm.addEventListener(
-							"submit",
-							(e) => {
-								e.preventDefault();
-								const levelId =
-									rateForm.querySelector(
-										'input[name="id"]',
-									).value;
-								const rating =
-									rateForm.querySelector(
-										'select[name="rating"]',
-									).value;
-								rateLevel(levelId, rating);
-							},
-						);
-					}
-				},
-			);
+				const rateForm = document.getElementById("rateForm");
+				if (rateForm) {
+					rateForm.addEventListener("submit", (e) => {
+						e.preventDefault();
+						const levelId =
+							rateForm.querySelector('input[name="id"]').value;
+						const rating = rateForm.querySelector(
+							'select[name="rating"]'
+						).value;
+						rateLevel(levelId, rating);
+					});
+				}
+			});
 		</script>
 	</body>
 </html>
