@@ -1,4 +1,4 @@
-# PVZM Backend
+# PVZM Backend [![Lint & Format](https://github.com/ROBlNET13/pvzm-backend/actions/workflows/lint-format.yml/badge.svg)](https://github.com/ROBlNET13/pvzm-backend/actions/workflows/lint-format.yml)
 
 A Deno-powered backend service for [Plants vs. Zombies: MODDED](https://github.com/roblnet13.pvz). This service provides APIs for uploading, downloading, listing, and rating user-created _I, Zombie_ levels.
 
