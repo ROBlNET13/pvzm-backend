@@ -3,5 +3,8 @@
 	"deno.disablePaths": ["public"],
 	"[javascript]": {
 		"editor.defaultFormatter": "denoland.vscode-deno"
+	},
+	"[markdown]": {
+		"editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
 	}
 }

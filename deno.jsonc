@@ -1,7 +1,12 @@
 {
 	"tasks": {
-		"dev": "deno run --watch --allow-env --allow-read --allow-write --allow-net --allow-ffi --env-file main.js",
-		"start": "deno run --allow-env --allow-read --allow-write --allow-net --allow-ffi --env-file main.js"
+		"dev": "deno run --watch --allow-env --allow-read --allow-write --allow-net --allow-ffi --allow-run main.ts",
+		"start": "deno run --allow-env --allow-read --allow-write --allow-net --allow-ffi --allow-run main.ts"
+	},
+	"lint": {
+		"rules": {
+			"exclude": ["no-explicit-any"]
+		}
 	},
 	"imports": {
 		"@db/sqlite": "jsr:@db/sqlite@^0.12.0",
@@ -9,8 +14,10 @@
 		"@openai/openai": "jsr:@openai/openai@^4.97.0",
 		"@types/cors": "npm:@types/cors@^2.8.17",
 		"@types/express": "npm:@types/express@^5.0.1",
+		"@types/pako": "npm:@types/pako@^2.0.3",
 		"cors": "npm:cors@^2.8.5",
-		"express": "npm:express@^5.1.0"
+		"express": "npm:express@^5.1.0",
+		"pako": "npm:pako@^2.1.0"
 	},
 	"fmt": {
 		"useTabs": true,
@@ -29,5 +36,9 @@
 			"**/*.html",
 			"**/*.ejs"
 		]
+	},
+	"compilerOptions": {
+		"strict": true,
+		"strictNullChecks": true
 	}
 }

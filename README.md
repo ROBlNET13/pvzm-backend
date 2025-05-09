@@ -4,11 +4,24 @@ A Deno-powered backend service for [Plants vs. Zombies: MODDED](https://github.c
 
 ## Features
 
-- Level management (upload, download, listing)
+- **Error Responses:**
+  - **Code:** 400
+  - **Content:** `{ "error": "Invalid level ID" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "Rating must be 'like' or 'dislike'" }`
+  - **Code:** 404
+  - **Content:** `{ "error": "Level not found" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "You have already rated this level" }`
+  - **Code:** 500
+  - **Content:** `{ "error": "Failed to rate level" }`
+
+> Note: Captcha verification is not required for rating levels. management (upload, download, listing)
+
 - User tracking and author management
 - Rating system for levels
 - Content moderation using OpenAI (optional)
-- CAPTCHA protection using Cloudflare Turnstile (optional)
+- CAPTCHA protection using Cloudflare Turnstile (optional, only required for level uploading)
 - SSL support for secure connections
 - CORS configuration for frontend integration
 
@@ -79,33 +92,34 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
   - `turnstileResponse`: Captcha verification token (if enabled)
 - **Request Body:** (for JSON)
 
-  ```json
-  {
-  	"name": "Level Name",
-  	"author": "Author Name",
-  	"is_water": true,
-  	"sun": 100,
-  	"version": 1,
-  	"level_data": "base64-encoded level data",
-  	"turnstileResponse": "captcha-token"
-  }
-  ```
+    ```json
+    {
+     "name": "Level Name",
+     "author": "Author Name",
+     "is_water": true,
+     "sun": 100,
+     "version": 1,
+     "level_data": "base64-encoded level data",
+     "turnstileResponse": "captcha-token"
+    }
+    ```
 
 - **Success Response:**
+
   - **Code:** 201
   - **Content:**
 
-  ```json
-  {
-  	"id": 123,
-  	"name": "Level Name",
-  	"author": "Author Name",
-  	"created_at": 1714680000,
-  	"is_water": 1,
-  	"sun": 100,
-  	"version": 1
-  }
-  ```
+    ```json
+    {
+     "id": 123,
+     "name": "Level Name",
+     "author": "Author Name",
+     "created_at": 1714680000,
+     "is_water": 1,
+     "sun": 100,
+     "version": 1
+    }
+    ```
 
 - **Error Responses:**
   - **Code:** 400
@@ -131,33 +145,34 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
   - `is_water`: Filter by water levels ("true"/"false")
   - `version`: Filter by level version
 - **Success Response:**
+
   - **Code:** 200
   - **Content:**
 
-  ```json
-  {
-  	"levels": [
-  		{
-  			"id": 123,
-  			"name": "Level Name",
-  			"author": "Author Name",
-  			"created_at": 1714680000,
-  			"sun": 100,
-  			"is_water": 1,
-  			"likes": 5,
-  			"dislikes": 0,
-  			"plays": 10,
-  			"version": 1
-  		}
-  	],
-  	"pagination": {
-  		"total": 50,
-  		"page": 1,
-  		"limit": 10,
-  		"pages": 5
-  	}
-  }
-  ```
+    ```json
+    {
+     "levels": [
+      {
+       "id": 123,
+       "name": "Level Name",
+       "author": "Author Name",
+       "created_at": 1714680000,
+       "sun": 100,
+       "is_water": 1,
+       "likes": 5,
+       "dislikes": 0,
+       "plays": 10,
+       "version": 1
+      }
+     ],
+     "pagination": {
+      "total": 50,
+      "page": 1,
+      "limit": 10,
+      "pages": 5
+     }
+    }
+    ```
 
 - **Error Response:**
   - **Code:** 500
@@ -170,23 +185,24 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
 - **URL Params:**
   - `id`: Level ID
 - **Success Response:**
+
   - **Code:** 200
   - **Content:**
 
-  ```json
-  {
-  	"id": 123,
-  	"name": "Level Name",
-  	"author": "Author Name",
-  	"created_at": 1714680000,
-  	"sun": 100,
-  	"is_water": 1,
-  	"likes": 5,
-  	"dislikes": 0,
-  	"plays": 10,
-  	"version": 1
-  }
-  ```
+    ```json
+    {
+     "id": 123,
+     "name": "Level Name",
+     "author": "Author Name",
+     "created_at": 1714680000,
+     "sun": 100,
+     "is_water": 1,
+     "likes": 5,
+     "dislikes": 0,
+     "plays": 10,
+     "version": 1
+    }
+    ```
 
 - **Error Responses:**
   - **Code:** 400
@@ -223,24 +239,29 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
   - `id`: Level ID
 - **Request Body:**
 
-  ```json
-  {
-    "rating": "like" or "dislike"
-  }
-  ```
+    ```json
+    {
+      "rating": "like" or "dislike"
+    }
+    ```
 
 - **Success Response:**
   - **Code:** 200
   - **Content:** `{ "success": true }` or `{ "success": true, "message": "Rating updated" }` or `{ "success": true, "message": "You've already rated this level" }`
 - **Error Responses:**
+
   - **Code:** 400
   - **Content:** `{ "error": "Invalid level ID" }`
   - **Code:** 400
   - **Content:** `{ "error": "Rating must be 'like' or 'dislike'" }`
   - **Code:** 404
   - **Content:** `{ "error": "Level not found" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "You have already rated this level" }`
   - **Code:** 500
   - **Content:** `{ "error": "Failed to rate level" }`
+
+    Note: Captcha verification is not required for rating levels.
 
 #### Configuration
 
@@ -249,16 +270,17 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
 - **URL:** `/api/config`
 - **Method:** `GET`
 - **Success Response:**
+
   - **Code:** 200
   - **Content:**
 
-  ```json
-  {
-  	"turnstileEnabled": true,
-  	"turnstileSiteKey": "0x0000000000000000000000",
-  	"moderationEnabled": true
-  }
-  ```
+    ```json
+    {
+     "turnstileEnabled": true,
+     "turnstileSiteKey": "0x0000000000000000000000",
+     "moderationEnabled": true
+    }
+    ```
 
 ## Environment Variables
 

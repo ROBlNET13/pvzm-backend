@@ -20,13 +20,20 @@
     "jsr:@std/path@0.221": "0.221.0",
     "jsr:@std/streams@^1.0.9": "1.0.9",
     "npm:@types/cors@^2.8.17": "2.8.17",
+    "npm:@types/express@*": "5.0.1",
     "npm:@types/express@^5.0.1": "5.0.1",
     "npm:@types/node@*": "22.12.0",
+    "npm:@types/pako@^2.0.3": "2.0.3",
     "npm:cors@*": "2.8.5",
+    "npm:cors@2.8.5": "2.8.5",
     "npm:cors@^2.8.5": "2.8.5",
+    "npm:express-serve-static-core@*": "0.1.1",
     "npm:express@*": "5.1.0",
     "npm:express@4": "4.21.2",
+    "npm:express@5.1.0": "5.1.0",
     "npm:express@^5.1.0": "5.1.0",
+    "npm:pako@^2.1.0": "2.1.0",
+    "npm:qs@*": "6.14.0",
     "npm:zod@3": "3.24.3"
   },
   "jsr": {
@@ -144,6 +151,9 @@
       "dependencies": [
         "undici-types"
       ]
+    },
+    "@types/pako@2.0.3": {
+      "integrity": "sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q=="
     },
     "@types/qs@6.9.18": {
       "integrity": "sha512-kK7dgTYDyGqS+e2Q4aK9X3D7q234CIZ1Bv0q/7Z5IwRDoADNU81xXJK/YVyLbLTZCoIwUoDoffFeF+p/eIklAA=="
@@ -317,6 +327,9 @@
     },
     "etag@1.8.1": {
       "integrity": "sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg=="
+    },
+    "express-serve-static-core@0.1.1": {
+      "integrity": "sha512-phQFPo1vVwBLOjDq+EspUY6PpWZIs/s62Lvu6QuReViQ9j9ANBnMqPBRwdxs3zxNmpMJ9KBKrmMqCjMwHnGRyQ=="
     },
     "express@4.21.2": {
       "integrity": "sha512-28HqgMZAmih1Czt9ny7qr6ek2qddF4FclbMzwhCREB6OFfH+rXAnuNCwo1/wFvrtbgsQDb4kSbX9de9lFbrXnA==",
@@ -556,6 +569,9 @@
         "wrappy"
       ]
     },
+    "pako@2.1.0": {
+      "integrity": "sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug=="
+    },
     "parseurl@1.3.3": {
       "integrity": "sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ=="
     },
@@ -759,8 +775,10 @@
       "jsr:@openai/openai@^4.97.0",
       "npm:@types/cors@^2.8.17",
       "npm:@types/express@^5.0.1",
+      "npm:@types/pako@^2.0.3",
       "npm:cors@^2.8.5",
-      "npm:express@^5.1.0"
+      "npm:express@^5.1.0",
+      "npm:pako@^2.1.0"
     ]
   }
 }
