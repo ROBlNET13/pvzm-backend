@@ -38,7 +38,7 @@ const TINYIFIER_MAP = {
 };
 
 function decompressStringFromBytes(
-	compressed: Uint8Array | ArrayBuffer | number[]
+	compressed: Uint8Array | ArrayBuffer | number[],
 ): string {
 	const inputData = Array.isArray(compressed)
 		? new Uint8Array(compressed)
@@ -50,7 +50,7 @@ function decompressStringFromBytes(
 
 function untinyifyClone(tinyString: string): Clone {
 	const REVERSE_TINYIFIER_MAP: Record<number, string> = Object.fromEntries(
-		Object.entries(TINYIFIER_MAP).map(([key, value]) => [value, key])
+		Object.entries(TINYIFIER_MAP).map(([key, value]) => [value, key]),
 	);
 	const originalClone: Partial<Clone> = {};
 	const pairs = tinyString.split("\uE006");
@@ -75,8 +75,9 @@ function untinyifyClone(tinyString: string): Clone {
 					.slice(1, -1) // remove start/end markers \ue001
 					.split("\uE002");
 				for (const plantPair of plantData) {
-					const [plantTinyKey, plantValueStr] =
-						plantPair.split("\uE004");
+					const [plantTinyKey, plantValueStr] = plantPair.split(
+						"\uE004",
+					);
 					const plantOriginalKey = REVERSE_TINYIFIER_MAP[
 						parseInt(plantTinyKey, 10)
 					] as keyof Plant;
@@ -111,7 +112,7 @@ function untinyifyClone(tinyString: string): Clone {
 		} else if (["sun", "stripeCol"].includes(originalKey)) {
 			originalClone[originalKey as "sun" | "stripeCol"] = parseInt(
 				tinyValue,
-				10
+				10,
 			);
 		} else {
 			originalClone[originalKey as keyof Clone] = tinyValue as any; // keep as string for name, music, screenshot
@@ -121,7 +122,7 @@ function untinyifyClone(tinyString: string): Clone {
 }
 
 export function decodeFile(
-	compressedData: Uint8Array | ArrayBuffer | number[]
+	compressedData: Uint8Array | ArrayBuffer | number[],
 ): Clone {
 	const decompressedString = decompressStringFromBytes(compressedData);
 	const cloneData = untinyifyClone(decompressedString);

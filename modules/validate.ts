@@ -171,7 +171,7 @@ function plantsHasAllRequiredFields(clone: Clone): boolean {
 				console.error(
 					`Plant is missing required field: ${field}`,
 					plant,
-					clone
+					clone,
 				);
 				return false;
 			}
