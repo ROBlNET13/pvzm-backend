@@ -75,21 +75,23 @@ app.use(
 	}),
 );
 
-// set up static file serving from the public directory
-const publicFolderPath = "./public";
-try {
-	Deno.mkdirSync(publicFolderPath, { recursive: true });
-	console.log(`Created public folder at: ${publicFolderPath}`);
-} catch (error) {
-	if (error instanceof Deno.errors.AlreadyExists) {
-		// directory already exists, no action needed
-	} else {
-		console.error(
-			`Error creating public folder: ${(error as Error).message}`,
-		);
+if (Deno.env.get("USE_PUBLIC_FOLDER") === "true") {
+	// set up static file serving from the public directory
+	const publicFolderPath = Deno.env.get("PUBLIC_FOLDER_PATH") || "./public";
+	try {
+		Deno.mkdirSync(publicFolderPath, { recursive: true });
+		console.log(`Created public folder at: ${publicFolderPath}`);
+	} catch (error) {
+		if (error instanceof Deno.errors.AlreadyExists) {
+			// directory already exists, no action needed
+		} else {
+			console.error(
+				`Error creating public folder: ${(error as Error).message}`,
+			);
+		}
 	}
+	app.use(express.static(publicFolderPath));
 }
-app.use(express.static(publicFolderPath));
 
 // set up database
 const dbPath = Deno.env.get("DB_PATH") || "database.db";
