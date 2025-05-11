@@ -84,17 +84,12 @@ Currently, the API doesn't require authentication, but it tracks users by IP add
   - `application/octet-stream`
 - **URL Params:** None
 - **Query Params:** (for octet-stream)
-  - `name`: Level name
   - `author`: Author name
-  - `is_water`: Boolean flag for water levels ("true"/"false")
-  - `sun`: Integer sun value
-  - `version`: Level version (default: 1)
   - `turnstileResponse`: Captcha verification token (if enabled)
 - **Request Body:** (for JSON)
 
   ```json
   {
-   "name": "Level Name",
    "author": "Author Name",
    "is_water": true,
    "sun": 100,

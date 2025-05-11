@@ -36,7 +36,7 @@ const allowedOrigins = allowedOriginsString
 	? allowedOriginsString.split(",")
 	: [];
 
-// configure cors if enabled
+// configure cors
 if (corsEnabled) {
 	const corsOptions = {
 		origin: function (
@@ -63,7 +63,9 @@ if (corsEnabled) {
 		`CORS enabled for origins: ${allowedOrigins.join(", ") || "none"}`,
 	);
 } else {
-	console.log("CORS disabled");
+	// when CORS is disabled, allow all origins
+	app.use(cors());
+	console.log("CORS disabled - allowing all origins");
 }
 
 // set up middleware
@@ -278,7 +280,6 @@ app.post("/api/levels", async (req: any, res: any) => {
 
 		if (contentType.includes("application/octet-stream")) {
 			author = req.query.author as string;
-			_is_water = (req.query.is_water as string) === "true";
 			turnstileResponse = req.query.turnstileResponse as string;
 			levelBinary = req.body;
 		} else {
