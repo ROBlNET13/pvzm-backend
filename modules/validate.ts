@@ -60,7 +60,7 @@ function validStripeCol(clone: Clone): boolean {
 }
 
 function hasValidPlantCount(clone: Clone): boolean {
-	const MAX_PLANTS = 98;
+	const MAX_PLANTS = 126; // TODO: CALCULATE THIS PROPERLY LATER
 	return clone.plants.length <= MAX_PLANTS;
 }
 
@@ -109,6 +109,7 @@ function noInvalidPlants(clone: Clone): boolean {
 		"oHypnoShroom",
 		"oScaredyShroom",
 		"oLilyPad",
+		"oILilyPad",
 		"oSquash",
 		"oThreepeater",
 		"oTangleKlep",
@@ -129,6 +130,7 @@ function noInvalidPlants(clone: Clone): boolean {
 
 	for (const plant of clone.plants) {
 		if (!validPlants.includes(plant.plantName)) {
+			console.log(plant.plantName, "is bad");
 			return false;
 		}
 	}
@@ -161,8 +163,8 @@ function plantsHasAllRequiredFields(clone: Clone): boolean {
 		"plantRow",
 		"plantCol",
 		"plantName",
-		"eleLeft",
-		"eleTop",
+		// "eleLeft",
+		// "eleTop",
 	];
 
 	for (const plant of clone.plants) {
