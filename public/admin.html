@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="css/pico.green.min.css" />
+		<title>PVZM Admin Dashboard</title>
+		<style>
+			.hidden {
+				display: none;
+			}
+			.level-actions {
+				display: flex;
+				gap: 0.5rem;
+			}
+			.success-message {
+				color: green;
+				font-weight: bold;
+			}
+			.error-message {
+				color: red;
+				font-weight: bold;
+			}
+			.difficulty-marker {
+				display: inline-block;
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+				margin-right: 5px;
+			}
+			/* use tailwind 400 colors */
+			.difficulty-1 {
+				background-color: oklch(74.6% 0.16 232.661); /* sky */
+			}
+			.difficulty-2 {
+				background-color: oklch(77.7% 0.152 181.912); /* teal */
+			}
+			.difficulty-3 {
+				background-color: oklch(79.2% 0.209 151.711); /* green */
+			}
+			.difficulty-4 {
+				background-color: oklch(84.1% 0.238 128.85); /* lime */
+			}
+			.difficulty-5 {
+				background-color: oklch(85.2% 0.199 91.936); /* yellow */
+			}
+			.difficulty-6 {
+				background-color: oklch(82.8% 0.189 84.429); /* amber */
+			}
+			.difficulty-7 {
+				background-color: oklch(79.2% 0.176 69.885); /* orange */
+			}
+			.difficulty-8 {
+				background-color: oklch(77.1% 0.21 39.998); /* red */
+			}
+			.difficulty-9 {
+				background-color: oklch(75.8% 0.182 2.965); /* rose */
+			}
+			.difficulty-10 {
+				background-color: oklch(74.5% 0.153 325.354); /* pink */
+			}
+			.pagination {
+				margin-top: 1rem;
+				display: flex;
+				gap: 0.5rem;
+				align-items: center;
+				justify-content: center;
+			}
+			.pagination button {
+				padding: 0.25rem 0.5rem;
+			}
+			.pagination .page-info {
+				margin: 0 0.5rem;
+			}
+			table {
+				width: 100%;
+			}
+			table td {
+				vertical-align: middle;
+			}
+			.stats {
+				display: flex;
+				gap: 1rem;
+				font-size: 0.85rem;
+			}
+			.stats div {
+				display: flex;
+				gap: 0.25rem;
+				align-items: center;
+			}
+			.stats svg {
+				width: 16px;
+				height: 16px;
+			}
+			.user-profile {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+			}
+			.user-avatar {
+				width: 80px;
+				height: 80px;
+				border-radius: 50%;
+				margin-right: 1rem;
+			}
+			div.x-scroll {
+				overflow-x: scroll;
+			}
+		</style>
+	</head>
+
+	<body>
+		<main class="container">
+			<h1>PVZM Admin Dashboard</h1>
+			<p><a href="/index.html">Back to main page</a></p>
+
+			<!-- Authentication Section -->
+			<article id="auth-section" class="auth-section">
+				<div id="login-container" class="hidden">
+					<h2>Admin Authentication Required</h2>
+					<p>Please sign in with GitHub to access the admin dashboard.</p>
+					<a href="/api/auth/github" class="button">Sign in with GitHub</a>
+				</div>
+				<div id="user-profile" class="hidden">
+					<div class="user-profile">
+						<img id="user-avatar" class="user-avatar" src="" alt="User avatar" />
+						<div>
+							<h3 id="user-name">Username</h3>
+							<p>You are signed in as an administrator</p>
+						</div>
+					</div>
+					<a href="/api/auth/logout" class="button">Sign out</a>
+				</div>
+			</article>
+
+			<div id="admin-content" class="hidden">
+				<article>
+					<h2>Level Management</h2>
+					<fieldset role="group">
+						<input
+							type="search"
+							id="searchInput"
+							placeholder="Search by name, author, or ID"
+						/>
+						<button id="searchButton">Search</button>
+						<button id="resetButton" class="outline secondary">Reset</button>
+					</fieldset>
+
+					<div id="levelsTableContainer" class="x-scroll">
+						<table id="levelsTable">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Name</th>
+									<th>Author</th>
+									<th>Date</th>
+									<th>Stats</th>
+									<th>Difficulty</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+					</div>
+
+					<div class="pagination">
+						<button id="prevPage">&laquo; Previous</button>
+						<span class="page-info" id="pageInfo">Page 1 of 1</span>
+						<button id="nextPage">Next &raquo;</button>
+					</div>
+				</article>
+
+				<!-- Edit Modal -->
+				<dialog id="editModal">
+					<article>
+					<h3>Edit Level</h3>
+					<form id="editForm">
+						<input type="hidden" id="editLevelId" />
+
+						<div>
+							<label for="editName">Name</label>
+							<input type="text" id="editName" required />
+						</div>
+
+						<div>
+							<label for="editAuthor">Author</label>
+							<input type="text" id="editAuthor" required />
+						</div>
+
+						<div>
+							<label for="editSun">Sun</label>
+							<input type="number" id="editSun" required />
+						</div>
+
+						<div>
+							<label>
+								<input type="checkbox" id="editIsWater" role="switch" />
+								Water Level
+							</label>
+						</div>
+
+						<div>
+							<label for="editDifficulty">Difficulty (1-10)</label>
+							<input type="number" id="editDifficulty" min="1" max="10" />
+						</div>
+
+						<div>
+							<label for="editLikes">Likes</label>
+							<input type="number" id="editLikes" required />
+						</div>
+
+						<div>
+							<label for="editDislikes">Dislikes</label>
+							<input type="number" id="editDislikes" required />
+						</div>
+
+						<div>
+							<label for="editPlays">Plays</label>
+							<input type="number" id="editPlays" required />
+						</div>
+
+						<div class="grid">
+							<button type="button" id="cancelEdit" class="outline">Cancel</button>
+							<button type="submit">Save Changes</button>
+						</div>
+					</form>
+					</article>
+				</dialog>
+
+				<!-- Delete Confirmation Modal -->
+				<dialog id="deleteModal">
+					<article>
+					<h3>Confirm Deletion</h3>
+					<p>Are you sure you want to delete this level?</p>
+					<p>This action cannot be undone.</p>
+					<footer class="grid">
+						<button id="cancelDelete" class="outline">Cancel</button>
+						<button id="confirmDelete">Delete</button>
+					</footer>
+					</article>
+				</dialog>
+			</div>
+		</main>
+		<script src="js/pico.modal.js"></script>
+		<script>
+			document.addEventListener("DOMContentLoaded", async () => {
+				// Check authentication status
+				try {
+					const authResponse = await fetch("/api/auth/status");
+					const authData = await authResponse.json();
+
+					if (authData.authenticated) {
+						// User is authenticated, show admin content
+						document.getElementById("login-container").classList.add("hidden");
+						document.getElementById("user-profile").classList.remove("hidden");
+						document.getElementById("admin-content").classList.remove("hidden");
+
+						// Update user profile
+						document.getElementById("user-name").textContent = authData.user.displayName;
+						if (authData.user.avatarUrl) {
+							document.getElementById("user-avatar").src = authData.user.avatarUrl;
+						}
+					} else {
+						// User is not authenticated, show login button
+						document.getElementById("login-container").classList.remove("hidden");
+						document.getElementById("user-profile").classList.add("hidden");
+						document.getElementById("admin-content").classList.add("hidden");
+					}
+				} catch (error) {
+					console.error("Error checking authentication:", error);
+					// Fallback to showing login
+					document.getElementById("login-container").classList.remove("hidden");
+					document.getElementById("user-profile").classList.add("hidden");
+					document.getElementById("admin-content").classList.add("hidden");
+				}
+
+				const API_BASE_URL = "/api";
+				const PAGE_SIZE = 10;
+				let currentPage = 1;
+				let currentSearchQuery = "";
+				let totalPages = 1;
+
+				// DOM elements
+				const levelsTable = document.getElementById("levelsTable");
+				const tbody = levelsTable.querySelector("tbody");
+				const searchInput = document.getElementById("searchInput");
+				const searchButton = document.getElementById("searchButton");
+				const resetButton = document.getElementById("resetButton");
+				const prevPageButton = document.getElementById("prevPage");
+				const nextPageButton = document.getElementById("nextPage");
+				const pageInfo = document.getElementById("pageInfo");
+				const editModal = document.getElementById("editModal");
+				const editForm = document.getElementById("editForm");
+				const cancelEditButton = document.getElementById("cancelEdit");
+				const deleteModal = document.getElementById("deleteModal");
+				const confirmDeleteButton = document.getElementById("confirmDelete");
+				const cancelDeleteButton = document.getElementById("cancelDelete");
+
+				let levelIdToDelete = null;
+
+				// Event listeners
+				searchButton.addEventListener("click", () => {
+					currentSearchQuery = searchInput.value.trim();
+					currentPage = 1;
+					fetchLevels();
+				});
+
+				resetButton.addEventListener("click", () => {
+					searchInput.value = "";
+					currentSearchQuery = "";
+					currentPage = 1;
+					fetchLevels();
+				});
+
+				prevPageButton.addEventListener("click", () => {
+					if (currentPage > 1) {
+						currentPage--;
+						fetchLevels();
+					}
+				});
+
+				nextPageButton.addEventListener("click", () => {
+					if (currentPage < totalPages) {
+						currentPage++;
+						fetchLevels();
+					}
+				});
+
+				cancelEditButton.addEventListener("click", () => {
+					closeModal(editModal);
+				});
+
+				cancelDeleteButton.addEventListener("click", () => {
+					closeModal(deleteModal);
+					levelIdToDelete = null;
+				});
+
+				confirmDeleteButton.addEventListener("click", async () => {
+					if (levelIdToDelete) {
+						await deleteLevel(levelIdToDelete);
+						closeModal(deleteModal);
+						levelIdToDelete = null;
+					}
+				});
+
+				editForm.addEventListener("submit", async (e) => {
+					e.preventDefault();
+					await saveChanges();
+					closeModal(editModal);
+				});
+
+				// Add event delegation for edit and delete buttons
+				tbody.addEventListener("click", (e) => {
+					if (e.target.classList.contains("edit-btn")) {
+						const levelId = e.target.getAttribute("data-id");
+						openEditModal(levelId);
+					} else if (e.target.classList.contains("delete-btn")) {
+						const levelId = e.target.getAttribute("data-id");
+						openDeleteModal(levelId);
+					}
+				});
+
+				// Init
+				fetchLevels();
+
+				// fetch levels from API
+				async function fetchLevels() {
+					// Check if user is authenticated before fetching
+					try {
+						const authResponse = await fetch("/api/auth/status");
+						const authData = await authResponse.json();
+						
+						if (!authData.authenticated) {
+							console.log("User not authenticated, skipping level fetch");
+							return;
+						}
+					} catch (error) {
+						console.error("Error checking authentication:", error);
+						return;
+					}
+
+					try {
+						let url = `${API_BASE_URL}/admin/levels?page=${currentPage}&limit=${PAGE_SIZE}`;
+
+						if (currentSearchQuery) {
+							url += `&q=${encodeURIComponent(currentSearchQuery)}`;
+						}
+
+						const response = await fetch(url);
+						if (!response.ok) throw new Error("Failed to fetch levels");
+
+						const data = await response.json();
+						renderLevelsTable(data.levels);
+
+						// Update pagination
+						totalPages = data.totalPages || 1;
+						pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+						prevPageButton.disabled = currentPage <= 1;
+						nextPageButton.disabled = currentPage >= totalPages;
+					} catch (error) {
+						console.error("Error fetching levels:", error);
+						alert("Failed to load levels. Please try again later.");
+					}
+				}
+
+				function renderLevelsTable(levels) {
+					tbody.innerHTML = "";
+
+					if (!levels || levels.length === 0) {
+						const tr = document.createElement("tr");
+						tr.innerHTML = `<td colspan="7" style="text-align: center;">No levels found</td>`;
+						tbody.appendChild(tr);
+						return;
+					}
+
+					levels.forEach((level) => {
+						const tr = document.createElement("tr");
+						const date = new Date(level.created_at * 1000);
+						const formattedDate = date.toLocaleDateString();
+
+						const difficultyClass = level.difficulty
+							? `difficulty-${level.difficulty}`
+							: "";
+						const difficultyDisplay = level.difficulty
+							? `<span class="difficulty-marker ${difficultyClass}"></span>${level.difficulty}/10`
+							: "Not set";
+
+						tr.innerHTML = `
+					<td>${level.id}</td>
+					<td>${level.name}</td>
+					<td>${level.author}</td>
+					<td>${formattedDate}</td>
+					<td>
+						<div class="stats">
+							<div title="Likes">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M7 10v12"></path>
+									<path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"></path>
+								</svg>
+								${level.likes}
+							</div>
+							<div title="Dislikes">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M17 14V2"></path>
+									<path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"></path>
+								</svg>
+								${level.dislikes}
+							</div>
+							<div title="Plays">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<polygon points="5 3 19 12 5 21 5 3"></polygon>
+								</svg>
+								${level.plays}
+							</div>
+						</div>
+					</td>
+					<td>${difficultyDisplay}</td>
+					<td class="level-actions">
+						<button class="edit-btn" data-id="${level.id}">Edit</button>
+						<button class="outline delete-btn" data-id="${level.id}">Delete</button>
+					</td>
+				`;
+						tbody.appendChild(tr);
+					});
+				}
+				async function openEditModal(levelId) {
+					try {
+						const response = await fetch(`${API_BASE_URL}/levels/${levelId}`);
+						if (!response.ok) {
+							throw new Error("Failed to fetch level details");
+						}
+
+						const level = await response.json();
+
+						// Fill the form
+						document.getElementById("editLevelId").value = level.id;
+						document.getElementById("editName").value = level.name;
+						document.getElementById("editAuthor").value = level.author;
+						document.getElementById("editSun").value = level.sun;
+						document.getElementById("editIsWater").checked = level.is_water === 1;
+						document.getElementById("editDifficulty").value = level.difficulty || "";
+						document.getElementById("editLikes").value = level.likes;
+						document.getElementById("editDislikes").value = level.dislikes;
+						document.getElementById("editPlays").value = level.plays;
+
+						// Show the modal
+						openModal(editModal);
+					} catch (error) {
+						console.error("Error opening edit modal:", error);
+						alert("Failed to load level details.");
+					}
+				}
+
+				async function saveChanges() {
+					try {
+						const levelId = document.getElementById("editLevelId").value;
+						const name = document.getElementById("editName").value.trim();
+						const author = document.getElementById("editAuthor").value.trim();
+						const sun = parseInt(document.getElementById("editSun").value);
+						const is_water = document.getElementById("editIsWater").checked ? 1 : 0;
+						const difficultyInput = document.getElementById("editDifficulty").value;
+						const difficulty = difficultyInput ? parseInt(difficultyInput) : null;
+						const likes = parseInt(document.getElementById("editLikes").value);
+						const dislikes = parseInt(document.getElementById("editDislikes").value);
+						const plays = parseInt(document.getElementById("editPlays").value);
+
+						const response = await fetch(`${API_BASE_URL}/admin/levels/${levelId}`, {
+							method: "PUT",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								name,
+								author,
+								sun,
+								is_water,
+								difficulty,
+								likes,
+								dislikes,
+								plays,
+							}),
+						});
+
+						if (!response.ok) {
+							const errorData = await response.json();
+							throw new Error(errorData.message || "Failed to update level");
+						}
+
+						fetchLevels(); // refresh the table
+					} catch (error) {
+						console.error("Error saving changes:", error);
+						alert(`Failed to save changes: ${error.message}`);
+					}
+				}
+
+				function openDeleteModal(levelId) {
+					levelIdToDelete = levelId;
+					openModal(deleteModal);
+				}
+
+				async function deleteLevel(levelId) {
+					try {
+						const response = await fetch(`${API_BASE_URL}/admin/levels/${levelId}`, {
+							method: "DELETE",
+						});
+
+						if (!response.ok) {
+							const errorData = await response.json();
+							throw new Error(errorData.message || "Failed to delete level");
+						}
+
+						fetchLevels(); // refresh the table
+					} catch (error) {
+						console.error("Error deleting level:", error);
+						alert(`Failed to delete level: ${error.message}`);
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

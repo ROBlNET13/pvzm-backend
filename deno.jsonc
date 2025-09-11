@@ -11,10 +11,13 @@
 	"imports": {
 		"@db/sqlite": "jsr:@db/sqlite@^0.12.0",
 		"@mathis/turnstile-verify": "jsr:@mathis/turnstile-verify@^1.2.0",
-		"@openai/openai": "jsr:@openai/openai@^4.97.0",
-		"@types/cors": "npm:@types/cors@^2.8.17",
-		"@types/express": "npm:@types/express@^5.0.1",
-		"@types/pako": "npm:@types/pako@^2.0.3",
+		"@msgpack/msgpack": "npm:@msgpack/msgpack@^3.1.2",
+		"@openai/openai": "jsr:@openai/openai@^5.20.1",
+		"@std/fs": "jsr:@std/fs@^1.0.19",
+		"@types/cors": "npm:@types/cors@^2.8.19",
+		"@types/express": "npm:@types/express@^5.0.3",
+		"@types/node": "npm:@types/node@^24.3.1",
+		"@types/pako": "npm:@types/pako@^2.0.4",
 		"cors": "npm:cors@^2.8.5",
 		"express": "npm:express@^5.1.0",
 		"pako": "npm:pako@^2.1.0"

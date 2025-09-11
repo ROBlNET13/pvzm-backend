@@ -24,6 +24,20 @@ A Deno-powered backend service for [Plants vs. Zombies: MODDED](https://github.c
 - CAPTCHA protection using Cloudflare Turnstile (optional, only required for level uploading)
 - SSL support for secure connections
 - CORS configuration for frontend integration
+- Admin dashboard for direct database management (no authentication implemented)
+
+## Admin Dashboard
+
+The backend includes an admin dashboard for managing levels directly in the database:
+
+- **Access**: Navigate to `/admin.html` or click the "Admin Dashboard" link on the main page
+- **Features**:
+  - View all levels with pagination
+  - Search levels by name, author, or ID
+  - Edit level properties (name, author, sun, water status, difficulty, statistics)
+  - Delete levels (including related files and database entries)
+
+> Note: The admin dashboard does not currently have authentication. Implement your own authentication mechanism before deploying to production.
 
 ## Getting Started
 

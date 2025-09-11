@@ -3,8 +3,8 @@ interface Plant {
 	plantRow: number;
 	plantCol: number;
 	plantName: string;
-	eleLeft: number;
-	eleTop: number;
+	eleLeft?: number;
+	eleTop?: number;
 }
 
 interface Clone {
@@ -15,6 +15,25 @@ interface Clone {
 	lfValue: number[];
 	stripeCol: number;
 	screenshot?: string;
+}
+
+function hasAllRequiredProperties(clone: Clone): boolean {
+	const requiredProperties = [
+		"plants",
+		"music",
+		"sun",
+		"name",
+		"lfValue",
+		"stripeCol",
+	];
+
+	for (const prop of requiredProperties) {
+		if (!(prop in clone)) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 function max3PlantsIn1Tile(clone: Clone): boolean {
@@ -54,20 +73,41 @@ function validMusic(clone: Clone): boolean {
 function validStripeCol(clone: Clone): boolean {
 	const MIN_STRIPE_COL = 3;
 	const MAX_STRIPE_COL = 8;
-	return (
+	return clone.stripeCol !== undefined && (
 		clone.stripeCol >= MIN_STRIPE_COL && clone.stripeCol <= MAX_STRIPE_COL
 	);
 }
 
 function hasValidPlantCount(clone: Clone): boolean {
-	const MAX_PLANTS = 126; // TODO: CALCULATE THIS PROPERLY LATER
-	return clone.plants.length <= MAX_PLANTS;
+	if (clone.lfValue[3] === 2) { // if this is true, its a water level
+		let MAX_PLANTS = 108; // assuming flower pot/lilypad + pumpkin filling up the screen
+		const extraStripeCols = clone.stripeCol ? clone.stripeCol - 1 : 2;
+		for (let i = 0; i < extraStripeCols; i++) {
+			MAX_PLANTS += 6;
+		}
+		return clone.plants.length <= MAX_PLANTS;
+	} else {
+		let MAX_PLANTS = 90; // assuming flower pot + pumpkin filling up the screen
+		const extraStripeCols = clone.stripeCol ? clone.stripeCol - 1 : 2;
+		for (let i = 0; i < extraStripeCols; i++) {
+			MAX_PLANTS += 5;
+		}
+		return clone.plants.length <= MAX_PLANTS;
+	}
 }
 
 function noPlantsAfterStripe(clone: Clone): boolean {
+	if (clone.stripeCol === undefined) {
+		return true; // no stripe limit to check
+	}
+
 	for (const plant of clone.plants) {
+		const plantsThatCanBypassStripe = ["oPumpkinHead", "oFlowerPot", "oLilyPad", "oILilyPad"];
+		if (plantsThatCanBypassStripe.includes(plant.plantName)) {
+			continue; // these plants can be placed anywhere
+		}
 		// plantcol is 0-indexed, so add 1 for the actual column number
-		if (plant.plantCol + 1 > clone.stripeCol) {
+		if ( plant.plantCol + 1 > clone.stripeCol) {
 			return false;
 		}
 	}
@@ -236,6 +276,11 @@ export function validateClone(clone: Clone): boolean {
 
 	if (!noInvalidPlants(clone)) {
 		console.error("Clone contains invalid plants.");
+		return false;
+	}
+
+	if (!hasAllRequiredProperties(clone)) {
+		console.error("Clone is missing some required properties.");
 		return false;
 	}
 
