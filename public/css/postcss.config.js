@@ -1,8 +1,8 @@
 module.exports = {
-  map: false,
-  plugins: {
-    autoprefixer: {
-      cascade: false
-    }
-  }
-}
+	map: false,
+	plugins: {
+		autoprefixer: {
+			cascade: false,
+		},
+	},
+};

@@ -102,12 +102,17 @@ function noPlantsAfterStripe(clone: Clone): boolean {
 	}
 
 	for (const plant of clone.plants) {
-		const plantsThatCanBypassStripe = ["oPumpkinHead", "oFlowerPot", "oLilyPad", "oILilyPad"];
+		const plantsThatCanBypassStripe = [
+			"oPumpkinHead",
+			"oFlowerPot",
+			"oLilyPad",
+			"oILilyPad",
+		];
 		if (plantsThatCanBypassStripe.includes(plant.plantName)) {
 			continue; // these plants can be placed anywhere
 		}
 		// plantcol is 0-indexed, so add 1 for the actual column number
-		if ( plant.plantCol + 1 > clone.stripeCol) {
+		if (plant.plantCol + 1 > clone.stripeCol) {
 			return false;
 		}
 	}

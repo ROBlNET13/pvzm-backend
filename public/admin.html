@@ -118,12 +118,21 @@
 			<article id="auth-section" class="auth-section">
 				<div id="login-container" class="hidden">
 					<h2>Admin Authentication Required</h2>
-					<p>Please sign in with GitHub to access the admin dashboard.</p>
-					<a href="/api/auth/github" class="button">Sign in with GitHub</a>
+					<p>
+						Please sign in with GitHub to access the admin
+						dashboard.
+					</p>
+					<a href="/api/auth/github" class="button"
+					>Sign in with GitHub</a>
 				</div>
 				<div id="user-profile" class="hidden">
 					<div class="user-profile">
-						<img id="user-avatar" class="user-avatar" src="" alt="User avatar" />
+						<img
+							id="user-avatar"
+							class="user-avatar"
+							src=""
+							alt="User avatar"
+						/>
 						<div>
 							<h3 id="user-name">Username</h3>
 							<p>You are signed in as an administrator</p>
@@ -143,7 +152,9 @@
 							placeholder="Search by name, author, or ID"
 						/>
 						<button id="searchButton">Search</button>
-						<button id="resetButton" class="outline secondary">Reset</button>
+						<button id="resetButton" class="outline secondary">
+							Reset
+						</button>
 					</fieldset>
 
 					<div id="levelsTableContainer" class="x-scroll">
@@ -173,259 +184,403 @@
 				<!-- Edit Modal -->
 				<dialog id="editModal">
 					<article>
-					<h3>Edit Level</h3>
-					<form id="editForm">
-						<input type="hidden" id="editLevelId" />
+						<h3>Edit Level</h3>
+						<form id="editForm">
+							<input type="hidden" id="editLevelId" />
 
-						<div>
-							<label for="editName">Name</label>
-							<input type="text" id="editName" required />
-						</div>
+							<div>
+								<label for="editName">Name</label>
+								<input type="text" id="editName" required />
+							</div>
 
-						<div>
-							<label for="editAuthor">Author</label>
-							<input type="text" id="editAuthor" required />
-						</div>
+							<div>
+								<label for="editAuthor">Author</label>
+								<input type="text" id="editAuthor" required />
+							</div>
 
-						<div>
-							<label for="editSun">Sun</label>
-							<input type="number" id="editSun" required />
-						</div>
+							<div>
+								<label for="editSun">Sun</label>
+								<input type="number" id="editSun" required />
+							</div>
 
-						<div>
-							<label>
-								<input type="checkbox" id="editIsWater" role="switch" />
-								Water Level
-							</label>
-						</div>
+							<div>
+								<label>
+									<input
+										type="checkbox"
+										id="editIsWater"
+										role="switch"
+									/>
+									Water Level
+								</label>
+							</div>
 
-						<div>
-							<label for="editDifficulty">Difficulty (1-10)</label>
-							<input type="number" id="editDifficulty" min="1" max="10" />
-						</div>
+							<div>
+								<label for="editDifficulty"
+								>Difficulty (1-10)</label>
+								<input
+									type="number"
+									id="editDifficulty"
+									min="1"
+									max="10"
+								/>
+							</div>
 
-						<div>
-							<label for="editLikes">Likes</label>
-							<input type="number" id="editLikes" required />
-						</div>
+							<div>
+								<label for="editLikes">Likes</label>
+								<input type="number" id="editLikes" required />
+							</div>
 
-						<div>
-							<label for="editDislikes">Dislikes</label>
-							<input type="number" id="editDislikes" required />
-						</div>
+							<div>
+								<label for="editDislikes">Dislikes</label>
+								<input
+									type="number"
+									id="editDislikes"
+									required
+								/>
+							</div>
 
-						<div>
-							<label for="editPlays">Plays</label>
-							<input type="number" id="editPlays" required />
-						</div>
+							<div>
+								<label for="editPlays">Plays</label>
+								<input type="number" id="editPlays" required />
+							</div>
 
-						<div class="grid">
-							<button type="button" id="cancelEdit" class="outline">Cancel</button>
-							<button type="submit">Save Changes</button>
-						</div>
-					</form>
+							<div class="grid">
+								<button
+									type="button"
+									id="cancelEdit"
+									class="outline"
+								>
+									Cancel
+								</button>
+								<button type="submit">Save Changes</button>
+							</div>
+						</form>
 					</article>
 				</dialog>
 
 				<!-- Delete Confirmation Modal -->
 				<dialog id="deleteModal">
 					<article>
-					<h3>Confirm Deletion</h3>
-					<p>Are you sure you want to delete this level?</p>
-					<p>This action cannot be undone.</p>
-					<footer class="grid">
-						<button id="cancelDelete" class="outline">Cancel</button>
-						<button id="confirmDelete">Delete</button>
-					</footer>
+						<h3>Confirm Deletion</h3>
+						<p>Are you sure you want to delete this level?</p>
+						<p>This action cannot be undone.</p>
+						<footer class="grid">
+							<button id="cancelDelete" class="outline">
+								Cancel
+							</button>
+							<button id="confirmDelete">Delete</button>
+						</footer>
 					</article>
 				</dialog>
 			</div>
 		</main>
 		<script src="js/pico.modal.js"></script>
 		<script>
-			document.addEventListener("DOMContentLoaded", async () => {
-				// Check authentication status
-				try {
-					const authResponse = await fetch("/api/auth/status");
-					const authData = await authResponse.json();
-
-					if (authData.authenticated) {
-						// User is authenticated, show admin content
-						document.getElementById("login-container").classList.add("hidden");
-						document.getElementById("user-profile").classList.remove("hidden");
-						document.getElementById("admin-content").classList.remove("hidden");
-
-						// Update user profile
-						document.getElementById("user-name").textContent = authData.user.displayName;
-						if (authData.user.avatarUrl) {
-							document.getElementById("user-avatar").src = authData.user.avatarUrl;
-						}
-					} else {
-						// User is not authenticated, show login button
-						document.getElementById("login-container").classList.remove("hidden");
-						document.getElementById("user-profile").classList.add("hidden");
-						document.getElementById("admin-content").classList.add("hidden");
-					}
-				} catch (error) {
-					console.error("Error checking authentication:", error);
-					// Fallback to showing login
-					document.getElementById("login-container").classList.remove("hidden");
-					document.getElementById("user-profile").classList.add("hidden");
-					document.getElementById("admin-content").classList.add("hidden");
-				}
-
-				const API_BASE_URL = "/api";
-				const PAGE_SIZE = 10;
-				let currentPage = 1;
-				let currentSearchQuery = "";
-				let totalPages = 1;
-
-				// DOM elements
-				const levelsTable = document.getElementById("levelsTable");
-				const tbody = levelsTable.querySelector("tbody");
-				const searchInput = document.getElementById("searchInput");
-				const searchButton = document.getElementById("searchButton");
-				const resetButton = document.getElementById("resetButton");
-				const prevPageButton = document.getElementById("prevPage");
-				const nextPageButton = document.getElementById("nextPage");
-				const pageInfo = document.getElementById("pageInfo");
-				const editModal = document.getElementById("editModal");
-				const editForm = document.getElementById("editForm");
-				const cancelEditButton = document.getElementById("cancelEdit");
-				const deleteModal = document.getElementById("deleteModal");
-				const confirmDeleteButton = document.getElementById("confirmDelete");
-				const cancelDeleteButton = document.getElementById("cancelDelete");
-
-				let levelIdToDelete = null;
-
-				// Event listeners
-				searchButton.addEventListener("click", () => {
-					currentSearchQuery = searchInput.value.trim();
-					currentPage = 1;
-					fetchLevels();
-				});
-
-				resetButton.addEventListener("click", () => {
-					searchInput.value = "";
-					currentSearchQuery = "";
-					currentPage = 1;
-					fetchLevels();
-				});
-
-				prevPageButton.addEventListener("click", () => {
-					if (currentPage > 1) {
-						currentPage--;
-						fetchLevels();
-					}
-				});
-
-				nextPageButton.addEventListener("click", () => {
-					if (currentPage < totalPages) {
-						currentPage++;
-						fetchLevels();
-					}
-				});
-
-				cancelEditButton.addEventListener("click", () => {
-					closeModal(editModal);
-				});
-
-				cancelDeleteButton.addEventListener("click", () => {
-					closeModal(deleteModal);
-					levelIdToDelete = null;
-				});
-
-				confirmDeleteButton.addEventListener("click", async () => {
-					if (levelIdToDelete) {
-						await deleteLevel(levelIdToDelete);
-						closeModal(deleteModal);
-						levelIdToDelete = null;
-					}
-				});
-
-				editForm.addEventListener("submit", async (e) => {
-					e.preventDefault();
-					await saveChanges();
-					closeModal(editModal);
-				});
-
-				// Add event delegation for edit and delete buttons
-				tbody.addEventListener("click", (e) => {
-					if (e.target.classList.contains("edit-btn")) {
-						const levelId = e.target.getAttribute("data-id");
-						openEditModal(levelId);
-					} else if (e.target.classList.contains("delete-btn")) {
-						const levelId = e.target.getAttribute("data-id");
-						openDeleteModal(levelId);
-					}
-				});
-
-				// Init
-				fetchLevels();
-
-				// fetch levels from API
-				async function fetchLevels() {
-					// Check if user is authenticated before fetching
+			document.addEventListener(
+				"DOMContentLoaded",
+				async () => {
+					// Check authentication status
 					try {
-						const authResponse = await fetch("/api/auth/status");
-						const authData = await authResponse.json();
-						
-						if (!authData.authenticated) {
-							console.log("User not authenticated, skipping level fetch");
+						const authResponse = await fetch(
+							"/api/auth/status",
+						);
+						const authData = await authResponse
+							.json();
+
+						if (authData.authenticated) {
+							// User is authenticated, show admin content
+							document.getElementById(
+								"login-container",
+							).classList.add("hidden");
+							document.getElementById(
+								"user-profile",
+							).classList.remove("hidden");
+							document.getElementById(
+								"admin-content",
+							).classList.remove("hidden");
+
+							// Update user profile
+							document.getElementById("user-name")
+								.textContent =
+									authData.user.displayName;
+							if (authData.user.avatarUrl) {
+								document.getElementById(
+									"user-avatar",
+								).src = authData.user.avatarUrl;
+							}
+						} else {
+							// User is not authenticated, show login button
+							document.getElementById(
+								"login-container",
+							).classList.remove("hidden");
+							document.getElementById(
+								"user-profile",
+							).classList.add("hidden");
+							document.getElementById(
+								"admin-content",
+							).classList.add("hidden");
+						}
+					} catch (error) {
+						console.error(
+							"Error checking authentication:",
+							error,
+						);
+						// Fallback to showing login
+						document.getElementById(
+							"login-container",
+						).classList.remove("hidden");
+						document.getElementById("user-profile")
+							.classList.add("hidden");
+						document.getElementById("admin-content")
+							.classList.add("hidden");
+					}
+
+					const API_BASE_URL = "/api";
+					const PAGE_SIZE = 10;
+					let currentPage = 1;
+					let currentSearchQuery = "";
+					let totalPages = 1;
+
+					// DOM elements
+					const levelsTable = document.getElementById(
+						"levelsTable",
+					);
+					const tbody = levelsTable.querySelector(
+						"tbody",
+					);
+					const searchInput = document.getElementById(
+						"searchInput",
+					);
+					const searchButton = document
+						.getElementById("searchButton");
+					const resetButton = document.getElementById(
+						"resetButton",
+					);
+					const prevPageButton = document
+						.getElementById("prevPage");
+					const nextPageButton = document
+						.getElementById("nextPage");
+					const pageInfo = document.getElementById(
+						"pageInfo",
+					);
+					const editModal = document.getElementById(
+						"editModal",
+					);
+					const editForm = document.getElementById(
+						"editForm",
+					);
+					const cancelEditButton = document
+						.getElementById("cancelEdit");
+					const deleteModal = document.getElementById(
+						"deleteModal",
+					);
+					const confirmDeleteButton = document
+						.getElementById("confirmDelete");
+					const cancelDeleteButton = document
+						.getElementById("cancelDelete");
+
+					let levelIdToDelete = null;
+
+					// Event listeners
+					searchButton.addEventListener(
+						"click",
+						() => {
+							currentSearchQuery = searchInput
+								.value.trim();
+							currentPage = 1;
+							fetchLevels();
+						},
+					);
+
+					resetButton.addEventListener(
+						"click",
+						() => {
+							searchInput.value = "";
+							currentSearchQuery = "";
+							currentPage = 1;
+							fetchLevels();
+						},
+					);
+
+					prevPageButton.addEventListener(
+						"click",
+						() => {
+							if (currentPage > 1) {
+								currentPage--;
+								fetchLevels();
+							}
+						},
+					);
+
+					nextPageButton.addEventListener(
+						"click",
+						() => {
+							if (currentPage < totalPages) {
+								currentPage++;
+								fetchLevels();
+							}
+						},
+					);
+
+					cancelEditButton.addEventListener(
+						"click",
+						() => {
+							closeModal(editModal);
+						},
+					);
+
+					cancelDeleteButton.addEventListener(
+						"click",
+						() => {
+							closeModal(deleteModal);
+							levelIdToDelete = null;
+						},
+					);
+
+					confirmDeleteButton.addEventListener(
+						"click",
+						async () => {
+							if (levelIdToDelete) {
+								await deleteLevel(
+									levelIdToDelete,
+								);
+								closeModal(deleteModal);
+								levelIdToDelete = null;
+							}
+						},
+					);
+
+					editForm.addEventListener(
+						"submit",
+						async (e) => {
+							e.preventDefault();
+							await saveChanges();
+							closeModal(editModal);
+						},
+					);
+
+					// Add event delegation for edit and delete buttons
+					tbody.addEventListener("click", (e) => {
+						if (
+							e.target.classList.contains(
+								"edit-btn",
+							)
+						) {
+							const levelId = e.target
+								.getAttribute("data-id");
+							openEditModal(levelId);
+						} else if (
+							e.target.classList.contains(
+								"delete-btn",
+							)
+						) {
+							const levelId = e.target
+								.getAttribute("data-id");
+							openDeleteModal(levelId);
+						}
+					});
+
+					// Init
+					fetchLevels();
+
+					// fetch levels from API
+					async function fetchLevels() {
+						// Check if user is authenticated before fetching
+						try {
+							const authResponse = await fetch(
+								"/api/auth/status",
+							);
+							const authData = await authResponse
+								.json();
+
+							if (!authData.authenticated) {
+								console.log(
+									"User not authenticated, skipping level fetch",
+								);
+								return;
+							}
+						} catch (error) {
+							console.error(
+								"Error checking authentication:",
+								error,
+							);
 							return;
 						}
-					} catch (error) {
-						console.error("Error checking authentication:", error);
-						return;
+
+						try {
+							let url =
+								`${API_BASE_URL}/admin/levels?page=${currentPage}&limit=${PAGE_SIZE}`;
+
+							if (currentSearchQuery) {
+								url += `&q=${
+									encodeURIComponent(
+										currentSearchQuery,
+									)
+								}`;
+							}
+
+							const response = await fetch(url);
+							if (!response.ok) {
+								throw new Error(
+									"Failed to fetch levels",
+								);
+							}
+
+							const data = await response.json();
+							renderLevelsTable(data.levels);
+
+							// Update pagination
+							totalPages = data.totalPages || 1;
+							pageInfo.textContent =
+								`Page ${currentPage} of ${totalPages}`;
+							prevPageButton.disabled =
+								currentPage <= 1;
+							nextPageButton.disabled =
+								currentPage >= totalPages;
+						} catch (error) {
+							console.error(
+								"Error fetching levels:",
+								error,
+							);
+							alert(
+								"Failed to load levels. Please try again later.",
+							);
+						}
 					}
 
-					try {
-						let url = `${API_BASE_URL}/admin/levels?page=${currentPage}&limit=${PAGE_SIZE}`;
+					function renderLevelsTable(levels) {
+						tbody.innerHTML = "";
 
-						if (currentSearchQuery) {
-							url += `&q=${encodeURIComponent(currentSearchQuery)}`;
+						if (!levels || levels.length === 0) {
+							const tr = document.createElement(
+								"tr",
+							);
+							tr.innerHTML =
+								`<td colspan="7" style="text-align: center;">No levels found</td>`;
+							tbody.appendChild(tr);
+							return;
 						}
 
-						const response = await fetch(url);
-						if (!response.ok) throw new Error("Failed to fetch levels");
+						levels.forEach((level) => {
+							const tr = document.createElement(
+								"tr",
+							);
+							const date = new Date(
+								level.created_at * 1000,
+							);
+							const formattedDate = date
+								.toLocaleDateString();
 
-						const data = await response.json();
-						renderLevelsTable(data.levels);
+							const difficultyClass =
+								level.difficulty
+									? `difficulty-${level.difficulty}`
+									: "";
+							const difficultyDisplay =
+								level.difficulty
+									? `<span class="difficulty-marker ${difficultyClass}"></span>${level.difficulty}/10`
+									: "Not set";
 
-						// Update pagination
-						totalPages = data.totalPages || 1;
-						pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-						prevPageButton.disabled = currentPage <= 1;
-						nextPageButton.disabled = currentPage >= totalPages;
-					} catch (error) {
-						console.error("Error fetching levels:", error);
-						alert("Failed to load levels. Please try again later.");
-					}
-				}
-
-				function renderLevelsTable(levels) {
-					tbody.innerHTML = "";
-
-					if (!levels || levels.length === 0) {
-						const tr = document.createElement("tr");
-						tr.innerHTML = `<td colspan="7" style="text-align: center;">No levels found</td>`;
-						tbody.appendChild(tr);
-						return;
-					}
-
-					levels.forEach((level) => {
-						const tr = document.createElement("tr");
-						const date = new Date(level.created_at * 1000);
-						const formattedDate = date.toLocaleDateString();
-
-						const difficultyClass = level.difficulty
-							? `difficulty-${level.difficulty}`
-							: "";
-						const difficultyDisplay = level.difficulty
-							? `<span class="difficulty-marker ${difficultyClass}"></span>${level.difficulty}/10`
-							: "Not set";
-
-						tr.innerHTML = `
+							tr.innerHTML = `
 					<td>${level.id}</td>
 					<td>${level.name}</td>
 					<td>${level.author}</td>
@@ -460,102 +615,184 @@
 						<button class="outline delete-btn" data-id="${level.id}">Delete</button>
 					</td>
 				`;
-						tbody.appendChild(tr);
-					});
-				}
-				async function openEditModal(levelId) {
-					try {
-						const response = await fetch(`${API_BASE_URL}/levels/${levelId}`);
-						if (!response.ok) {
-							throw new Error("Failed to fetch level details");
-						}
-
-						const level = await response.json();
-
-						// Fill the form
-						document.getElementById("editLevelId").value = level.id;
-						document.getElementById("editName").value = level.name;
-						document.getElementById("editAuthor").value = level.author;
-						document.getElementById("editSun").value = level.sun;
-						document.getElementById("editIsWater").checked = level.is_water === 1;
-						document.getElementById("editDifficulty").value = level.difficulty || "";
-						document.getElementById("editLikes").value = level.likes;
-						document.getElementById("editDislikes").value = level.dislikes;
-						document.getElementById("editPlays").value = level.plays;
-
-						// Show the modal
-						openModal(editModal);
-					} catch (error) {
-						console.error("Error opening edit modal:", error);
-						alert("Failed to load level details.");
-					}
-				}
-
-				async function saveChanges() {
-					try {
-						const levelId = document.getElementById("editLevelId").value;
-						const name = document.getElementById("editName").value.trim();
-						const author = document.getElementById("editAuthor").value.trim();
-						const sun = parseInt(document.getElementById("editSun").value);
-						const is_water = document.getElementById("editIsWater").checked ? 1 : 0;
-						const difficultyInput = document.getElementById("editDifficulty").value;
-						const difficulty = difficultyInput ? parseInt(difficultyInput) : null;
-						const likes = parseInt(document.getElementById("editLikes").value);
-						const dislikes = parseInt(document.getElementById("editDislikes").value);
-						const plays = parseInt(document.getElementById("editPlays").value);
-
-						const response = await fetch(`${API_BASE_URL}/admin/levels/${levelId}`, {
-							method: "PUT",
-							headers: {
-								"Content-Type": "application/json",
-							},
-							body: JSON.stringify({
-								name,
-								author,
-								sun,
-								is_water,
-								difficulty,
-								likes,
-								dislikes,
-								plays,
-							}),
+							tbody.appendChild(tr);
 						});
-
-						if (!response.ok) {
-							const errorData = await response.json();
-							throw new Error(errorData.message || "Failed to update level");
-						}
-
-						fetchLevels(); // refresh the table
-					} catch (error) {
-						console.error("Error saving changes:", error);
-						alert(`Failed to save changes: ${error.message}`);
 					}
-				}
+					async function openEditModal(levelId) {
+						try {
+							const response = await fetch(
+								`${API_BASE_URL}/levels/${levelId}`,
+							);
+							if (!response.ok) {
+								throw new Error(
+									"Failed to fetch level details",
+								);
+							}
 
-				function openDeleteModal(levelId) {
-					levelIdToDelete = levelId;
-					openModal(deleteModal);
-				}
+							const level = await response.json();
 
-				async function deleteLevel(levelId) {
-					try {
-						const response = await fetch(`${API_BASE_URL}/admin/levels/${levelId}`, {
-							method: "DELETE",
-						});
+							// Fill the form
+							document.getElementById(
+								"editLevelId",
+							).value = level.id;
+							document.getElementById("editName")
+								.value = level.name;
+							document.getElementById(
+								"editAuthor",
+							).value = level.author;
+							document.getElementById("editSun")
+								.value = level.sun;
+							document.getElementById(
+								"editIsWater",
+							).checked = level.is_water === 1;
+							document.getElementById(
+								"editDifficulty",
+							).value = level.difficulty || "";
+							document.getElementById("editLikes")
+								.value = level.likes;
+							document.getElementById(
+								"editDislikes",
+							).value = level.dislikes;
+							document.getElementById("editPlays")
+								.value = level.plays;
 
-						if (!response.ok) {
-							const errorData = await response.json();
-							throw new Error(errorData.message || "Failed to delete level");
+							// Show the modal
+							openModal(editModal);
+						} catch (error) {
+							console.error(
+								"Error opening edit modal:",
+								error,
+							);
+							alert(
+								"Failed to load level details.",
+							);
 						}
-
-						fetchLevels(); // refresh the table
-					} catch (error) {
-						console.error("Error deleting level:", error);
-						alert(`Failed to delete level: ${error.message}`);
 					}
-				}
-			});
+
+					async function saveChanges() {
+						try {
+							const levelId =
+								document.getElementById(
+									"editLevelId",
+								).value;
+							const name = document
+								.getElementById("editName")
+								.value.trim();
+							const author = document
+								.getElementById("editAuthor")
+								.value.trim();
+							const sun = parseInt(
+								document.getElementById(
+									"editSun",
+								).value,
+							);
+							const is_water =
+								document.getElementById(
+										"editIsWater",
+									).checked
+									? 1
+									: 0;
+							const difficultyInput =
+								document.getElementById(
+									"editDifficulty",
+								).value;
+							const difficulty = difficultyInput
+								? parseInt(difficultyInput)
+								: null;
+							const likes = parseInt(
+								document.getElementById(
+									"editLikes",
+								).value,
+							);
+							const dislikes = parseInt(
+								document.getElementById(
+									"editDislikes",
+								).value,
+							);
+							const plays = parseInt(
+								document.getElementById(
+									"editPlays",
+								).value,
+							);
+
+							const response = await fetch(
+								`${API_BASE_URL}/admin/levels/${levelId}`,
+								{
+									method: "PUT",
+									headers: {
+										"Content-Type":
+											"application/json",
+									},
+									body: JSON.stringify({
+										name,
+										author,
+										sun,
+										is_water,
+										difficulty,
+										likes,
+										dislikes,
+										plays,
+									}),
+								},
+							);
+
+							if (!response.ok) {
+								const errorData = await response
+									.json();
+								throw new Error(
+									errorData.message ||
+										"Failed to update level",
+								);
+							}
+
+							fetchLevels(); // refresh the table
+						} catch (error) {
+							console.error(
+								"Error saving changes:",
+								error,
+							);
+							alert(
+								`Failed to save changes: ${error.message}`,
+							);
+						}
+					}
+
+					function openDeleteModal(levelId) {
+						levelIdToDelete = levelId;
+						openModal(deleteModal);
+					}
+
+					async function deleteLevel(levelId) {
+						try {
+							const response = await fetch(
+								`${API_BASE_URL}/admin/levels/${levelId}`,
+								{
+									method: "DELETE",
+								},
+							);
+
+							if (!response.ok) {
+								const errorData = await response
+									.json();
+								throw new Error(
+									errorData.message ||
+										"Failed to delete level",
+								);
+							}
+
+							fetchLevels(); // refresh the table
+						} catch (error) {
+							console.error(
+								"Error deleting level:",
+								error,
+							);
+							alert(
+								`Failed to delete level: ${error.message}`,
+							);
+						}
+					}
+				},
+			);
 		</script>
 	</body>
 </html>
