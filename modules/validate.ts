@@ -229,7 +229,8 @@ function plantsHasAllRequiredFields(clone: Clone): boolean {
 }
 
 export function validateClone(clone: Clone): boolean {
-	let [doesCloneHaveAllRequiredFields, missingFields] = cloneHasAllRequiredFields(clone);
+	let [doesCloneHaveAllRequiredFields, missingFields] =
+		cloneHasAllRequiredFields(clone);
 	if (!doesCloneHaveAllRequiredFields) {
 		console.error("Clone is missing required fields:", missingFields);
 		return false;

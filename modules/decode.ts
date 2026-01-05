@@ -174,7 +174,9 @@ function decompressStringFromBytes(
 ): string {
 	const inputData = Array.isArray(compressed)
 		? new Uint8Array(compressed)
-		: (compressed instanceof ArrayBuffer ? new Uint8Array(compressed) : compressed);
+		: (compressed instanceof ArrayBuffer
+			? new Uint8Array(compressed)
+			: compressed);
 
 	const decompressed = pako.inflate(inputData);
 	return new TextDecoder().decode(decompressed);
@@ -235,7 +237,9 @@ function untinyifyClone(tinyBytes: Uint8Array): Clone {
 	const obj = msgpackDecode(msgpackBytes);
 	const reversed = reverseKeys(obj);
 
-	if (reversed.lfValue !== undefined && typeof reversed.lfValue === "number") {
+	if (
+		reversed.lfValue !== undefined && typeof reversed.lfValue === "number"
+	) {
 		reversed.lfValue = unpackToArray(reversed.lfValue);
 	}
 	return reversed;
@@ -261,7 +265,9 @@ function untinyifyClone_OLD(tinyString: string): Clone {
 				const plantData = plantString.slice(1, -1).split("\uE002");
 
 				for (const plantPair of plantData) {
-					const [plantTinyKey, plantValueStr] = plantPair.split("\uE004");
+					const [plantTinyKey, plantValueStr] = plantPair.split(
+						"\uE004",
+					);
 					const plantOriginalKey = REVERSE_TINYIFIER_MAP[
 						parseInt(plantTinyKey, 10)
 					] as keyof Plant;
@@ -269,8 +275,15 @@ function untinyifyClone_OLD(tinyString: string): Clone {
 					if (!plantOriginalKey) continue;
 
 					// match frontend OLD behavior: only these are forced numeric
-					if (["zIndex", "plantRow", "plantCol"].includes(plantOriginalKey)) {
-						plantObj[plantOriginalKey] = parseInt(plantValueStr, 10);
+					if (
+						["zIndex", "plantRow", "plantCol"].includes(
+							plantOriginalKey,
+						)
+					) {
+						plantObj[plantOriginalKey] = parseInt(
+							plantValueStr,
+							10,
+						);
 					} else {
 						plantObj[plantOriginalKey] = plantValueStr;
 					}
@@ -282,7 +295,10 @@ function untinyifyClone_OLD(tinyString: string): Clone {
 		} else if (originalKey === "lfValue") {
 			originalClone[originalKey] = tinyValue.split("\uE000").map(Number);
 		} else if (["sun", "stripeCol"].includes(originalKey)) {
-			originalClone[originalKey as "sun" | "stripeCol"] = parseInt(tinyValue, 10);
+			originalClone[originalKey as "sun" | "stripeCol"] = parseInt(
+				tinyValue,
+				10,
+			);
 		} else {
 			originalClone[originalKey as keyof Clone] = tinyValue as any;
 		}
