@@ -6,8 +6,9 @@ interface Plant {
 	plantRow: number;
 	plantCol: number;
 	plantName: string;
-	eleLeft?: number;
-	eleTop?: number;
+	// Frontend OLD untinyify does not force these to numbers; keep decode permissive.
+	eleLeft?: number | string;
+	eleTop?: number | string;
 }
 
 interface Clone {
@@ -138,32 +139,34 @@ function unpackToArray(packed: number): number[] {
 	return arr;
 }
 
+function padBase64(unpadded: string): string {
+	const mod = unpadded.length % 4;
+	return mod === 0 ? unpadded : unpadded + "=".repeat(4 - mod);
+}
+
 function decompressString(compressedBase64: string): string {
 	const compressed = Uint8Array.from(
-		atob(compressedBase64),
+		atob(padBase64(compressedBase64)),
 		(c) => c.charCodeAt(0),
 	);
 	const decompressed = pako.inflate(compressed);
-	const decompressedString = new TextDecoder().decode(decompressed);
-	return decompressedString;
+	return new TextDecoder().decode(decompressed);
 }
 
 function compressString(input: string): string {
 	const inputUTF8 = new TextEncoder().encode(input);
 	const compressed = pako.deflate(inputUTF8, { level: 9 });
-	const compressedBase64 = btoa(
-		String.fromCharCode(...Array.from(compressed)),
-	);
+	// match frontend: btoa(String.fromCharCode(...compressed))
+	const compressedBase64 = btoa(String.fromCharCode(...compressed));
 	return compressedBase64.replaceAll("=", "");
 }
 
 function decompressStringToBytes(compressedBase64: string): Uint8Array {
 	const compressed = Uint8Array.from(
-		atob(compressedBase64),
+		atob(padBase64(compressedBase64)),
 		(c) => c.charCodeAt(0),
 	);
-	const decompressed = pako.inflate(compressed);
-	return decompressed;
+	return pako.inflate(compressed);
 }
 
 function decompressStringFromBytes(
@@ -171,30 +174,53 @@ function decompressStringFromBytes(
 ): string {
 	const inputData = Array.isArray(compressed)
 		? new Uint8Array(compressed)
-		: compressed;
+		: (compressed instanceof ArrayBuffer ? new Uint8Array(compressed) : compressed);
+
 	const decompressed = pako.inflate(inputData);
-	const decompressedString = new TextDecoder().decode(decompressed);
-	return decompressedString;
+	return new TextDecoder().decode(decompressed);
+}
+
+function maybeInflateZlibBytes(bytes: Uint8Array): Uint8Array {
+	// zlib-wrapped deflate commonly starts with 0x78 (e.g. 0x78 0x9C / 0xDA / 0x01 / 0x5E)
+	if (bytes.length >= 2 && bytes[0] === 0x78) {
+		try {
+			return pako.inflate(bytes);
+		} catch {
+			// Not actually zlib/deflate; treat as already-uncompressed msgpack.
+		}
+	}
+	return bytes;
 }
 
 function reverseKeys(obj: any): any {
+	if (obj instanceof Map) {
+		// msgpack decode may produce Maps depending on options/inputs
+		const result: any = {};
+		for (const [k, v] of obj.entries()) {
+			const keyStr = String(k);
+			const mapped = REVERSE_TINYIFIER_MAP[Number(keyStr)] ?? keyStr;
+
+			if (mapped === "plantName" && typeof v === "number") {
+				result[mapped] = allPlantsStringArray[v] || v;
+			} else {
+				result[mapped] = reverseKeys(v);
+			}
+		}
+		return result;
+	}
+
 	if (Array.isArray(obj)) {
-		// If it's an array, recursively process each element
 		return obj.map((item) => reverseKeys(item));
 	} else if (obj !== null && typeof obj === "object") {
-		// If it's an object, process each key-value pair
 		const result: any = {};
 		for (const [key, value] of Object.entries(obj)) {
-			// Try to reverse the key if it exists in our map, otherwise keep the original key
-			const newKey = REVERSE_TINYIFIER_MAP[key as any] !== undefined
-				? REVERSE_TINYIFIER_MAP[key as any]
-				: key;
+			// frontend does REVERSE_TINYIFIER_MAP[key]; ensure numeric-string keys map correctly
+			const mapped = REVERSE_TINYIFIER_MAP[Number(key)] ?? key;
 
-			// If this is a plantName and the value is a number, convert back to plant name
-			if (newKey === "plantName" && typeof value === "number") {
-				result[newKey] = allPlantsStringArray[value] || value; // fallback to original if index is invalid
+			if (mapped === "plantName" && typeof value === "number") {
+				result[mapped] = allPlantsStringArray[value] || value;
 			} else {
-				result[newKey] = reverseKeys(value);
+				result[mapped] = reverseKeys(value);
 			}
 		}
 		return result;
@@ -203,15 +229,13 @@ function reverseKeys(obj: any): any {
 }
 
 function untinyifyClone(tinyBytes: Uint8Array): Clone {
-	// un-messagepack it (no decompression needed, already done)
-	const obj = msgpackDecode(tinyBytes);
-	// reverse the keys
+	// Be tolerant: some paths may still pass deflated bytes.
+	const msgpackBytes = maybeInflateZlibBytes(tinyBytes);
+
+	const obj = msgpackDecode(msgpackBytes);
 	const reversed = reverseKeys(obj);
-	// unpack lfValue if it exists
-	// if lfValue is packed, unpack it
-	if (
-		reversed.lfValue !== undefined && typeof reversed.lfValue === "number"
-	) {
+
+	if (reversed.lfValue !== undefined && typeof reversed.lfValue === "number") {
 		reversed.lfValue = unpackToArray(reversed.lfValue);
 	}
 	return reversed;
@@ -225,63 +249,42 @@ function untinyifyClone_OLD(tinyString: string): Clone {
 		const [tinyKey, tinyValue] = pair.split("\uE005");
 		const originalKey = REVERSE_TINYIFIER_MAP[parseInt(tinyKey, 10)];
 
-		if (!originalKey) {
-			continue;
-		} // skip if key not found
+		if (!originalKey) continue;
 
 		if (originalKey === "plants") {
 			const plants: Plant[] = [];
 			const plantStrings = tinyValue.split("\uE003");
 			for (const plantString of plantStrings) {
-				if (!plantString) {
-					continue;
-				}
-				const plantObj: Partial<Plant> = {};
-				const plantData = plantString
-					.slice(1, -1) // remove start/end markers \ue001
-					.split("\uE002");
+				if (!plantString) continue;
+
+				const plantObj: Record<string, any> = {};
+				const plantData = plantString.slice(1, -1).split("\uE002");
+
 				for (const plantPair of plantData) {
-					const [plantTinyKey, plantValueStr] = plantPair.split(
-						"\uE004",
-					);
+					const [plantTinyKey, plantValueStr] = plantPair.split("\uE004");
 					const plantOriginalKey = REVERSE_TINYIFIER_MAP[
 						parseInt(plantTinyKey, 10)
 					] as keyof Plant;
-					if (plantOriginalKey) {
-						// convert numeric values back to numbers
-						if (
-							[
-								"zIndex",
-								"plantRow",
-								"plantCol",
-								"eleLeft",
-								"eleTop",
-							].includes(plantOriginalKey)
-						) {
-							const numericKey = plantOriginalKey as
-								| "zIndex"
-								| "plantRow"
-								| "plantCol"
-								| "eleLeft"
-								| "eleTop";
-							plantObj[numericKey] = parseInt(plantValueStr, 10);
-						} else if (plantOriginalKey === "plantName") {
-							plantObj[plantOriginalKey] = plantValueStr;
-						}
+
+					if (!plantOriginalKey) continue;
+
+					// match frontend OLD behavior: only these are forced numeric
+					if (["zIndex", "plantRow", "plantCol"].includes(plantOriginalKey)) {
+						plantObj[plantOriginalKey] = parseInt(plantValueStr, 10);
+					} else {
+						plantObj[plantOriginalKey] = plantValueStr;
 					}
 				}
+
 				plants.push(plantObj as Plant);
 			}
 			originalClone[originalKey] = plants;
 		} else if (originalKey === "lfValue") {
 			originalClone[originalKey] = tinyValue.split("\uE000").map(Number);
 		} else if (["sun", "stripeCol"].includes(originalKey)) {
-			originalClone[originalKey as "sun" | "stripeCol"] = parseInt(
-				tinyValue,
-				10,
-			);
+			originalClone[originalKey as "sun" | "stripeCol"] = parseInt(tinyValue, 10);
 		} else {
-			originalClone[originalKey as keyof Clone] = tinyValue as any; // keep as string for name, music, screenshot
+			originalClone[originalKey as keyof Clone] = tinyValue as any;
 		}
 	}
 	return originalClone as Clone;
@@ -335,30 +338,20 @@ export function decodeFile(
 		fileHeader[2] === izl3Header[2] &&
 		fileHeader[3] === izl3Header[3]
 	) {
-		// IZL3 format - already compressed msgpack data
-		const compressedData = fileBytes.slice(4); // remove the IZL3 header
-		const compressedBase64 = btoa(
-			String.fromCharCode(...Array.from(compressedData)),
-		);
-		const stringified = "|" + compressedBase64.replaceAll("=", "");
-		return parseCloneTiny(stringified);
+		// IZL3 format - compressed msgpack bytes after the header.
+		// Decode directly from bytes (no base64 roundtrip).
+		const payload = fileBytes.slice(4);
+
+		// Most IZL3 payloads are deflated msgpack, but tolerate already-msgpack payloads too.
+		const maybeMsgpack = maybeInflateZlibBytes(payload);
+		return untinyifyClone(maybeMsgpack);
 	}
 
-	// Check for deflate header (0x78 followed by various possible second bytes)
+	// Frontend: if first byte is 0x78, treat as deflate old-format (no extra heuristics)
 	if (fileBytes.length >= 2 && fileBytes[0] === 0x78) {
-		// Common deflate headers: 0x789C (default), 0x78DA (best compression), 0x7801 (fast), etc.
-		const secondByte = fileBytes[1];
-		if (
-			(secondByte === 0x9C) || (secondByte === 0xDA) ||
-			(secondByte === 0x01) ||
-			(secondByte === 0x5E) || (secondByte === 0x9C) ||
-			(secondByte === 0xDA)
-		) {
-			// Deflate format detected - treat as old format (already compressed)
-			const decompressedString = decompressStringFromBytes(fileBytes);
-			const stringified = "=" + compressString(decompressedString);
-			return parseCloneTiny_OLD(stringified);
-		}
+		const decompressedString = decompressStringFromBytes(fileBytes);
+		const stringified = "=" + compressString(decompressedString);
+		return parseCloneTiny_OLD(stringified);
 	}
 
 	// Old format - treat as string data

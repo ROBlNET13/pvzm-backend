@@ -183,7 +183,7 @@ function noInvalidPlants(clone: Clone): boolean {
 	return true;
 }
 
-function cloneHasAllRequiredFields(clone: Clone): boolean {
+function cloneHasAllRequiredFields(clone: Clone): [boolean, string?] {
 	const requiredFields = [
 		"plants",
 		"music",
@@ -195,11 +195,11 @@ function cloneHasAllRequiredFields(clone: Clone): boolean {
 
 	for (const field of requiredFields) {
 		if (!(field in clone)) {
-			return false;
+			return [false, field];
 		}
 	}
 
-	return true;
+	return [true];
 }
 
 function plantsHasAllRequiredFields(clone: Clone): boolean {
@@ -229,8 +229,9 @@ function plantsHasAllRequiredFields(clone: Clone): boolean {
 }
 
 export function validateClone(clone: Clone): boolean {
-	if (!cloneHasAllRequiredFields(clone)) {
-		console.error("Clone is missing required fields.");
+	let [doesCloneHaveAllRequiredFields, missingFields] = cloneHasAllRequiredFields(clone);
+	if (!doesCloneHaveAllRequiredFields) {
+		console.error("Clone is missing required fields:", missingFields);
 		return false;
 	}
 
