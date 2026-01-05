@@ -85,7 +85,11 @@ if (corsEnabled) {
 }
 
 // Log UI status
-console.log(`UI Status - Test UI: ${useTestUI ? "enabled" : "disabled"}, Admin UI: ${useAdminUI ? "enabled" : "disabled"}`);
+console.log(
+	`UI Status - Test UI: ${useTestUI ? "enabled" : "disabled"}, Admin UI: ${
+		useAdminUI ? "enabled" : "disabled"
+	}`,
+);
 
 // set up middleware
 app.use(express.json());
@@ -221,7 +225,7 @@ if (Deno.env.get("USE_PUBLIC_FOLDER") === "true") {
 			);
 		}
 	}
-	
+
 	// Add conditional route handlers BEFORE static file serving
 	// Block access to index.html if test UI is disabled
 	if (!useTestUI) {
@@ -229,14 +233,14 @@ if (Deno.env.get("USE_PUBLIC_FOLDER") === "true") {
 			res.status(404).send("Test UI is disabled");
 		});
 	}
-	
+
 	// Block access to admin.html if admin UI is disabled
 	if (!useAdminUI) {
 		app.get("/admin.html", (_req: any, res: any) => {
 			res.status(404).send("Admin UI is disabled");
 		});
 	}
-	
+
 	// Serve static files after conditional blocking
 	app.use(express.static(publicFolderPath));
 }
@@ -1171,7 +1175,7 @@ if (useSSL) {
 
 		// create HTTPS server
 		const httpsServer = createServer({ key, cert }, app);
-		
+
 		httpsServer.listen(Number(port), () => {
 			console.log(
 				`SSL enabled - HTTPS server running on https://localhost:${port}`,
