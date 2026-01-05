@@ -152,7 +152,7 @@ function compressString(input: string): string {
 	const inputUTF8 = new TextEncoder().encode(input);
 	const compressed = pako.deflate(inputUTF8, { level: 9 });
 	const compressedBase64 = btoa(
-		String.fromCharCode.apply(null, Array.from(compressed)),
+		String.fromCharCode(...Array.from(compressed)),
 	);
 	return compressedBase64.replaceAll("=", "");
 }
@@ -338,7 +338,7 @@ export function decodeFile(
 		// IZL3 format - already compressed msgpack data
 		const compressedData = fileBytes.slice(4); // remove the IZL3 header
 		const compressedBase64 = btoa(
-			String.fromCharCode.apply(null, Array.from(compressedData)),
+			String.fromCharCode(...Array.from(compressedData)),
 		);
 		const stringified = "|" + compressedBase64.replaceAll("=", "");
 		return parseCloneTiny(stringified);

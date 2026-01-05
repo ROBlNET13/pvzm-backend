@@ -2,19 +2,19 @@
 
 ## High Priority
 
-- [ ] **Separate Test UI and Admin UI Controls**: There should be a way to disable the test UI without also disabling the admin UI
+- [x] **Separate Test UI and Admin UI Controls**: There should be a way to disable the test UI without also disabling the admin UI
   - Add `USE_TEST_UI` environment variable to control access to `/index.html` test interface
   - Keep `USE_PUBLIC_FOLDER` for admin UI but add conditional routing for test interface
   - This would allow production deployments to disable testing while keeping admin functionality
 
-- [ ] **Fix SSL/HTTPS Implementation**: The current SSL implementation is incomplete and non-functional
+- [x] **Fix SSL/HTTPS Implementation**: The current SSL implementation is incomplete and non-functional
   - The SSL certificate and key are read but not actually used to create an HTTPS server
   - Need to implement proper HTTPS server with Express.js or migrate to native Deno HTTPS
   - Add proper SSL error handling and validation
 
 ## Medium Priority
 
-- [ ] **Environment Configuration Management**
+- [x] **Environment Configuration Management**
   - Create a `.env.example` file with all available environment variables
   - Add environment variable validation on startup
   - Document all configuration options in README.md

@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 import cors from "npm:cors";
 import express from "npm:express";
+import { createServer } from "node:https";
 import { TurnstileVerify } from "jsr:@mathis/turnstile-verify";
 import OpenAI from "jsr:@openai/openai";
 import { Database } from "jsr:@db/sqlite";
@@ -47,6 +48,10 @@ const allowedUsersString = Deno.env.get("GITHUB_ALLOWED_USERS") || "";
 const allowedUsers = allowedUsersString ? allowedUsersString.split(",") : [];
 const sessionSecret = Deno.env.get("SESSION_SECRET") || "default-secret";
 
+// UI Configuration
+const useTestUI = Deno.env.get("USE_TEST_UI") === "true";
+const useAdminUI = Deno.env.get("USE_ADMIN_UI") === "true";
+
 // configure cors
 if (corsEnabled) {
 	const corsOptions = {
@@ -78,6 +83,9 @@ if (corsEnabled) {
 	app.use(cors());
 	console.log("CORS disabled - allowing all origins");
 }
+
+// Log UI status
+console.log(`UI Status - Test UI: ${useTestUI ? "enabled" : "disabled"}, Admin UI: ${useAdminUI ? "enabled" : "disabled"}`);
 
 // set up middleware
 app.use(express.json());
@@ -213,6 +221,23 @@ if (Deno.env.get("USE_PUBLIC_FOLDER") === "true") {
 			);
 		}
 	}
+	
+	// Add conditional route handlers BEFORE static file serving
+	// Block access to index.html if test UI is disabled
+	if (!useTestUI) {
+		app.get("/index.html", (_req: any, res: any) => {
+			res.status(404).send("Test UI is disabled");
+		});
+	}
+	
+	// Block access to admin.html if admin UI is disabled
+	if (!useAdminUI) {
+		app.get("/admin.html", (_req: any, res: any) => {
+			res.status(404).send("Admin UI is disabled");
+		});
+	}
+	
+	// Serve static files after conditional blocking
 	app.use(express.static(publicFolderPath));
 }
 
@@ -887,9 +912,15 @@ app.post("/api/levels/:id/rate", (req: any, res: any) => {
 	}
 });
 
-// redirect root to index.html
+// redirect root to appropriate page
 app.get("/", (_req: any, res: any) => {
-	res.redirect("/index.html");
+	if (useTestUI) {
+		res.redirect("/index.html");
+	} else if (useAdminUI) {
+		res.redirect("/admin.html");
+	} else {
+		res.status(404).send("No UI interfaces are enabled");
+	}
 });
 
 // ADMIN DASHBOARD API ENDPOINTS
@@ -1134,25 +1165,18 @@ if (useSSL) {
 			Deno.exit(1);
 		}
 
-		// create https server using modern deno api
-		try {
-			// read ssl certificate and key
-			const _cert = Deno.readTextFileSync(sslCertPath);
-			const _key = Deno.readTextFileSync(sslKeyPath);
+		// read ssl certificate and key
+		const cert = Deno.readTextFileSync(sslCertPath);
+		const key = Deno.readTextFileSync(sslKeyPath);
 
-			// start an express server with https
-			app.listen(Number(port), () => {
-				console.log(
-					`SSL enabled - HTTPS server running on https://localhost:${port}`,
-				);
-			});
-
-			// note: in a real production environment, you might want to use
-			// a proper https server module that integrates with express
-		} catch (error) {
-			console.error("Error starting Deno HTTPS server:", error);
-			throw error; // re-throw to be caught by the outer catch
-		}
+		// create HTTPS server
+		const httpsServer = createServer({ key, cert }, app);
+		
+		httpsServer.listen(Number(port), () => {
+			console.log(
+				`SSL enabled - HTTPS server running on https://localhost:${port}`,
+			);
+		});
 	} catch (error) {
 		console.error("Error setting up SSL server:", error);
 		console.log("Falling back to HTTP...");
