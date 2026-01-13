@@ -3,7 +3,7 @@
  *
  * Pico.css - https://picocss.com
  * Copyright 2019-2024 - Licensed under MIT
- */ 
+ */
 // deno-lint-ignore-file
 
 const isOpenClass = "modal-is-open";
