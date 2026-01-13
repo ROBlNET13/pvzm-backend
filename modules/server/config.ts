@@ -44,9 +44,7 @@ function splitCsv(value: string): string[] {
 export function loadConfig(): ServerConfig {
 	const port = Number(Deno.env.get("PORT") || 3000);
 	const corsEnabled = (Deno.env.get("CORS_ENABLED") ?? "true") === "true";
-	const allowedOriginsString =
-		Deno.env.get("ALLOWED_ORIGINS") ??
-		"https://pvzm.net,https://backend.pvzm.net";
+	const allowedOriginsString = Deno.env.get("ALLOWED_ORIGINS") ?? "https://pvzm.net,https://backend.pvzm.net";
 	const allowedOrigins = allowedOriginsString ? splitCsv(allowedOriginsString) : [];
 
 	const useGithubAuth = (Deno.env.get("USE_GITHUB_AUTH") ?? "true") === "true";
@@ -59,8 +57,7 @@ export function loadConfig(): ServerConfig {
 	const useTestUI = (Deno.env.get("USE_TEST_UI") ?? "true") === "true";
 	const useAdminUI = (Deno.env.get("USE_ADMIN_UI") ?? "true") === "true";
 
-	const usePublicFolder =
-		(Deno.env.get("USE_PUBLIC_FOLDER") ?? "true") === "true";
+	const usePublicFolder = (Deno.env.get("USE_PUBLIC_FOLDER") ?? "true") === "true";
 	const publicFolderPath = Deno.env.get("PUBLIC_FOLDER_PATH") || "./public";
 
 	const discordReportWebhookUrl = Deno.env.get("DISCORD_REPORT_WEBHOOK_URL") || "";
@@ -75,15 +72,13 @@ export function loadConfig(): ServerConfig {
 
 	const dbPath = Deno.env.get("DB_PATH") || "./database.db";
 	const dataFolderPath = Deno.env.get("DATA_FOLDER_PATH") || "./data";
-	const createDataFolder =
-		(Deno.env.get("CREATE_DATA_FOLDER") ?? "true") === "true";
+	const createDataFolder = (Deno.env.get("CREATE_DATA_FOLDER") ?? "true") === "true";
 
 	const useTurnstile = (Deno.env.get("USE_TURNSTILE") ?? "true") === "true";
 	const turnstileSecret = Deno.env.get("TURNSTILE_SECRET") || null;
 	const turnstileTesting = Deno.env.get("TURNSTILE_TESTING") === "true";
 
-	const useOpenAIModeration =
-		(Deno.env.get("USE_OPENAI_MODERATION") ?? "true") === "true";
+	const useOpenAIModeration = (Deno.env.get("USE_OPENAI_MODERATION") ?? "true") === "true";
 	const openAiApiKey = Deno.env.get("OPENAI_API_KEY") || null;
 	const turnstileSiteKey = Deno.env.get("TURNSTILE_SITE_KEY") || null;
 

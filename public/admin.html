@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
@@ -137,11 +137,7 @@
 				<article>
 					<h2>Level Management</h2>
 					<fieldset role="group">
-						<input
-							type="search"
-							id="searchInput"
-							placeholder="Search by name, author, or ID"
-						/>
+						<input type="search" id="searchInput" placeholder="Search by name, author, or ID" />
 						<button id="searchButton">Search</button>
 						<button id="resetButton" class="outline secondary">Reset</button>
 					</fieldset>
@@ -244,10 +240,7 @@
 				const tokenActionRaw = (urlParams.get("action") || "").trim();
 				const tokenAction = tokenActionRaw.toLowerCase();
 				const tokenLevelId = parseInt((urlParams.get("level") || "").trim(), 10);
-				const hasTokenFlowParams =
-					Boolean(oneTimeToken) &&
-					(tokenAction === "edit" || tokenAction === "delete") &&
-					Number.isFinite(tokenLevelId);
+				const hasTokenFlowParams = Boolean(oneTimeToken) && (tokenAction === "edit" || tokenAction === "delete") && Number.isFinite(tokenLevelId);
 
 				function closeWindowAfterTokenAction(levelId) {
 					if (!oneTimeToken) return false;
@@ -263,9 +256,7 @@
 				async function validateTokenFlow() {
 					if (!hasTokenFlowParams) return false;
 					try {
-						const resp = await fetch(
-							`${API_BASE_URL}/levels?token=${encodeURIComponent(oneTimeToken)}`
-						);
+						const resp = await fetch(`${API_BASE_URL}/levels?token=${encodeURIComponent(oneTimeToken)}`);
 						if (!resp.ok) return false;
 						const data = await resp.json();
 						const levels = Array.isArray(data?.levels) ? data.levels : [];
@@ -278,9 +269,7 @@
 
 				async function getTokenLevel() {
 					try {
-						const resp = await fetch(
-							`${API_BASE_URL}/levels?token=${encodeURIComponent(oneTimeToken)}`
-						);
+						const resp = await fetch(`${API_BASE_URL}/levels?token=${encodeURIComponent(oneTimeToken)}`);
 						if (!resp.ok) return null;
 						const data = await resp.json();
 						const levels = Array.isArray(data?.levels) ? data.levels : [];
@@ -490,9 +479,7 @@
 						const date = new Date(level.created_at * 1000);
 						const formattedDate = date.toLocaleDateString();
 
-						const difficultyClass = level.difficulty
-							? `difficulty-${level.difficulty}`
-							: "";
+						const difficultyClass = level.difficulty ? `difficulty-${level.difficulty}` : "";
 						const difficultyDisplay = level.difficulty
 							? `<span class="difficulty-marker ${difficultyClass}"></span>${level.difficulty}/10`
 							: "Not set";
@@ -551,10 +538,7 @@
 						document.getElementById("editAuthor").value = level.author;
 						document.getElementById("editSun").value = level.sun;
 						document.getElementById("editIsWater").checked = level.is_water === 1;
-						document.getElementById("editDifficulty").value =
-							level.difficulty === null || level.difficulty === undefined
-								? ""
-								: level.difficulty;
+						document.getElementById("editDifficulty").value = level.difficulty === null || level.difficulty === undefined ? "" : level.difficulty;
 						document.getElementById("editFavorites").value = level.favorites;
 						document.getElementById("editPlays").value = level.plays;
 
@@ -579,8 +563,7 @@
 						const plays = parseInt(document.getElementById("editPlays").value);
 
 						let url = `${API_BASE_URL}/admin/levels/${levelId}`;
-						const usingOneTimeToken =
-							oneTimeToken && String(levelId) === String(tokenLevelId);
+						const usingOneTimeToken = oneTimeToken && String(levelId) === String(tokenLevelId);
 						if (usingOneTimeToken) {
 							url += `?token=${encodeURIComponent(oneTimeToken)}`;
 						}
@@ -626,8 +609,7 @@
 				async function deleteLevel(levelId) {
 					try {
 						let url = `${API_BASE_URL}/admin/levels/${levelId}`;
-						const usingOneTimeToken =
-							oneTimeToken && String(levelId) === String(tokenLevelId);
+						const usingOneTimeToken = oneTimeToken && String(levelId) === String(tokenLevelId);
 						if (usingOneTimeToken) {
 							url += `?token=${encodeURIComponent(oneTimeToken)}`;
 						}

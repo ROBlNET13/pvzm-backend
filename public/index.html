@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
@@ -136,11 +136,7 @@
 				try {
 					const response = await fetch("/api/config");
 					config = await response.json();
-					document.getElementById("settings").textContent = JSON.stringify(
-						config,
-						null,
-						2
-					);
+					document.getElementById("settings").textContent = JSON.stringify(config, null, 2);
 
 					if (config.turnstileEnabled && config.turnstileSiteKey) {
 						loadTurnstileWidget(config.turnstileSiteKey);
@@ -158,8 +154,7 @@
 			function loadTurnstileWidget(siteKey) {
 				if (!window.turnstile) {
 					const script = document.createElement("script");
-					script.src =
-						"https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+					script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 					script.async = true;
 					script.defer = true;
 
@@ -203,16 +198,12 @@
 						}
 
 						data.levels.forEach((level) => {
-							const levelElement = template.content
-								.cloneNode(true)
-								.querySelector(".level-item");
+							const levelElement = template.content.cloneNode(true).querySelector(".level-item");
 
 							levelElement.querySelector(".level-name").textContent = level.name;
 							levelElement.querySelector(".level-id").textContent = level.id;
 							levelElement.querySelector(".level-author").textContent = level.author;
-							levelElement.querySelector(".level-created-at").textContent = formatDate(
-								level.created_at
-							);
+							levelElement.querySelector(".level-created-at").textContent = formatDate(level.created_at);
 							levelElement.querySelector(".level-sun").textContent = level.sun;
 							levelElement.querySelector(".level-is-water").checked = level.is_water;
 							levelElement.querySelector(".level-favorites").textContent = level.favorites;
@@ -233,8 +224,7 @@
 					}
 				} catch (error) {
 					console.error("Error loading levels:", error);
-					document.getElementById("levelsList").innerHTML =
-						"<p>Error loading levels.</p>";
+					document.getElementById("levelsList").innerHTML = "<p>Error loading levels.</p>";
 				}
 			}
 
@@ -296,11 +286,7 @@
 				try {
 					const response = await fetch(`/api/levels/${id}`);
 					const data = await response.json();
-					document.getElementById("levelDetails").textContent = JSON.stringify(
-						data,
-						null,
-						2
-					);
+					document.getElementById("levelDetails").textContent = JSON.stringify(data, null, 2);
 
 					const getLevelForm = document.getElementById("getLevelForm");
 					if (getLevelForm) {
@@ -308,19 +294,14 @@
 					}
 				} catch (error) {
 					console.error("Error getting level details:", error);
-					document.getElementById("levelDetails").textContent = JSON.stringify(
-						{ error: error.message },
-						null,
-						2
-					);
+					document.getElementById("levelDetails").textContent = JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
 			async function downloadLevel(id) {
 				try {
 					window.location.href = `/api/levels/${id}/download`;
-					document.getElementById("downloadResponse").textContent =
-						"Download initiated...";
+					document.getElementById("downloadResponse").textContent = "Download initiated...";
 
 					const downloadForm = document.getElementById("downloadForm");
 					if (downloadForm) {
@@ -328,11 +309,7 @@
 					}
 				} catch (error) {
 					console.error("Error downloading level:", error);
-					document.getElementById("downloadResponse").textContent = JSON.stringify(
-						{ error: error.message },
-						null,
-						2
-					);
+					document.getElementById("downloadResponse").textContent = JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
@@ -348,11 +325,7 @@
 					});
 
 					const data = await response.json();
-					document.getElementById("favoriteResponse").textContent = JSON.stringify(
-						data,
-						null,
-						2
-					);
+					document.getElementById("favoriteResponse").textContent = JSON.stringify(data, null, 2);
 
 					if (data.success) {
 						loadLevels();
@@ -364,11 +337,7 @@
 					}
 				} catch (error) {
 					console.error("Error favoriting level:", error);
-					document.getElementById("favoriteResponse").textContent = JSON.stringify(
-						{ error: error.message },
-						null,
-						2
-					);
+					document.getElementById("favoriteResponse").textContent = JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
@@ -422,11 +391,7 @@
 					reader.readAsArrayBuffer(file);
 				} catch (error) {
 					console.error("Error uploading level:", error);
-					document.getElementById("response").textContent = JSON.stringify(
-						{ error: error.message },
-						null,
-						2
-					);
+					document.getElementById("response").textContent = JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 

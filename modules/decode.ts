@@ -42,7 +42,8 @@ const TINYIFIER_MAP = {
 	eleHeight: 15,
 };
 
-const REVERSE_TINYIFIER_MAP: Record<number, string> = Object.fromEntries(Object.entries(TINYIFIER_MAP).map(([key, value]) => [value, key]));$1//$2\l$3lant names array matching the frontend
+const REVERSE_TINYIFIER_MAP: Record<number, string> = Object.fromEntries(Object.entries(TINYIFIER_MAP).map(([key, value]) => [value, key]));
+$1; //$2\l$3lant names array matching the frontend
 export const allPlantsStringArray = [
 	"oPeashooter",
 	"oSunFlower",
@@ -238,7 +239,8 @@ export function decodeFile(compressedData: Uint8Array | ArrayBuffer | number[]):
 		fileHeader[1] === izl3Header[1] &&
 		fileHeader[2] === izl3Header[2] &&
 		fileHeader[3] === izl3Header[3]
-	) {		// IZL3 format - compressed msgpack bytes after the header.
+	) {
+		// IZL3 format - compressed msgpack bytes after the header.
 		// decode directly from bytes (no base64 roundtrip).
 		const payload = fileBytes.slice(4);
 

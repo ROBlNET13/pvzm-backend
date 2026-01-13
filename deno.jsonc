@@ -1,12 +1,12 @@
 {
 	"tasks": {
 		"dev": "deno run --watch --allow-env --allow-read --allow-write --allow-net --allow-ffi --allow-run --env-file=.env main.ts",
-		"start": "deno run --allow-env --allow-read --allow-write --allow-net --allow-ffi --allow-run --env-file=.env main.ts"
+		"start": "deno run --allow-env --allow-read --allow-write --allow-net --allow-ffi --allow-run --env-file=.env main.ts",
 	},
 	"lint": {
 		"rules": {
-			"exclude": ["no-explicit-any"]
-		}
+			"exclude": ["no-explicit-any"],
+		},
 	},
 	"imports": {
 		"@db/sqlite": "jsr:@db/sqlite@^0.12.0",
@@ -25,7 +25,7 @@
 		"express": "npm:express@^5.1.0",
 		"passport": "npm:passport@^0.7.0",
 		"passport-github2": "npm:passport-github2@^0.1.12",
-		"pako": "npm:pako@^2.1.0"
+		"pako": "npm:pako@^2.1.0",
 	},
 	"fmt": {
 		"useTabs": true,
@@ -34,17 +34,10 @@
 		"semiColons": true,
 		"singleQuote": false,
 		"proseWrap": "preserve",
-		"include": [
-			"**/*.js",
-			"**/*.ts",
-			"**/*.json",
-			"**/*.jsonc",
-			"**/*.css",
-			"**/*.html"
-		]
+		"include": ["**/*.js", "**/*.ts", "**/*.json", "**/*.jsonc", "**/*.css", "**/*.html"],
 	},
 	"compilerOptions": {
 		"strict": true,
-		"strictNullChecks": true
-	}
+		"strictNullChecks": true,
+	},
 }

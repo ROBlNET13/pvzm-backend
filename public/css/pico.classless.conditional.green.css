@@ -8,13 +8,10 @@
  */
 :root,
 :host {
-	--pico-font-family-emoji: "Apple Color Emoji", "Segoe UI Emoji",
-		"Segoe UI Symbol", "Noto Color Emoji";
-	--pico-font-family-sans-serif: system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu,
-		Cantarell, Helvetica, Arial, "Helvetica Neue", sans-serif,
-		var(--pico-font-family-emoji);
-	--pico-font-family-monospace: ui-monospace, SFMono-Regular, "SF Mono", Menlo,
-		Consolas, "Liberation Mono", monospace, var(--pico-font-family-emoji);
+	--pico-font-family-emoji: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	--pico-font-family-sans-serif:
+		system-ui, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, Helvetica, Arial, "Helvetica Neue", sans-serif, var(--pico-font-family-emoji);
+	--pico-font-family-monospace: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace, var(--pico-font-family-emoji);
 	--pico-font-family: var(--pico-font-family-sans-serif);
 	--pico-line-height: 1.5;
 	--pico-font-weight: 400;
@@ -31,10 +28,8 @@
 	--pico-form-element-spacing-vertical: 0.75rem;
 	--pico-form-element-spacing-horizontal: 1rem;
 	--pico-group-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-	--pico-group-box-shadow-focus-with-button: 0 0 0 var(--pico-outline-width)
-		var(--pico-primary-focus);
-	--pico-group-box-shadow-focus-with-input: 0 0 0 0.0625rem
-		var(--pico-form-element-border-color);
+	--pico-group-box-shadow-focus-with-button: 0 0 0 var(--pico-outline-width) var(--pico-primary-focus);
+	--pico-group-box-shadow-focus-with-input: 0 0 0 0.0625rem var(--pico-form-element-border-color);
 	--pico-modal-overlay-backdrop-filter: blur(0.375rem);
 	--pico-nav-element-spacing-vertical: 1rem;
 	--pico-nav-element-spacing-horizontal: 0.5rem;
@@ -153,14 +148,7 @@ kbd {
 	--pico-font-weight: bolder;
 }
 
-input:not(
-		[type="submit"],
-		[type="button"],
-		[type="reset"],
-		[type="checkbox"],
-		[type="radio"],
-		[type="file"]
-	),
+input:not([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="file"]),
 :where(select, textarea) {
 	--pico-outline-width: 0.0625rem;
 }
@@ -197,14 +185,7 @@ input:not(
 	filter: brightness(0) invert(1);
 }
 
-.pico
-	[aria-busy="true"]:not(input, select, textarea):is(
-		button,
-		[type="submit"],
-		[type="button"],
-		[type="reset"],
-		[role="button"]
-	)::before {
+.pico [aria-busy="true"]:not(input, select, textarea):is(button, [type="submit"], [type="button"], [type="reset"], [role="button"])::before {
 	filter: brightness(0) invert(1);
 }
 
@@ -250,13 +231,10 @@ input:not(
 	--pico-contrast-hover-underline: var(--pico-secondary-hover);
 	--pico-contrast-focus: rgba(93, 107, 137, 0.25);
 	--pico-contrast-inverse: #fff;
-	--pico-box-shadow: 0.0145rem 0.029rem 0.174rem rgba(129, 145, 181, 0.01698),
-		0.0335rem 0.067rem 0.402rem rgba(129, 145, 181, 0.024),
-		0.0625rem 0.125rem 0.75rem rgba(129, 145, 181, 0.03),
-		0.1125rem 0.225rem 1.35rem rgba(129, 145, 181, 0.036),
-		0.2085rem 0.417rem 2.502rem rgba(129, 145, 181, 0.04302),
-		0.5rem 1rem 6rem rgba(129, 145, 181, 0.06),
-		0 0 0 0.0625rem rgba(129, 145, 181, 0.015);
+	--pico-box-shadow:
+		0.0145rem 0.029rem 0.174rem rgba(129, 145, 181, 0.01698), 0.0335rem 0.067rem 0.402rem rgba(129, 145, 181, 0.024),
+		0.0625rem 0.125rem 0.75rem rgba(129, 145, 181, 0.03), 0.1125rem 0.225rem 1.35rem rgba(129, 145, 181, 0.036),
+		0.2085rem 0.417rem 2.502rem rgba(129, 145, 181, 0.04302), 0.5rem 1rem 6rem rgba(129, 145, 181, 0.06), 0 0 0 0.0625rem rgba(129, 145, 181, 0.015);
 	--pico-h1-color: #2d3138;
 	--pico-h2-color: #373c44;
 	--pico-h3-color: #424751;
@@ -288,14 +266,10 @@ input:not(
 	--pico-form-element-disabled-opacity: 0.5;
 	--pico-form-element-invalid-border-color: rgb(183.5, 105.5, 106.5);
 	--pico-form-element-invalid-active-border-color: rgb(200.25, 79.25, 72.25);
-	--pico-form-element-invalid-focus-color: var(
-		--pico-form-element-invalid-active-border-color
-	);
+	--pico-form-element-invalid-focus-color: var(--pico-form-element-invalid-active-border-color);
 	--pico-form-element-valid-border-color: rgb(76, 154.5, 137.5);
 	--pico-form-element-valid-active-border-color: rgb(39, 152.75, 118.75);
-	--pico-form-element-valid-focus-color: var(
-		--pico-form-element-valid-active-border-color
-	);
+	--pico-form-element-valid-focus-color: var(--pico-form-element-valid-active-border-color);
 	--pico-switch-background-color: #bfc7d9;
 	--pico-switch-checked-background-color: var(--pico-primary-background);
 	--pico-switch-color: #fff;
@@ -322,33 +296,9 @@ input:not(
 	--pico-icon-valid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgb(76, 154.5, 137.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
 	--pico-icon-invalid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgb(200.25, 79.25, 72.25)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' y1='8' x2='12' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'%3E%3C/line%3E%3C/svg%3E");
 }
-[data-theme="light"]
-	input:is(
-		[type="submit"],
-		[type="button"],
-		[type="reset"],
-		[type="checkbox"],
-		[type="radio"],
-		[type="file"]
-	),
-:root:not([data-theme="dark"])
-	input:is(
-		[type="submit"],
-		[type="button"],
-		[type="reset"],
-		[type="checkbox"],
-		[type="radio"],
-		[type="file"]
-	),
-:host(:not([data-theme="dark"]))
-	input:is(
-		[type="submit"],
-		[type="button"],
-		[type="reset"],
-		[type="checkbox"],
-		[type="radio"],
-		[type="file"]
-	) {
+[data-theme="light"] input:is([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="file"]),
+:root:not([data-theme="dark"]) input:is([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="file"]),
+:host(:not([data-theme="dark"])) input:is([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="file"]) {
 	--pico-form-element-focus-color: var(--pico-primary-focus);
 }
 
@@ -391,12 +341,10 @@ input:not(
 		--pico-contrast-hover-underline: var(--pico-contrast-hover);
 		--pico-contrast-focus: rgba(207, 213, 226, 0.25);
 		--pico-contrast-inverse: #000;
-		--pico-box-shadow: 0.0145rem 0.029rem 0.174rem rgba(7, 8.5, 12, 0.01698),
-			0.0335rem 0.067rem 0.402rem rgba(7, 8.5, 12, 0.024),
-			0.0625rem 0.125rem 0.75rem rgba(7, 8.5, 12, 0.03),
-			0.1125rem 0.225rem 1.35rem rgba(7, 8.5, 12, 0.036),
-			0.2085rem 0.417rem 2.502rem rgba(7, 8.5, 12, 0.04302),
-			0.5rem 1rem 6rem rgba(7, 8.5, 12, 0.06), 0 0 0 0.0625rem rgba(7, 8.5, 12, 0.015);
+		--pico-box-shadow:
+			0.0145rem 0.029rem 0.174rem rgba(7, 8.5, 12, 0.01698), 0.0335rem 0.067rem 0.402rem rgba(7, 8.5, 12, 0.024),
+			0.0625rem 0.125rem 0.75rem rgba(7, 8.5, 12, 0.03), 0.1125rem 0.225rem 1.35rem rgba(7, 8.5, 12, 0.036),
+			0.2085rem 0.417rem 2.502rem rgba(7, 8.5, 12, 0.04302), 0.5rem 1rem 6rem rgba(7, 8.5, 12, 0.06), 0 0 0 0.0625rem rgba(7, 8.5, 12, 0.015);
 		--pico-h1-color: #f0f1f3;
 		--pico-h2-color: #e0e3e7;
 		--pico-h3-color: #c2c7d0;
@@ -428,14 +376,10 @@ input:not(
 		--pico-form-element-disabled-opacity: 0.5;
 		--pico-form-element-invalid-border-color: rgb(149.5, 74, 80);
 		--pico-form-element-invalid-active-border-color: rgb(183.25, 63.5, 59);
-		--pico-form-element-invalid-focus-color: var(
-			--pico-form-element-invalid-active-border-color
-		);
+		--pico-form-element-invalid-focus-color: var(--pico-form-element-invalid-active-border-color);
 		--pico-form-element-valid-border-color: #2a7b6f;
 		--pico-form-element-valid-active-border-color: rgb(22, 137, 105.5);
-		--pico-form-element-valid-focus-color: var(
-			--pico-form-element-valid-active-border-color
-		);
+		--pico-form-element-valid-focus-color: var(--pico-form-element-valid-active-border-color);
 		--pico-switch-background-color: #333c4e;
 		--pico-switch-checked-background-color: var(--pico-primary-background);
 		--pico-switch-color: #fff;
@@ -462,24 +406,8 @@ input:not(
 		--pico-icon-valid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgb(42, 123, 111)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
 		--pico-icon-invalid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgb(149.5, 74, 80)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' y1='8' x2='12' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'%3E%3C/line%3E%3C/svg%3E");
 	}
-	:root:not([data-theme])
-		input:is(
-			[type="submit"],
-			[type="button"],
-			[type="reset"],
-			[type="checkbox"],
-			[type="radio"],
-			[type="file"]
-		),
-	:host(:not([data-theme]))
-		input:is(
-			[type="submit"],
-			[type="button"],
-			[type="reset"],
-			[type="checkbox"],
-			[type="radio"],
-			[type="file"]
-		) {
+	:root:not([data-theme]) input:is([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="file"]),
+	:host(:not([data-theme])) input:is([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="file"]) {
 		--pico-form-element-focus-color: var(--pico-primary-focus);
 	}
 }
@@ -520,12 +448,10 @@ input:not(
 	--pico-contrast-hover-underline: var(--pico-contrast-hover);
 	--pico-contrast-focus: rgba(207, 213, 226, 0.25);
 	--pico-contrast-inverse: #000;
-	--pico-box-shadow: 0.0145rem 0.029rem 0.174rem rgba(7, 8.5, 12, 0.01698),
-		0.0335rem 0.067rem 0.402rem rgba(7, 8.5, 12, 0.024),
-		0.0625rem 0.125rem 0.75rem rgba(7, 8.5, 12, 0.03),
-		0.1125rem 0.225rem 1.35rem rgba(7, 8.5, 12, 0.036),
-		0.2085rem 0.417rem 2.502rem rgba(7, 8.5, 12, 0.04302),
-		0.5rem 1rem 6rem rgba(7, 8.5, 12, 0.06), 0 0 0 0.0625rem rgba(7, 8.5, 12, 0.015);
+	--pico-box-shadow:
+		0.0145rem 0.029rem 0.174rem rgba(7, 8.5, 12, 0.01698), 0.0335rem 0.067rem 0.402rem rgba(7, 8.5, 12, 0.024),
+		0.0625rem 0.125rem 0.75rem rgba(7, 8.5, 12, 0.03), 0.1125rem 0.225rem 1.35rem rgba(7, 8.5, 12, 0.036),
+		0.2085rem 0.417rem 2.502rem rgba(7, 8.5, 12, 0.04302), 0.5rem 1rem 6rem rgba(7, 8.5, 12, 0.06), 0 0 0 0.0625rem rgba(7, 8.5, 12, 0.015);
 	--pico-h1-color: #f0f1f3;
 	--pico-h2-color: #e0e3e7;
 	--pico-h3-color: #c2c7d0;
@@ -557,14 +483,10 @@ input:not(
 	--pico-form-element-disabled-opacity: 0.5;
 	--pico-form-element-invalid-border-color: rgb(149.5, 74, 80);
 	--pico-form-element-invalid-active-border-color: rgb(183.25, 63.5, 59);
-	--pico-form-element-invalid-focus-color: var(
-		--pico-form-element-invalid-active-border-color
-	);
+	--pico-form-element-invalid-focus-color: var(--pico-form-element-invalid-active-border-color);
 	--pico-form-element-valid-border-color: #2a7b6f;
 	--pico-form-element-valid-active-border-color: rgb(22, 137, 105.5);
-	--pico-form-element-valid-focus-color: var(
-		--pico-form-element-valid-active-border-color
-	);
+	--pico-form-element-valid-focus-color: var(--pico-form-element-valid-active-border-color);
 	--pico-switch-background-color: #333c4e;
 	--pico-switch-checked-background-color: var(--pico-primary-background);
 	--pico-switch-color: #fff;
@@ -591,15 +513,7 @@ input:not(
 	--pico-icon-valid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgb(42, 123, 111)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
 	--pico-icon-invalid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgb(149.5, 74, 80)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' y1='8' x2='12' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'%3E%3C/line%3E%3C/svg%3E");
 }
-[data-theme="dark"]
-	input:is(
-		[type="submit"],
-		[type="button"],
-		[type="reset"],
-		[type="checkbox"],
-		[type="radio"],
-		[type="file"]
-	) {
+[data-theme="dark"] input:is([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="file"]) {
 	--pico-form-element-focus-color: var(--pico-primary-focus);
 }
 
@@ -790,9 +704,7 @@ main {
 	--pico-color: var(--pico-h6-color);
 }
 
-.pico
-	:where(article, address, blockquote, dl, figure, form, ol, p, pre, table, ul)
-	~ :is(h1, h2, h3, h4, h5, h6) {
+.pico :where(article, address, blockquote, dl, figure, form, ol, p, pre, table, ul) ~ :is(h1, h2, h3, h4, h5, h6) {
 	margin-top: var(--pico-typography-spacing-top);
 }
 
@@ -885,31 +797,25 @@ main {
 	text-decoration: var(--pico-text-decoration);
 	text-decoration-color: var(--pico-underline);
 	text-underline-offset: 0.125em;
-	transition: background-color var(--pico-transition),
-		color var(--pico-transition), box-shadow var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
+		color var(--pico-transition),
+		box-shadow var(--pico-transition),
 		-webkit-text-decoration var(--pico-transition);
-	transition: background-color var(--pico-transition),
-		color var(--pico-transition), text-decoration var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
+		color var(--pico-transition),
+		text-decoration var(--pico-transition),
 		box-shadow var(--pico-transition);
-	transition: background-color var(--pico-transition),
-		color var(--pico-transition), text-decoration var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
+		color var(--pico-transition),
+		text-decoration var(--pico-transition),
 		box-shadow var(--pico-transition),
 		-webkit-text-decoration var(--pico-transition);
 }
-.pico
-	:where(a:not([role="button"])):is(
-		[aria-current]:not([aria-current="false"]),
-		:hover,
-		:active,
-		:focus
-	),
-.pico
-	[role="link"]:is(
-		[aria-current]:not([aria-current="false"]),
-		:hover,
-		:active,
-		:focus
-	) {
+.pico :where(a:not([role="button"])):is([aria-current]:not([aria-current="false"]), :hover, :active, :focus),
+.pico [role="link"]:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
 	--pico-color: var(--pico-primary-hover);
 	--pico-underline: var(--pico-primary-hover-underline);
 	--pico-text-decoration: underline;
@@ -950,8 +856,7 @@ main {
 	--pico-border-color: var(--pico-primary-border);
 	--pico-color: var(--pico-primary-inverse);
 	--pico-box-shadow: var(--pico-button-box-shadow, 0 0 0 rgba(0, 0, 0, 0));
-	padding: var(--pico-form-element-spacing-vertical)
-		var(--pico-form-element-spacing-horizontal);
+	padding: var(--pico-form-element-spacing-vertical) var(--pico-form-element-spacing-horizontal);
 	border: var(--pico-border-width) solid var(--pico-border-color);
 	border-radius: var(--pico-border-radius);
 	outline: none;
@@ -967,8 +872,10 @@ main {
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	user-select: none;
-	transition: background-color var(--pico-transition),
-		border-color var(--pico-transition), color var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
+		border-color var(--pico-transition),
+		color var(--pico-transition),
 		box-shadow var(--pico-transition);
 }
 .pico button:is([aria-current]:not([aria-current="false"])),
@@ -979,10 +886,7 @@ main {
 .pico [type="reset"]:is(:hover, :active, :focus),
 .pico [type="button"]:is([aria-current]:not([aria-current="false"])),
 .pico [type="button"]:is(:hover, :active, :focus),
-.pico
-	[type="file"]::file-selector-button:is(
-		[aria-current]:not([aria-current="false"])
-	),
+.pico [type="file"]::file-selector-button:is([aria-current]:not([aria-current="false"])),
 .pico [type="file"]::file-selector-button:is(:hover, :active, :focus),
 .pico [role="button"]:is([aria-current]:not([aria-current="false"])),
 .pico [role="button"]:is(:hover, :active, :focus) {
@@ -1000,14 +904,10 @@ main {
 .pico [type="button"]:focus,
 .pico [type="button"]:is([aria-current]:not([aria-current="false"])):focus,
 .pico [type="file"]::file-selector-button:focus,
-.pico
-	[type="file"]::file-selector-button:is(
-		[aria-current]:not([aria-current="false"])
-	):focus,
+.pico [type="file"]::file-selector-button:is([aria-current]:not([aria-current="false"])):focus,
 .pico [role="button"]:focus,
 .pico [role="button"]:is([aria-current]:not([aria-current="false"])):focus {
-	--pico-box-shadow: var(--pico-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)),
-		0 0 0 var(--pico-outline-width) var(--pico-primary-focus);
+	--pico-box-shadow: var(--pico-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)), 0 0 0 var(--pico-outline-width) var(--pico-primary-focus);
 }
 
 .pico [type="submit"],
@@ -1023,41 +923,19 @@ main {
 	--pico-color: var(--pico-secondary-inverse);
 	cursor: pointer;
 }
-.pico
-	[type="reset"]:is(
-		[aria-current]:not([aria-current="false"]),
-		:hover,
-		:active,
-		:focus
-	),
-.pico
-	[type="file"]::file-selector-button:is(
-		[aria-current]:not([aria-current="false"]),
-		:hover,
-		:active,
-		:focus
-	) {
+.pico [type="reset"]:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus),
+.pico [type="file"]::file-selector-button:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
 	--pico-background-color: var(--pico-secondary-hover-background);
 	--pico-border-color: var(--pico-secondary-hover-border);
 	--pico-color: var(--pico-secondary-inverse);
 }
 .pico [type="reset"]:focus,
 .pico [type="file"]::file-selector-button:focus {
-	--pico-box-shadow: var(--pico-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)),
-		0 0 0 var(--pico-outline-width) var(--pico-secondary-focus);
+	--pico-box-shadow: var(--pico-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)), 0 0 0 var(--pico-outline-width) var(--pico-secondary-focus);
 }
 
-.pico
-	:where(
-		button,
-		[type="submit"],
-		[type="reset"],
-		[type="button"],
-		[role="button"]
-	)[disabled],
-.pico
-	:where(fieldset[disabled])
-	:is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]) {
+.pico :where(button, [type="submit"], [type="reset"], [type="button"], [role="button"])[disabled],
+.pico :where(fieldset[disabled]) :is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]) {
 	opacity: 0.5;
 	pointer-events: none;
 }
@@ -1303,10 +1181,7 @@ main {
 }
 
 .pico input:not([type="checkbox"], [type="radio"], [type="range"]) {
-	height: calc(
-		1rem * var(--pico-line-height) + var(--pico-form-element-spacing-vertical) * 2 +
-			var(--pico-border-width) * 2
-	);
+	height: calc(1rem * var(--pico-line-height) + var(--pico-form-element-spacing-vertical) * 2 + var(--pico-border-width) * 2);
 }
 
 .pico fieldset {
@@ -1336,15 +1211,13 @@ main {
 	width: 100%;
 }
 
-.pico
-	input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
+.pico input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
 .pico select,
 .pico textarea {
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	appearance: none;
-	padding: var(--pico-form-element-spacing-vertical)
-		var(--pico-form-element-spacing-horizontal);
+	padding: var(--pico-form-element-spacing-vertical) var(--pico-form-element-spacing-horizontal);
 }
 
 .pico input,
@@ -1361,61 +1234,33 @@ main {
 	box-shadow: var(--pico-box-shadow);
 	color: var(--pico-color);
 	font-weight: var(--pico-font-weight);
-	transition: background-color var(--pico-transition),
-		border-color var(--pico-transition), color var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
+		border-color var(--pico-transition),
+		color var(--pico-transition),
 		box-shadow var(--pico-transition);
 }
 
-.pico
-	input:not(
-		[type="submit"],
-		[type="button"],
-		[type="reset"],
-		[type="checkbox"],
-		[type="radio"],
-		[readonly]
-	):is(:active, :focus),
+.pico input:not([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [readonly]):is(:active, :focus),
 .pico :where(select, textarea):not([readonly]):is(:active, :focus) {
 	--pico-background-color: var(--pico-form-element-active-background-color);
 }
 
-.pico
-	input:not(
-		[type="submit"],
-		[type="button"],
-		[type="reset"],
-		[role="switch"],
-		[readonly]
-	):is(:active, :focus),
+.pico input:not([type="submit"], [type="button"], [type="reset"], [role="switch"], [readonly]):is(:active, :focus),
 .pico :where(select, textarea):not([readonly]):is(:active, :focus) {
 	--pico-border-color: var(--pico-form-element-active-border-color);
 }
 
-.pico
-	input:not(
-		[type="submit"],
-		[type="button"],
-		[type="reset"],
-		[type="range"],
-		[type="file"],
-		[readonly]
-	):focus,
+.pico input:not([type="submit"], [type="button"], [type="reset"], [type="range"], [type="file"], [readonly]):focus,
 .pico :where(select, textarea):not([readonly]):focus {
-	--pico-box-shadow: 0 0 0 var(--pico-outline-width)
-		var(--pico-form-element-focus-color);
+	--pico-box-shadow: 0 0 0 var(--pico-outline-width) var(--pico-form-element-focus-color);
 }
 
 .pico input:not([type="submit"], [type="button"], [type="reset"])[disabled],
 .pico select[disabled],
 .pico textarea[disabled],
 .pico label[aria-disabled="true"],
-.pico
-	:where(fieldset[disabled])
-	:is(
-		input:not([type="submit"], [type="button"], [type="reset"]),
-		select,
-		textarea
-	) {
+.pico :where(fieldset[disabled]) :is(input:not([type="submit"], [type="button"], [type="reset"]), select, textarea) {
 	opacity: var(--pico-form-element-disabled-opacity);
 	pointer-events: none;
 }
@@ -1435,14 +1280,10 @@ main {
 		[type="week"],
 		[type="range"]
 	)[aria-invalid] {
-	padding-right: calc(
-		var(--pico-form-element-spacing-horizontal) + 1.5rem
-	) !important;
+	padding-right: calc(var(--pico-form-element-spacing-horizontal) + 1.5rem) !important;
 	padding-left: var(--pico-form-element-spacing-horizontal);
 	padding-inline-start: var(--pico-form-element-spacing-horizontal) !important;
-	padding-inline-end: calc(
-		var(--pico-form-element-spacing-horizontal) + 1.5rem
-	) !important;
+	padding-inline-end: calc(var(--pico-form-element-spacing-horizontal) + 1.5rem) !important;
 	background-position: center right 0.75rem;
 	background-size: 1rem auto;
 	background-repeat: no-repeat;
@@ -1476,44 +1317,23 @@ main {
 .pico :where(input, select, textarea)[aria-invalid="false"] {
 	--pico-border-color: var(--pico-form-element-valid-border-color);
 }
-.pico
-	:where(input, select, textarea)[aria-invalid="false"]:is(:active, :focus) {
-	--pico-border-color: var(
-		--pico-form-element-valid-active-border-color
-	) !important;
+.pico :where(input, select, textarea)[aria-invalid="false"]:is(:active, :focus) {
+	--pico-border-color: var(--pico-form-element-valid-active-border-color) !important;
 }
-.pico
-	:where(input, select, textarea)[aria-invalid="false"]:is(:active, :focus):not(
-		[type="checkbox"],
-		[type="radio"]
-	) {
-	--pico-box-shadow: 0 0 0 var(--pico-outline-width)
-		var(--pico-form-element-valid-focus-color) !important;
+.pico :where(input, select, textarea)[aria-invalid="false"]:is(:active, :focus):not([type="checkbox"], [type="radio"]) {
+	--pico-box-shadow: 0 0 0 var(--pico-outline-width) var(--pico-form-element-valid-focus-color) !important;
 }
 .pico :where(input, select, textarea)[aria-invalid="true"] {
 	--pico-border-color: var(--pico-form-element-invalid-border-color);
 }
 .pico :where(input, select, textarea)[aria-invalid="true"]:is(:active, :focus) {
-	--pico-border-color: var(
-		--pico-form-element-invalid-active-border-color
-	) !important;
+	--pico-border-color: var(--pico-form-element-invalid-active-border-color) !important;
 }
-.pico
-	:where(input, select, textarea)[aria-invalid="true"]:is(:active, :focus):not(
-		[type="checkbox"],
-		[type="radio"]
-	) {
-	--pico-box-shadow: 0 0 0 var(--pico-outline-width)
-		var(--pico-form-element-invalid-focus-color) !important;
+.pico :where(input, select, textarea)[aria-invalid="true"]:is(:active, :focus):not([type="checkbox"], [type="radio"]) {
+	--pico-box-shadow: 0 0 0 var(--pico-outline-width) var(--pico-form-element-invalid-focus-color) !important;
 }
 
-[dir="rtl"]
-	.pico
-	:where(input, select, textarea):not([type="checkbox"], [type="radio"]):is(
-		[aria-invalid],
-		[aria-invalid="true"],
-		[aria-invalid="false"]
-	) {
+[dir="rtl"] .pico :where(input, select, textarea):not([type="checkbox"], [type="radio"]):is([aria-invalid], [aria-invalid="true"], [aria-invalid="false"]) {
 	background-position: center left 0.75rem;
 }
 
@@ -1560,10 +1380,7 @@ main {
 	resize: vertical;
 }
 .pico textarea[aria-invalid] {
-	--pico-icon-height: calc(
-		1rem * var(--pico-line-height) + var(--pico-form-element-spacing-vertical) * 2 +
-			var(--pico-border-width) * 2
-	);
+	--pico-icon-height: calc(1rem * var(--pico-line-height) + var(--pico-form-element-spacing-vertical) * 2 + var(--pico-border-width) * 2);
 	background-position: top right 0.75rem !important;
 	background-size: 1rem var(--pico-icon-height) !important;
 }
@@ -1772,13 +1589,7 @@ main {
 	background-size: var(--pico-icon-width) auto;
 	background-repeat: no-repeat;
 }
-.pico
-	input:not(
-		[type="checkbox"],
-		[type="radio"],
-		[type="range"],
-		[type="file"]
-	)[type="time"] {
+.pico input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"])[type="time"] {
 	background-image: var(--pico-icon-time);
 }
 
@@ -1803,15 +1614,7 @@ main {
 		background-image: none !important;
 	}
 }
-[dir="rtl"]
-	.pico
-	:is(
-		[type="date"],
-		[type="datetime-local"],
-		[type="month"],
-		[type="time"],
-		[type="week"]
-	) {
+[dir="rtl"] .pico :is([type="date"], [type="datetime-local"], [type="month"], [type="time"], [type="week"]) {
 	text-align: right;
 }
 
@@ -1829,16 +1632,14 @@ main {
 }
 .pico [type="file"]::file-selector-button {
 	margin-right: calc(var(--pico-spacing) / 2);
-	padding: calc(var(--pico-form-element-spacing-vertical) * 0.5)
-		var(--pico-form-element-spacing-horizontal);
+	padding: calc(var(--pico-form-element-spacing-vertical) * 0.5) var(--pico-form-element-spacing-horizontal);
 }
 .pico [type="file"]:is(:hover, :active, :focus)::file-selector-button {
 	--pico-background-color: var(--pico-secondary-hover-background);
 	--pico-border-color: var(--pico-secondary-hover-border);
 }
 .pico [type="file"]:focus::file-selector-button {
-	--pico-box-shadow: var(--pico-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)),
-		0 0 0 var(--pico-outline-width) var(--pico-secondary-focus);
+	--pico-box-shadow: var(--pico-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)), 0 0 0 var(--pico-outline-width) var(--pico-secondary-focus);
 }
 
 /**
@@ -1857,9 +1658,11 @@ main {
 	height: 0.375rem;
 	border-radius: var(--pico-border-radius);
 	background-color: var(--pico-range-border-color);
-	-webkit-transition: background-color var(--pico-transition),
+	-webkit-transition:
+		background-color var(--pico-transition),
 		box-shadow var(--pico-transition);
-	transition: background-color var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
 		box-shadow var(--pico-transition);
 }
 .pico [type="range"]::-moz-range-track {
@@ -1867,9 +1670,11 @@ main {
 	height: 0.375rem;
 	border-radius: var(--pico-border-radius);
 	background-color: var(--pico-range-border-color);
-	-moz-transition: background-color var(--pico-transition),
+	-moz-transition:
+		background-color var(--pico-transition),
 		box-shadow var(--pico-transition);
-	transition: background-color var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
 		box-shadow var(--pico-transition);
 }
 .pico [type="range"]::-ms-track {
@@ -1877,9 +1682,11 @@ main {
 	height: 0.375rem;
 	border-radius: var(--pico-border-radius);
 	background-color: var(--pico-range-border-color);
-	-ms-transition: background-color var(--pico-transition),
+	-ms-transition:
+		background-color var(--pico-transition),
 		box-shadow var(--pico-transition);
-	transition: background-color var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
 		box-shadow var(--pico-transition);
 }
 .pico [type="range"]::-webkit-slider-thumb {
@@ -1891,9 +1698,11 @@ main {
 	border-radius: 50%;
 	background-color: var(--pico-range-thumb-color);
 	cursor: pointer;
-	-webkit-transition: background-color var(--pico-transition),
+	-webkit-transition:
+		background-color var(--pico-transition),
 		transform var(--pico-transition);
-	transition: background-color var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
 		transform var(--pico-transition);
 }
 .pico [type="range"]::-moz-range-thumb {
@@ -1905,9 +1714,11 @@ main {
 	border-radius: 50%;
 	background-color: var(--pico-range-thumb-color);
 	cursor: pointer;
-	-moz-transition: background-color var(--pico-transition),
+	-moz-transition:
+		background-color var(--pico-transition),
 		transform var(--pico-transition);
-	transition: background-color var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
 		transform var(--pico-transition);
 }
 .pico [type="range"]::-ms-thumb {
@@ -1919,9 +1730,11 @@ main {
 	border-radius: 50%;
 	background-color: var(--pico-range-thumb-color);
 	cursor: pointer;
-	-ms-transition: background-color var(--pico-transition),
+	-ms-transition:
+		background-color var(--pico-transition),
 		transform var(--pico-transition);
-	transition: background-color var(--pico-transition),
+	transition:
+		background-color var(--pico-transition),
 		transform var(--pico-transition);
 }
 .pico [type="range"]:active,
@@ -1942,72 +1755,33 @@ main {
 /**
  * Input type search
  */
-.pico
-	input:not(
-		[type="checkbox"],
-		[type="radio"],
-		[type="range"],
-		[type="file"]
-	)[type="search"] {
-	padding-inline-start: calc(
-		var(--pico-form-element-spacing-horizontal) + 1.75rem
-	);
+.pico input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"])[type="search"] {
+	padding-inline-start: calc(var(--pico-form-element-spacing-horizontal) + 1.75rem);
 	background-image: var(--pico-icon-search);
-	background-position: center left
-		calc(var(--pico-form-element-spacing-horizontal) + 0.125rem);
+	background-position: center left calc(var(--pico-form-element-spacing-horizontal) + 0.125rem);
 	background-size: 1rem auto;
 	background-repeat: no-repeat;
 }
-.pico
-	input:not(
-		[type="checkbox"],
-		[type="radio"],
-		[type="range"],
-		[type="file"]
-	)[type="search"][aria-invalid] {
-	padding-inline-start: calc(
-		var(--pico-form-element-spacing-horizontal) + 1.75rem
-	) !important;
-	background-position: center left 1.125rem, center right 0.75rem;
+.pico input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"])[type="search"][aria-invalid] {
+	padding-inline-start: calc(var(--pico-form-element-spacing-horizontal) + 1.75rem) !important;
+	background-position:
+		center left 1.125rem,
+		center right 0.75rem;
 }
-.pico
-	input:not(
-		[type="checkbox"],
-		[type="radio"],
-		[type="range"],
-		[type="file"]
-	)[type="search"][aria-invalid="false"] {
+.pico input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"])[type="search"][aria-invalid="false"] {
 	background-image: var(--pico-icon-search), var(--pico-icon-valid);
 }
-.pico
-	input:not(
-		[type="checkbox"],
-		[type="radio"],
-		[type="range"],
-		[type="file"]
-	)[type="search"][aria-invalid="true"] {
+.pico input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"])[type="search"][aria-invalid="true"] {
 	background-image: var(--pico-icon-search), var(--pico-icon-invalid);
 }
 
-[dir="rtl"]
-	.pico
-	:where(input):not(
-		[type="checkbox"],
-		[type="radio"],
-		[type="range"],
-		[type="file"]
-	)[type="search"] {
+[dir="rtl"] .pico :where(input):not([type="checkbox"], [type="radio"], [type="range"], [type="file"])[type="search"] {
 	background-position: center right 1.125rem;
 }
-[dir="rtl"]
-	.pico
-	:where(input):not(
-		[type="checkbox"],
-		[type="radio"],
-		[type="range"],
-		[type="file"]
-	)[type="search"][aria-invalid] {
-	background-position: center right 1.125rem, center left 0.75rem;
+[dir="rtl"] .pico :where(input):not([type="checkbox"], [type="radio"], [type="range"], [type="file"])[type="search"][aria-invalid] {
+	background-position:
+		center right 1.125rem,
+		center left 0.75rem;
 }
 
 /**
@@ -2099,8 +1873,7 @@ main {
 .pico article > footer {
 	margin-right: calc(var(--pico-block-spacing-horizontal) * -1);
 	margin-left: calc(var(--pico-block-spacing-horizontal) * -1);
-	padding: calc(var(--pico-block-spacing-vertical) * 0.66)
-		var(--pico-block-spacing-horizontal);
+	padding: calc(var(--pico-block-spacing-vertical) * 0.66) var(--pico-block-spacing-horizontal);
 	background-color: var(--pico-card-sectioning-background-color);
 }
 .pico article > header {
@@ -2143,28 +1916,20 @@ main {
 	margin-bottom: 0;
 }
 .pico [role="search"] > *:not(:first-child),
-.pico
-	[role="search"]
-	input:not([type="checkbox"], [type="radio"]):not(:first-child),
+.pico [role="search"] input:not([type="checkbox"], [type="radio"]):not(:first-child),
 .pico [role="search"] select:not(:first-child),
 .pico [role="group"] > *:not(:first-child),
-.pico
-	[role="group"]
-	input:not([type="checkbox"], [type="radio"]):not(:first-child),
+.pico [role="group"] input:not([type="checkbox"], [type="radio"]):not(:first-child),
 .pico [role="group"] select:not(:first-child) {
 	margin-left: 0;
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
 }
 .pico [role="search"] > *:not(:last-child),
-.pico
-	[role="search"]
-	input:not([type="checkbox"], [type="radio"]):not(:last-child),
+.pico [role="search"] input:not([type="checkbox"], [type="radio"]):not(:last-child),
 .pico [role="search"] select:not(:last-child),
 .pico [role="group"] > *:not(:last-child),
-.pico
-	[role="group"]
-	input:not([type="checkbox"], [type="radio"]):not(:last-child),
+.pico [role="group"] input:not([type="checkbox"], [type="radio"]):not(:last-child),
 .pico [role="group"] select:not(:last-child) {
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
@@ -2182,18 +1947,14 @@ main {
 .pico [role="search"] [type="reset"]:not(:first-child),
 .pico [role="search"] [type="button"]:not(:first-child),
 .pico [role="search"] [role="button"]:not(:first-child),
-.pico
-	[role="search"]
-	input:not([type="checkbox"], [type="radio"]):not(:first-child),
+.pico [role="search"] input:not([type="checkbox"], [type="radio"]):not(:first-child),
 .pico [role="search"] select:not(:first-child),
 .pico [role="group"] button:not(:first-child),
 .pico [role="group"] [type="submit"]:not(:first-child),
 .pico [role="group"] [type="reset"]:not(:first-child),
 .pico [role="group"] [type="button"]:not(:first-child),
 .pico [role="group"] [role="button"]:not(:first-child),
-.pico
-	[role="group"]
-	input:not([type="checkbox"], [type="radio"]):not(:first-child),
+.pico [role="group"] input:not([type="checkbox"], [type="radio"]):not(:first-child),
 .pico [role="group"] select:not(:first-child) {
 	margin-left: calc(var(--pico-border-width) * -1);
 }
@@ -2210,120 +1971,30 @@ main {
 	width: auto;
 }
 @supports selector(:has(*)) {
-	.pico
-		[role="search"]:has(
-			button:focus,
-			[type="submit"]:focus,
-			[type="button"]:focus,
-			[role="button"]:focus
-		),
-	.pico
-		[role="group"]:has(
-			button:focus,
-			[type="submit"]:focus,
-			[type="button"]:focus,
-			[role="button"]:focus
-		) {
+	.pico [role="search"]:has(button:focus, [type="submit"]:focus, [type="button"]:focus, [role="button"]:focus),
+	.pico [role="group"]:has(button:focus, [type="submit"]:focus, [type="button"]:focus, [role="button"]:focus) {
 		--pico-group-box-shadow: var(--pico-group-box-shadow-focus-with-button);
 	}
-	.pico
-		[role="search"]:has(
-			button:focus,
-			[type="submit"]:focus,
-			[type="button"]:focus,
-			[role="button"]:focus
-		)
-		input:not([type="checkbox"], [type="radio"]),
-	.pico
-		[role="search"]:has(
-			button:focus,
-			[type="submit"]:focus,
-			[type="button"]:focus,
-			[role="button"]:focus
-		)
-		select,
-	.pico
-		[role="group"]:has(
-			button:focus,
-			[type="submit"]:focus,
-			[type="button"]:focus,
-			[role="button"]:focus
-		)
-		input:not([type="checkbox"], [type="radio"]),
-	.pico
-		[role="group"]:has(
-			button:focus,
-			[type="submit"]:focus,
-			[type="button"]:focus,
-			[role="button"]:focus
-		)
-		select {
+	.pico [role="search"]:has(button:focus, [type="submit"]:focus, [type="button"]:focus, [role="button"]:focus) input:not([type="checkbox"], [type="radio"]),
+	.pico [role="search"]:has(button:focus, [type="submit"]:focus, [type="button"]:focus, [role="button"]:focus) select,
+	.pico [role="group"]:has(button:focus, [type="submit"]:focus, [type="button"]:focus, [role="button"]:focus) input:not([type="checkbox"], [type="radio"]),
+	.pico [role="group"]:has(button:focus, [type="submit"]:focus, [type="button"]:focus, [role="button"]:focus) select {
 		border-color: transparent;
 	}
-	.pico
-		[role="search"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		),
-	.pico
-		[role="group"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		) {
+	.pico [role="search"]:has(input:not([type="submit"], [type="button"]):focus, select:focus),
+	.pico [role="group"]:has(input:not([type="submit"], [type="button"]):focus, select:focus) {
 		--pico-group-box-shadow: var(--pico-group-box-shadow-focus-with-input);
 	}
-	.pico
-		[role="search"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		)
-		button,
-	.pico
-		[role="search"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		)
-		[type="submit"],
-	.pico
-		[role="search"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		)
-		[type="button"],
-	.pico
-		[role="search"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		)
-		[role="button"],
-	.pico
-		[role="group"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		)
-		button,
-	.pico
-		[role="group"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		)
-		[type="submit"],
-	.pico
-		[role="group"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		)
-		[type="button"],
-	.pico
-		[role="group"]:has(
-			input:not([type="submit"], [type="button"]):focus,
-			select:focus
-		)
-		[role="button"] {
-		--pico-button-box-shadow: 0 0 0 var(--pico-border-width)
-			var(--pico-primary-border);
-		--pico-button-hover-box-shadow: 0 0 0 var(--pico-border-width)
-			var(--pico-primary-hover-border);
+	.pico [role="search"]:has(input:not([type="submit"], [type="button"]):focus, select:focus) button,
+	.pico [role="search"]:has(input:not([type="submit"], [type="button"]):focus, select:focus) [type="submit"],
+	.pico [role="search"]:has(input:not([type="submit"], [type="button"]):focus, select:focus) [type="button"],
+	.pico [role="search"]:has(input:not([type="submit"], [type="button"]):focus, select:focus) [role="button"],
+	.pico [role="group"]:has(input:not([type="submit"], [type="button"]):focus, select:focus) button,
+	.pico [role="group"]:has(input:not([type="submit"], [type="button"]):focus, select:focus) [type="submit"],
+	.pico [role="group"]:has(input:not([type="submit"], [type="button"]):focus, select:focus) [type="button"],
+	.pico [role="group"]:has(input:not([type="submit"], [type="button"]):focus, select:focus) [role="button"] {
+		--pico-button-box-shadow: 0 0 0 var(--pico-border-width) var(--pico-primary-border);
+		--pico-button-hover-box-shadow: 0 0 0 var(--pico-border-width) var(--pico-primary-hover-border);
 	}
 	.pico [role="search"] button:focus,
 	.pico [role="search"] [type="submit"]:focus,
@@ -2364,10 +2035,7 @@ main {
 	content: "";
 	vertical-align: -0.125em;
 }
-.pico
-	[aria-busy="true"]:not(input, select, textarea, html, form):not(
-		:empty
-	)::before {
+.pico [aria-busy="true"]:not(input, select, textarea, html, form):not(:empty)::before {
 	margin-inline-end: calc(var(--pico-spacing) * 0.5);
 }
 .pico [aria-busy="true"]:not(input, select, textarea, html, form):empty {
@@ -2464,15 +2132,7 @@ main {
 	opacity: 0.5;
 	transition: opacity var(--pico-transition);
 }
-.pico
-	dialog
-	> article
-	:is(a, button)[rel="prev"]:is(
-		[aria-current]:not([aria-current="false"]),
-		:hover,
-		:active,
-		:focus
-	) {
+.pico dialog > article :is(a, button)[rel="prev"]:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
 	opacity: 1;
 }
 .pico dialog:not([open]),
@@ -2515,15 +2175,12 @@ main {
 .pico nav li {
 	display: inline-block;
 	margin: 0;
-	padding: var(--pico-nav-element-spacing-vertical)
-		var(--pico-nav-element-spacing-horizontal);
+	padding: var(--pico-nav-element-spacing-vertical) var(--pico-nav-element-spacing-horizontal);
 }
 .pico nav li :where(a, [role="link"]) {
 	display: inline-block;
-	margin: calc(var(--pico-nav-link-spacing-vertical) * -1)
-		calc(var(--pico-nav-link-spacing-horizontal) * -1);
-	padding: var(--pico-nav-link-spacing-vertical)
-		var(--pico-nav-link-spacing-horizontal);
+	margin: calc(var(--pico-nav-link-spacing-vertical) * -1) calc(var(--pico-nav-link-spacing-horizontal) * -1);
+	padding: var(--pico-nav-link-spacing-vertical) var(--pico-nav-link-spacing-horizontal);
 	border-radius: var(--pico-border-radius);
 }
 .pico nav li :where(a, [role="link"]):not(:hover) {
@@ -2532,19 +2189,13 @@ main {
 .pico nav li button,
 .pico nav li [role="button"],
 .pico nav li [type="button"],
-.pico
-	nav
-	li
-	input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
+.pico nav li input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
 .pico nav li select {
 	height: auto;
 	margin-right: inherit;
 	margin-bottom: 0;
 	margin-left: inherit;
-	padding: calc(
-			var(--pico-nav-link-spacing-vertical) - var(--pico-border-width) * 2
-		)
-		var(--pico-nav-link-spacing-horizontal);
+	padding: calc(var(--pico-nav-link-spacing-vertical) - var(--pico-border-width) * 2) var(--pico-nav-link-spacing-horizontal);
 }
 .pico nav[aria-label="breadcrumb"] {
 	align-items: center;
@@ -2582,8 +2233,7 @@ main {
 	display: block;
 }
 .pico aside li {
-	padding: calc(var(--pico-nav-element-spacing-vertical) * 0.5)
-		var(--pico-nav-element-spacing-horizontal);
+	padding: calc(var(--pico-nav-element-spacing-vertical) * 0.5) var(--pico-nav-element-spacing-horizontal);
 }
 .pico aside li a {
 	display: block;
@@ -2632,12 +2282,7 @@ main {
 }
 @media (prefers-reduced-motion: no-preference) {
 	.pico progress:indeterminate {
-		background: var(--pico-progress-background-color)
-			linear-gradient(
-				to right,
-				var(--pico-progress-color) 30%,
-				var(--pico-progress-background-color) 30%
-			)
+		background: var(--pico-progress-background-color) linear-gradient(to right, var(--pico-progress-color) 30%, var(--pico-progress-background-color) 30%)
 			top left/150% 150% no-repeat;
 		animation: progress-indeterminate 1s linear infinite;
 	}
