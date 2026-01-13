@@ -92,19 +92,19 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
     - **Code:** 201
     - **Content:**
 
-                  ```json
-                  {
-                  	"id": 123,
-                  	"name": "Level Name",
-                  	"author": "Author Name",
-                  	"created_at": 1714680000,
-                  	"sun": 100,
-                  	"is_water": true,
-                  	"version": 3
-                  }
-                  ```
+                    ```json
+                    {
+                    	"id": 123,
+                    	"name": "Level Name",
+                    	"author": "Author Name",
+                    	"created_at": 1714680000,
+                    	"sun": 100,
+                    	"is_water": true,
+                    	"version": 3
+                    }
+                    ```
 
-                  Note: `is_water` is stored as `0/1` in the database and is returned as `0/1` in list/detail endpoints.
+                    Note: `is_water` is stored as `0/1` in the database and is returned as `0/1` in list/detail endpoints.
 
 - **Error Responses:**
     - **Code:** 400
@@ -136,31 +136,31 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
     - **Code:** 200
     - **Content:**
 
-                  ```json
-                  {
-                  	"levels": [
-                  		{
-                  			"id": 123,
-                  			"name": "Level Name",
-                  			"author": "Author Name",
-                  			"created_at": 1714680000,
-                  			"sun": 100,
-                  			"is_water": 1,
-                  			"favorites": 5,
-                  			"plays": 10,
-                  			"difficulty": 7,
-                  			"thumbnail": [[0, 10, 10, 40, 40, 1]],
-                  			"version": 3
-                  		}
-                  	],
-                  	"pagination": {
-                  		"total": 50,
-                  		"page": 1,
-                  		"limit": 10,
-                  		"pages": 5
-                  	}
-                  }
-                  ```
+                    ```json
+                    {
+                    	"levels": [
+                    		{
+                    			"id": 123,
+                    			"name": "Level Name",
+                    			"author": "Author Name",
+                    			"created_at": 1714680000,
+                    			"sun": 100,
+                    			"is_water": 1,
+                    			"favorites": 5,
+                    			"plays": 10,
+                    			"difficulty": 7,
+                    			"thumbnail": [[0, 10, 10, 40, 40, 1]],
+                    			"version": 3
+                    		}
+                    	],
+                    	"pagination": {
+                    		"total": 50,
+                    		"page": 1,
+                    		"limit": 10,
+                    		"pages": 5
+                    	}
+                    }
+                    ```
 
 - **Error Response:**
     - **Code:** 401
@@ -178,21 +178,21 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
     - **Code:** 200
     - **Content:**
 
-                  ```json
-                  {
-                  	"id": 123,
-                  	"name": "Level Name",
-                  	"author": "Author Name",
-                  	"created_at": 1714680000,
-                  	"sun": 100,
-                  	"is_water": 1,
-                  	"favorites": 5,
-                  	"plays": 10,
-                  	"difficulty": 7,
-                  	"thumbnail": null,
-                  	"version": 3
-                  }
-                  ```
+                    ```json
+                    {
+                    	"id": 123,
+                    	"name": "Level Name",
+                    	"author": "Author Name",
+                    	"created_at": 1714680000,
+                    	"sun": 100,
+                    	"is_water": 1,
+                    	"favorites": 5,
+                    	"plays": 10,
+                    	"difficulty": 7,
+                    	"thumbnail": null,
+                    	"version": 3
+                    }
+                    ```
 
 - **Error Responses:**
     - **Code:** 400
@@ -281,13 +281,13 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
     - **Code:** 200
     - **Content:**
 
-                  ```json
-                  {
-                  	"turnstileEnabled": true,
-                  	"turnstileSiteKey": "0x0000000000000000000000",
-                  	"moderationEnabled": true
-                  }
-                  ```
+                    ```json
+                    {
+                    	"turnstileEnabled": true,
+                    	"turnstileSiteKey": "0x0000000000000000000000",
+                    	"moderationEnabled": true
+                    }
+                    ```
 
 ## Environment Variables
 
