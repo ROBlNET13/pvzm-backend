@@ -41,6 +41,7 @@
 		"express-msgpack": "npm:express-msgpack@^6.0.0",
 		"express-session": "npm:express-session@^1.18.0",
 		"express": "npm:express@^5.1.0",
+		"memorystore": "npm:memorystore@^1.6.7",
 		"passport": "npm:passport@^0.7.0",
 		"passport-github2": "npm:passport-github2@^0.1.12",
 		"pako": "npm:pako@^2.1.0",
