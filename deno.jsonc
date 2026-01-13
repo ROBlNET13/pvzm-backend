@@ -11,15 +11,15 @@
 			"net": true,
 			"ffi": true,
 			"read": true,
-			"write": true
+			"write": true,
 		},
 		"dev": {
 			"env": true,
 			"net": true,
 			"ffi": true,
 			"read": true,
-			"write": true
-		}
+			"write": true,
+		},
 	},
 	"lint": {
 		"rules": {
