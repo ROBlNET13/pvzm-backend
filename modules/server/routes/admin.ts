@@ -1,0 +1,187 @@
+import type { DbContext } from "../db.ts";
+
+export function registerAdminRoutes(
+	app: any,
+	dbCtx: DbContext,
+	deps: {
+		ensureAuthenticated: any;
+		ensureAuthenticatedOrConsumeTokenForLevelParam: any;
+	}
+) {
+	// get all levels with pagination and search
+	app.get("/api/admin/levels", deps.ensureAuthenticated, (req: any, res: any) => {
+		try {
+			const page = parseInt(req.query.page) || 1;
+			const limit = parseInt(req.query.limit) || 10;
+			const searchQuery = req.query.q || "";
+
+			const offset = (page - 1) * limit;
+
+			let queryParams: (string | number)[] = [];
+			let countQueryParams: (string | number)[] = [];
+			let whereClause = "";
+
+			if (searchQuery) {
+				whereClause = `WHERE name LIKE ? OR author LIKE ? OR id = ?`;
+				const likeParam = `%${searchQuery}%`;
+				queryParams = [likeParam, likeParam, searchQuery];
+				countQueryParams = [...queryParams];
+			}
+
+			const countQuery = `SELECT COUNT(*) as count FROM levels ${whereClause}`;
+			const countResult = dbCtx.db.prepare(countQuery).get(...countQueryParams);
+			const total = countResult ? (countResult as { count: number }).count : 0;
+
+			const query = `
+				SELECT id, name, author, created_at, sun, is_water, favorites, plays, difficulty, version
+				FROM levels ${whereClause}
+				ORDER BY id DESC
+				LIMIT ? OFFSET ?
+			`;
+
+			queryParams.push(limit, offset);
+			const levels = dbCtx.db.prepare(query).all(...queryParams);
+
+			res.json({
+				levels,
+				total,
+				page,
+				limit,
+				totalPages: Math.ceil(total / limit),
+			});
+		} catch (error) {
+			console.error("Error fetching levels for admin:", error);
+			res.status(500).json({
+				error: "Failed to fetch levels",
+				message: (error as Error).message,
+			});
+		}
+	});
+
+	// generate a one-time token scoped to a specific level (admin only)
+	app.post("/api/admin/levels/:id/token", deps.ensureAuthenticated, (req: any, res: any) => {
+		try {
+			const levelId = parseInt(req.params.id);
+			if (!Number.isFinite(levelId) || levelId <= 0) {
+				return res.status(400).json({ error: "Invalid level ID" });
+			}
+
+			const exists = dbCtx.db.prepare("SELECT 1 FROM levels WHERE id = ?").get(levelId);
+			if (!exists) {
+				return res.status(404).json({ error: "Level not found" });
+			}
+
+			const token = dbCtx.createOneTimeTokenForLevel(levelId);
+			res.json({ token, level_id: levelId });
+		} catch (error) {
+			console.error("Error generating one-time token:", error);
+			res.status(500).json({
+				error: "Failed to generate token",
+				message: (error as Error).message,
+			});
+		}
+	});
+
+	// update a level (admin only)
+	app.put("/api/admin/levels/:id", deps.ensureAuthenticatedOrConsumeTokenForLevelParam, (req: any, res: any) => {
+		try {
+			const levelId = parseInt(req.params.id);
+
+			if (!levelId) {
+				return res.status(400).json({ error: "Invalid level ID" });
+			}
+
+			const existingLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+
+			if (!existingLevel) {
+				return res.status(404).json({ error: "Level not found" });
+			}
+
+			const { name, author, sun, is_water, difficulty, favorites, plays } = req.body;
+
+			dbCtx.db
+				.prepare(`
+					UPDATE levels
+					SET 
+						name = ?,
+						author = ?,
+						sun = ?,
+						is_water = ?,
+						difficulty = ?,
+						favorites = ?,
+						plays = ?
+					WHERE id = ?
+				`)
+				.run(name, author, sun, is_water, difficulty, favorites, plays, levelId);
+
+			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+
+			res.json({
+				success: true,
+				level: updatedLevel,
+			});
+		} catch (error) {
+			console.error("Error updating level:", error);
+			res.status(500).json({
+				error: "Failed to update level",
+				message: (error as Error).message,
+			});
+		}
+	});
+
+	// delete a level (admin only)
+	app.delete("/api/admin/levels/:id", deps.ensureAuthenticatedOrConsumeTokenForLevelParam, async (req: any, res: any) => {
+		try {
+			const levelId = parseInt(req.params.id);
+
+			if (!levelId) {
+				return res.status(400).json({ error: "Invalid level ID" });
+			}
+
+			const existingLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+
+			if (!existingLevel) {
+				return res.status(404).json({ error: "Level not found" });
+			}
+
+			type LevelRecord = {
+				id: number;
+				version: number;
+			};
+			const typedLevel = existingLevel as LevelRecord;
+
+			dbCtx.db.prepare("DELETE FROM favorites WHERE level_id = ?").run(levelId);
+			dbCtx.db.prepare("DELETE FROM levels WHERE id = ?").run(levelId);
+
+			try {
+				const fileExtension = `izl${typedLevel.version || 3}`;
+				const levelPath = `${dbCtx.dataFolderPath}/${levelId}.${fileExtension}`;
+				await Deno.remove(levelPath);
+			} catch (fileError) {
+				console.error("Warning: Could not delete level file:", fileError);
+			}
+
+			const authors = dbCtx.db.prepare("SELECT * FROM authors").all() as any[];
+			for (const author of authors) {
+				try {
+					const levelIds = JSON.parse(author.level_ids);
+					const updatedLevelIds = levelIds.filter((id: number) => id !== levelId);
+
+					if (levelIds.length !== updatedLevelIds.length) {
+						dbCtx.db.prepare("UPDATE authors SET level_ids = ? WHERE id = ?").run(JSON.stringify(updatedLevelIds), author.id);
+					}
+				} catch (parseError) {
+					console.error("Error parsing level_ids for author:", parseError);
+				}
+			}
+
+			res.json({ success: true });
+		} catch (error) {
+			console.error("Error deleting level:", error);
+			res.status(500).json({
+				error: "Failed to delete level",
+				message: (error as Error).message,
+			});
+		}
+	});
+}

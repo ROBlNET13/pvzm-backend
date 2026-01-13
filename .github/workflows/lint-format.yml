@@ -3,11 +3,12 @@ name: Lint & Format
 on: [push]
 
 permissions:
-   contents: write
+    contents: write
 
 jobs:
-    format:
+    lint-and-format:
         runs-on: ubuntu-latest
+
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -17,14 +18,26 @@ jobs:
               with:
                   deno-version: v2.x.x
 
-            - name: Format code
-              run: deno fmt
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "lts/*"
 
-            - name: Get commit message
+            - name: Install dependencies
+              run: npm install -g oxfmt
+
+            - name: Beautify code
+              run: |
+                  deno lint --fix || true
+                  npx oxfmt --write . "**/*.{js,ts,md,html,css,yml}"
+
+            - name: Get commit message & author email
               id: get_commit_message
               run: |
                   COMMIT_MSG=$(git log -1 --pretty=format:%s)
+                  AUTHOR_EMAIL=$(git log -1 --pretty=format:%ae)
                   echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+                  echo "author_email=$AUTHOR_EMAIL" >> $GITHUB_OUTPUT
 
             - name: Commit changes
               run: |
@@ -32,19 +45,7 @@ jobs:
                   git config user.email github-actions@github.com
                   git add .
                   git commit -m "${{ github.actor }} - ${{ steps.get_commit_message.outputs.message }}
-                  Original commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}" || exit 0
+                  Original commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
+                  
+                  Co-authored-by: ${{ github.actor }} <${{ steps.get_commit_message.outputs.author_email }}>" || exit 0
                   git push
-
-    lint:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup Deno
-              uses: denoland/setup-deno@v2
-              with:
-                  deno-version: v2.x.x
-
-            - name: Lint code
-              run: deno lint

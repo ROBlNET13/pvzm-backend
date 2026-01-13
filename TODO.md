@@ -3,11 +3,12 @@
 ## High Priority
 
 - [x] **Separate Test UI and Admin UI Controls**: There should be a way to disable the test UI without also disabling the admin UI
+
   - Add `USE_TEST_UI` environment variable to control access to `/index.html` test interface
   - Keep `USE_PUBLIC_FOLDER` for admin UI but add conditional routing for test interface
   - This would allow production deployments to disable testing while keeping admin functionality
 
-- [x] **Fix SSL/HTTPS Implementation**: The current SSL implementation is incomplete and non-functional
+- [x] _(Removed in favor of NGINX)_ ~~**Fix SSL/HTTPS Implementation**: The current SSL implementation is incomplete and non-functional~~
   - The SSL certificate and key are read but not actually used to create an HTTPS server
   - Need to implement proper HTTPS server with Express.js or migrate to native Deno HTTPS
   - Add proper SSL error handling and validation
@@ -15,17 +16,20 @@
 ## Medium Priority
 
 - [x] **Environment Configuration Management**
+
   - Create a `.env.example` file with all available environment variables
   - Add environment variable validation on startup
   - Document all configuration options in README.md
 
-- [ ] **API Security Improvements**
-  - Add rate limiting for API endpoints (especially `/api/levels` POST)
+- [x] **API Security Improvements**
+
   - Implement API key authentication for programmatic access
   - Add request size limits for file uploads
   - Consider adding CSRF protection for admin endpoints
+  - _(Handled by Cloudflare)_ ~~Add rate limiting for API endpoints (especially `/api/levels` POST)~~
 
 - [ ] **Database Improvements**
+
   - Add database migrations system for schema changes
   - Implement database connection pooling
   - Add database backup/restore functionality
@@ -39,19 +43,22 @@
 
 ## Low Priority
 
-- [ ] **Code Quality & Maintenance**
+- [x] **Code Quality & Maintenance**
+
   - Split main.ts into separate modules (routes, middleware, database, etc.)
   - Add TypeScript strict mode configuration
   - Implement unit tests for core functionality
-  - Add API documentation (OpenAPI/Swagger)
+  - _(Decided against: API should not be public. README.md has instructions for the API.)_ ~~Add API documentation (OpenAPI/Swagger)~~
 
 - [ ] **Feature Enhancements**
+
   - Add level search by tags/categories
   - Implement level comments/reviews system
   - Add user profiles and level collections
   - Add level statistics and analytics dashboard
 
 - [ ] **Performance Optimizations**
+
   - Implement response caching for level listings
   - Add CDN support for static files
   - Optimize database queries with prepared statements

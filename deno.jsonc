@@ -19,7 +19,12 @@
 		"@types/node": "npm:@types/node@^24.3.1",
 		"@types/pako": "npm:@types/pako@^2.0.4",
 		"cors": "npm:cors@^2.8.5",
+		"discord.js": "npm:discord.js@^14.25.1",
+		"express-msgpack": "npm:express-msgpack@^6.0.0",
+		"express-session": "npm:express-session@^1.18.0",
 		"express": "npm:express@^5.1.0",
+		"passport": "npm:passport@^0.7.0",
+		"passport-github2": "npm:passport-github2@^0.1.12",
 		"pako": "npm:pako@^2.1.0"
 	},
 	"fmt": {

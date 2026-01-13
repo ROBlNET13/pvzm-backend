@@ -1,31 +1,9 @@
-interface Plant {
-	zIndex: number;
-	plantRow: number;
-	plantCol: number;
-	plantName: string;
-	eleLeft?: number;
-	eleTop?: number;
-}
+import type { decodeFile } from "./decode.ts";
 
-interface Clone {
-	plants: Plant[];
-	music: string;
-	sun: number;
-	name: string;
-	lfValue: number[];
-	stripeCol: number;
-	screenshot?: string;
-}
+type Clone = ReturnType<typeof decodeFile>;
 
 function hasAllRequiredProperties(clone: Clone): boolean {
-	const requiredProperties = [
-		"plants",
-		"music",
-		"sun",
-		"name",
-		"lfValue",
-		"stripeCol",
-	];
+	const requiredProperties = ["plants", "music", "sun", "name", "lfValue", "stripeCol"];
 
 	for (const prop of requiredProperties) {
 		if (!(prop in clone)) {
@@ -73,13 +51,12 @@ function validMusic(clone: Clone): boolean {
 function validStripeCol(clone: Clone): boolean {
 	const MIN_STRIPE_COL = 3;
 	const MAX_STRIPE_COL = 8;
-	return clone.stripeCol !== undefined && (
-		clone.stripeCol >= MIN_STRIPE_COL && clone.stripeCol <= MAX_STRIPE_COL
-	);
+	return clone.stripeCol !== undefined && clone.stripeCol >= MIN_STRIPE_COL && clone.stripeCol <= MAX_STRIPE_COL;
 }
 
 function hasValidPlantCount(clone: Clone): boolean {
-	if (clone.lfValue[3] === 2) { // if this is true, its a water level
+	if (clone.lfValue[3] === 2) {
+		// if this is true, its a water level
 		let MAX_PLANTS = 108; // assuming flower pot/lilypad + pumpkin filling up the screen
 		const extraStripeCols = clone.stripeCol ? clone.stripeCol - 1 : 2;
 		for (let i = 0; i < extraStripeCols; i++) {
@@ -102,12 +79,7 @@ function noPlantsAfterStripe(clone: Clone): boolean {
 	}
 
 	for (const plant of clone.plants) {
-		const plantsThatCanBypassStripe = [
-			"oPumpkinHead",
-			"oFlowerPot",
-			"oLilyPad",
-			"oILilyPad",
-		];
+		const plantsThatCanBypassStripe = ["oPumpkinHead", "oFlowerPot", "oLilyPad", "oILilyPad"];
 		if (plantsThatCanBypassStripe.includes(plant.plantName)) {
 			continue; // these plants can be placed anywhere
 		}
@@ -184,14 +156,7 @@ function noInvalidPlants(clone: Clone): boolean {
 }
 
 function cloneHasAllRequiredFields(clone: Clone): [boolean, string?] {
-	const requiredFields = [
-		"plants",
-		"music",
-		"sun",
-		"name",
-		"lfValue",
-		"stripeCol",
-	];
+	const requiredFields = ["plants", "music", "sun", "name", "lfValue", "stripeCol"];
 
 	for (const field of requiredFields) {
 		if (!(field in clone)) {
@@ -210,16 +175,14 @@ function plantsHasAllRequiredFields(clone: Clone): boolean {
 		"plantName",
 		// "eleLeft",
 		// "eleTop",
+		// "eleWidth",
+		// "eleHeight",
 	];
 
 	for (const plant of clone.plants) {
 		for (const field of requiredFields) {
 			if (!(field in plant)) {
-				console.error(
-					`Plant is missing required field: ${field}`,
-					plant,
-					clone,
-				);
+				console.error(`Plant is missing required field: ${field}`, plant, clone);
 				return false;
 			}
 		}
@@ -229,8 +192,7 @@ function plantsHasAllRequiredFields(clone: Clone): boolean {
 }
 
 export function validateClone(clone: Clone): boolean {
-	let [doesCloneHaveAllRequiredFields, missingFields] =
-		cloneHasAllRequiredFields(clone);
+	const [doesCloneHaveAllRequiredFields, missingFields] = cloneHasAllRequiredFields(clone);
 	if (!doesCloneHaveAllRequiredFields) {
 		console.error("Clone is missing required fields:", missingFields);
 		return false;

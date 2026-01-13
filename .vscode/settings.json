@@ -2,12 +2,12 @@
 	"deno.enable": true,
 	"deno.disablePaths": ["public"],
 	"[typescript]": {
-		"editor.defaultFormatter": "denoland.vscode-deno"
+		"editor.defaultFormatter": "oxc.oxc-vscode"
 	},
 	"[javascript]": {
-		"editor.defaultFormatter": "denoland.vscode-deno"
+		"editor.defaultFormatter": "oxc.oxc-vscode"
 	},
 	"[markdown]": {
-		"editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+		"editor.defaultFormatter": "oxc.oxc-vscode"
 	}
 }

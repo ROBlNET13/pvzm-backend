@@ -5,6 +5,7 @@ Comments should be in (mostly) lowercase. They should be used to explain the pur
 Here's a set of VSCode RegEx patterns to fix comment case. Keep in mind that these patterns are not perfect and may require you to exclude certain files manually (deno.lock comes to mind)
 
 1. Make comment lowercase:
+
    - Find: `([^\S\r\n]+)//([^\S\r\n]*)([A-Z])`
    - Replace: `$1//$2\l$3`
 
