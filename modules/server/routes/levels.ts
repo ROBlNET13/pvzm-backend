@@ -54,9 +54,8 @@ export function registerLevelRoutes(
 		const timestamps = apiLevelsRateLimitByIp.get(clientIP) ?? [];
 		pruneOldestTimestamps(timestamps, nowMs - API_LEVELS_WINDOW_MS);
 		if (timestamps.length >= API_LEVELS_LIMIT) {
-			const retryAfterSeconds = timestamps.length === 0
-				? Math.ceil(API_LEVELS_WINDOW_MS / 1000)
-				: Math.ceil((timestamps[0] + API_LEVELS_WINDOW_MS - nowMs) / 1000);
+			const retryAfterSeconds =
+				timestamps.length === 0 ? Math.ceil(API_LEVELS_WINDOW_MS / 1000) : Math.ceil((timestamps[0] + API_LEVELS_WINDOW_MS - nowMs) / 1000);
 			setRetryAfter(res, retryAfterSeconds);
 			return res.status(429).json({
 				error: "Rate limit exceeded",
@@ -108,9 +107,7 @@ export function registerLevelRoutes(
 			const lastUploadMs = uploadRateLimitByIp.get(clientIP) ?? 0;
 			const elapsedMs = nowMs - lastUploadMs;
 			if (elapsedMs >= 0 && elapsedMs < UPLOAD_WINDOW_MS) {
-				const retryAfterSeconds = Math.ceil(
-					(UPLOAD_WINDOW_MS - elapsedMs) / 1000,
-				);
+				const retryAfterSeconds = Math.ceil((UPLOAD_WINDOW_MS - elapsedMs) / 1000);
 				res.setHeader("Retry-After", String(retryAfterSeconds));
 				return res.status(429).json({
 					error: "Rate limit exceeded",
@@ -616,9 +613,10 @@ export function registerLevelRoutes(
 			const favoriteTimestamps = favoriteRateLimitByIp.get(clientIP) ?? [];
 			pruneOldestTimestamps(favoriteTimestamps, nowMs - FAVORITE_WINDOW_MS);
 			if (favoriteTimestamps.length >= FAVORITE_LIMIT) {
-				const retryAfterSeconds = favoriteTimestamps.length === 0
-					? Math.ceil(FAVORITE_WINDOW_MS / 1000)
-					: Math.ceil((favoriteTimestamps[0] + FAVORITE_WINDOW_MS - nowMs) / 1000);
+				const retryAfterSeconds =
+					favoriteTimestamps.length === 0
+						? Math.ceil(FAVORITE_WINDOW_MS / 1000)
+						: Math.ceil((favoriteTimestamps[0] + FAVORITE_WINDOW_MS - nowMs) / 1000);
 				setRetryAfter(res, retryAfterSeconds);
 				return res.status(429).json({
 					error: "Rate limit exceeded",
