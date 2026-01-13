@@ -43,7 +43,7 @@ const TINYIFIER_MAP = {
 };
 
 const REVERSE_TINYIFIER_MAP: Record<number, string> = Object.fromEntries(Object.entries(TINYIFIER_MAP).map(([key, value]) => [value, key]));
-$1; //$2\l$3lant names array matching the frontend
+// plant names array matching the frontend
 export const allPlantsStringArray = [
 	"oPeashooter",
 	"oSunFlower",
