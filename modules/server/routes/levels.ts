@@ -23,6 +23,58 @@ export function registerLevelRoutes(
 		uploadWebhookClient?: WebhookClient;
 	}
 ) {
+	const uploadRateLimitByIp = new Map<string, number>();
+	const UPLOAD_WINDOW_MS = 60_000;
+
+	const apiLevelsRateLimitByIp = new Map<string, number[]>();
+	const API_LEVELS_WINDOW_MS = 30_000;
+	const API_LEVELS_LIMIT = 60;
+
+	const favoriteRateLimitByIp = new Map<string, number[]>();
+	const FAVORITE_WINDOW_MS = 10_000;
+	const FAVORITE_LIMIT = 30;
+
+	const downloadRateLimitByIp = new Map<string, { events: number[]; blockedUntilMs: number }>();
+	const DOWNLOAD_WINDOW_MS = 5_000;
+	const DOWNLOAD_LIMIT = 5;
+	const DOWNLOAD_BLOCK_MS = 30_000;
+
+	function pruneOldestTimestamps(timestamps: number[], cutoffMs: number) {
+		while (timestamps.length > 0 && timestamps[0] <= cutoffMs) timestamps.shift();
+	}
+
+	function setRetryAfter(res: any, retryAfterSeconds: number) {
+		res.setHeader("Retry-After", String(Math.max(1, Math.ceil(retryAfterSeconds))));
+	}
+
+	// general rate limit for all /api/levels* calls
+	app.use("/api/levels", (req: any, res: any, next: any) => {
+		const clientIP = getClientIP(req);
+		const nowMs = Date.now();
+		const timestamps = apiLevelsRateLimitByIp.get(clientIP) ?? [];
+		pruneOldestTimestamps(timestamps, nowMs - API_LEVELS_WINDOW_MS);
+		if (timestamps.length >= API_LEVELS_LIMIT) {
+			const retryAfterSeconds = timestamps.length === 0
+				? Math.ceil(API_LEVELS_WINDOW_MS / 1000)
+				: Math.ceil((timestamps[0] + API_LEVELS_WINDOW_MS - nowMs) / 1000);
+			setRetryAfter(res, retryAfterSeconds);
+			return res.status(429).json({
+				error: "Rate limit exceeded",
+				message: "Too many requests to /api/levels.",
+				retryAfterSeconds,
+			});
+		}
+		timestamps.push(nowMs);
+		apiLevelsRateLimitByIp.set(clientIP, timestamps);
+		if (apiLevelsRateLimitByIp.size > 20_000) {
+			for (const [ip, ts] of apiLevelsRateLimitByIp) {
+				pruneOldestTimestamps(ts, nowMs - 2 * API_LEVELS_WINDOW_MS);
+				if (ts.length === 0) apiLevelsRateLimitByIp.delete(ip);
+			}
+		}
+		next();
+	});
+
 	// create a new level
 	app.post("/api/levels", async (req: any, res: any) => {
 		try {
@@ -52,6 +104,26 @@ export function registerLevelRoutes(
 			}
 
 			const clientIP = getClientIP(req);
+			const nowMs = Date.now();
+			const lastUploadMs = uploadRateLimitByIp.get(clientIP) ?? 0;
+			const elapsedMs = nowMs - lastUploadMs;
+			if (elapsedMs >= 0 && elapsedMs < UPLOAD_WINDOW_MS) {
+				const retryAfterSeconds = Math.ceil(
+					(UPLOAD_WINDOW_MS - elapsedMs) / 1000,
+				);
+				res.setHeader("Retry-After", String(retryAfterSeconds));
+				return res.status(429).json({
+					error: "Rate limit exceeded",
+					message: "Only 1 level upload per minute is allowed per user.",
+					retryAfterSeconds,
+				});
+			}
+			uploadRateLimitByIp.set(clientIP, nowMs);
+			if (uploadRateLimitByIp.size > 10_000) {
+				for (const [ip, ts] of uploadRateLimitByIp) {
+					if (nowMs - ts > 10 * 60_000) uploadRateLimitByIp.delete(ip);
+				}
+			}
 
 			const version = detectVersion(levelBinary);
 			if (version !== 3) {
@@ -362,6 +434,39 @@ export function registerLevelRoutes(
 	// download a level
 	app.get("/api/levels/:id/download", (req: any, res: any) => {
 		try {
+			const clientIP = getClientIP(req);
+			const nowMs = Date.now();
+			const state = downloadRateLimitByIp.get(clientIP) ?? { events: [], blockedUntilMs: 0 };
+			if (nowMs < state.blockedUntilMs) {
+				const retryAfterSeconds = Math.ceil((state.blockedUntilMs - nowMs) / 1000);
+				setRetryAfter(res, retryAfterSeconds);
+				return res.status(429).json({
+					error: "Rate limit exceeded",
+					message: "Too many downloads. Try again later.",
+					retryAfterSeconds,
+				});
+			}
+			pruneOldestTimestamps(state.events, nowMs - DOWNLOAD_WINDOW_MS);
+			if (state.events.length >= DOWNLOAD_LIMIT) {
+				state.blockedUntilMs = nowMs + DOWNLOAD_BLOCK_MS;
+				state.events = [];
+				downloadRateLimitByIp.set(clientIP, state);
+				const retryAfterSeconds = Math.ceil(DOWNLOAD_BLOCK_MS / 1000);
+				setRetryAfter(res, retryAfterSeconds);
+				return res.status(429).json({
+					error: "Rate limit exceeded",
+					message: "Too many downloads. Blocked for 30 seconds.",
+					retryAfterSeconds,
+				});
+			}
+			state.events.push(nowMs);
+			downloadRateLimitByIp.set(clientIP, state);
+			if (downloadRateLimitByIp.size > 20_000) {
+				for (const [ip, s] of downloadRateLimitByIp) {
+					if (nowMs > s.blockedUntilMs + 2 * DOWNLOAD_BLOCK_MS) downloadRateLimitByIp.delete(ip);
+				}
+			}
+
 			const levelId = parseInt(req.params.id);
 
 			if (isNaN(levelId)) {
@@ -506,6 +611,29 @@ export function registerLevelRoutes(
 	function favoriteToggleRouteHandler(req: any, res: any) {
 		try {
 			const levelId = parseInt(req.params.id);
+			const clientIP = getClientIP(req);
+			const nowMs = Date.now();
+			const favoriteTimestamps = favoriteRateLimitByIp.get(clientIP) ?? [];
+			pruneOldestTimestamps(favoriteTimestamps, nowMs - FAVORITE_WINDOW_MS);
+			if (favoriteTimestamps.length >= FAVORITE_LIMIT) {
+				const retryAfterSeconds = favoriteTimestamps.length === 0
+					? Math.ceil(FAVORITE_WINDOW_MS / 1000)
+					: Math.ceil((favoriteTimestamps[0] + FAVORITE_WINDOW_MS - nowMs) / 1000);
+				setRetryAfter(res, retryAfterSeconds);
+				return res.status(429).json({
+					error: "Rate limit exceeded",
+					message: "Too many favorite actions. Try again later.",
+					retryAfterSeconds,
+				});
+			}
+			favoriteTimestamps.push(nowMs);
+			favoriteRateLimitByIp.set(clientIP, favoriteTimestamps);
+			if (favoriteRateLimitByIp.size > 20_000) {
+				for (const [ip, ts] of favoriteRateLimitByIp) {
+					pruneOldestTimestamps(ts, nowMs - 2 * FAVORITE_WINDOW_MS);
+					if (ts.length === 0) favoriteRateLimitByIp.delete(ip);
+				}
+			}
 
 			if (isNaN(levelId)) {
 				return res.status(400).json({ error: "Invalid level ID" });
@@ -517,7 +645,6 @@ export function registerLevelRoutes(
 				return res.status(404).json({ error: "Level not found" });
 			}
 
-			const clientIP = getClientIP(req);
 			const existingFavorite = dbCtx.db.prepare("SELECT 1 FROM favorites WHERE level_id = ? AND ip_address = ? LIMIT 1").get(levelId, clientIP);
 			setFavorite(levelId, clientIP, !existingFavorite);
 

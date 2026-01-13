@@ -1,4 +1,3 @@
 data/
-ssl/
 *.db
 .env
