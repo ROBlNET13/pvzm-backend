@@ -1,12 +1,103 @@
 import session from "express-session";
 import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
+import { Database } from "@db/sqlite";
 
 import type { ServerConfig } from "./config.ts";
 
+class SqliteSessionStore extends session.Store {
+	db: Database;
+
+	constructor(dbPath: string) {
+		super();
+		this.db = new Database(dbPath);
+		this.db.exec(
+			`CREATE TABLE IF NOT EXISTS sessions (
+				sid TEXT PRIMARY KEY,
+				sess TEXT NOT NULL,
+				expire INTEGER NOT NULL
+			);
+			CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions(expire);`,
+		);
+	}
+
+	private cleanupExpired(nowMs: number) {
+		try {
+			this.db.prepare("DELETE FROM sessions WHERE expire < ?").run(nowMs);
+		} catch {
+			// best-effort cleanup
+		}
+	}
+
+	private computeExpireMs(sess: any): number {
+		const cookie = sess?.cookie;
+		if (cookie?.expires) {
+			const d = new Date(cookie.expires);
+			if (!Number.isNaN(d.getTime())) return d.getTime();
+		}
+		const maxAge = typeof cookie?.maxAge === "number" ? cookie.maxAge : null;
+		if (maxAge !== null) return Date.now() + maxAge;
+		return Date.now() + 24 * 60 * 60 * 1000;
+	}
+
+	get(sid: string, cb: (err?: any, session?: any | null) => void) {
+		try {
+			const nowMs = Date.now();
+			const row = this.db.prepare("SELECT sess, expire FROM sessions WHERE sid = ?").get(sid) as
+				| { sess: string; expire: number }
+				| undefined;
+			if (!row) return cb(null, null);
+			if (row.expire < nowMs) {
+				this.db.prepare("DELETE FROM sessions WHERE sid = ?").run(sid);
+				return cb(null, null);
+			}
+			return cb(null, JSON.parse(row.sess));
+		} catch (err) {
+			return cb(err);
+		}
+	}
+
+	set(sid: string, sess: any, cb: (err?: any) => void) {
+		try {
+			const nowMs = Date.now();
+			this.cleanupExpired(nowMs);
+			const expire = this.computeExpireMs(sess);
+			this.db.prepare(
+				"INSERT INTO sessions (sid, sess, expire) VALUES (?, ?, ?) ON CONFLICT(sid) DO UPDATE SET sess=excluded.sess, expire=excluded.expire",
+			).run(sid, JSON.stringify(sess), expire);
+			return cb(null);
+		} catch (err) {
+			return cb(err);
+		}
+	}
+
+	destroy(sid: string, cb: (err?: any) => void) {
+		try {
+			this.db.prepare("DELETE FROM sessions WHERE sid = ?").run(sid);
+			return cb(null);
+		} catch (err) {
+			return cb(err);
+		}
+	}
+
+	touch(sid: string, sess: any, cb: (err?: any) => void) {
+		try {
+			const nowMs = Date.now();
+			this.cleanupExpired(nowMs);
+			const expire = this.computeExpireMs(sess);
+			this.db.prepare("UPDATE sessions SET expire = ? WHERE sid = ?").run(expire, sid);
+			return cb(null);
+		} catch (err) {
+			return cb(err);
+		}
+	}
+}
+
 export function setupSession(app: any, config: ServerConfig) {
+	const store = new SqliteSessionStore(config.dbPath);
 	app.use(
 		session({
+			store,
 			secret: config.sessionSecret,
 			resave: false,
 			saveUninitialized: false,
