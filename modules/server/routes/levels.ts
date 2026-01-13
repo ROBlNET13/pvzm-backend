@@ -26,9 +26,12 @@ export function registerLevelRoutes(
 	// create a new level
 	app.post("/api/levels", async (req: any, res: any) => {
 		try {
+			// deno-lint-ignore prefer-const
 			let author: string;
 			let _is_water: boolean;
+			// deno-lint-ignore prefer-const
 			let turnstileResponse: string;
+			// deno-lint-ignore prefer-const
 			let levelBinary: Uint8Array;
 			const contentType = req.headers["content-type"] || "";
 

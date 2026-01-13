@@ -3,22 +3,24 @@
  *
  * Pico.css - https://picocss.com
  * Copyright 2019-2024 - Licensed under MIT
- */ $1; //$2\l$3onfig
+ */ 
+// deno-lint-ignore-file
+
 const isOpenClass = "modal-is-open";
 const openingClass = "modal-is-opening";
 const closingClass = "modal-is-closing";
 const scrollbarWidthCssVar = "--pico-scrollbar-width";
 const animationDuration = 400; // ms
 let visibleModal = null;
-$1; //$2\l$3oggle modal
-const toggleModal = (event) => {
+// toggle modal
+const _toggleModal = (event) => {
 	event.preventDefault();
 	const modal = document.getElementById(event.currentTarget.dataset.target);
 	if (!modal) return;
 	// oxlint-disable-next-line no-unused-expressions
 	modal && (modal.open ? closeModal(modal) : openModal(modal));
 };
-$1; //$2\l$3pen modal
+// open modal
 const openModal = (modal) => {
 	const { documentElement: html } = document;
 	const scrollbarWidth = getScrollbarWidth();
@@ -32,7 +34,7 @@ const openModal = (modal) => {
 	}, animationDuration);
 	modal.showModal();
 };
-$1; //$2\l$3lose modal
+// close modal
 const closeModal = (modal) => {
 	visibleModal = null;
 	const { documentElement: html } = document;
@@ -43,7 +45,7 @@ const closeModal = (modal) => {
 		modal.close();
 	}, animationDuration);
 };
-$1; //$2\l$3lose with a click outside
+// close with a click outside
 document.addEventListener("click", (event) => {
 	if (visibleModal === null) return;
 	const modalContent = visibleModal.querySelector("article");
@@ -51,19 +53,18 @@ document.addEventListener("click", (event) => {
 	// oxlint-disable-next-line no-unused-expressions
 	!isClickInside && closeModal(visibleModal);
 });
-$1; //$2\l$3lose with Esc key
+// close with Esc key
 document.addEventListener("keydown", (event) => {
 	if (event.key === "Escape" && visibleModal) {
 		closeModal(visibleModal);
 	}
 });
-$1; //$2\l$3et scrollbar width
+// get scrollbar width
 const getScrollbarWidth = () => {
 	const scrollbarWidth = globalThis.innerWidth - document.documentElement.clientWidth;
 	return scrollbarWidth;
 };
-$1; //$2\l$3s scrollbar visible
-// oxlint-disable-next-line no-unused-vars
+// is scrollbar visible
 const isScrollbarVisible = () => {
 	return document.body.scrollHeight > screen.height;
 };
