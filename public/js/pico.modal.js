@@ -5,6 +5,7 @@
  * Copyright 2019-2024 - Licensed under MIT
  */
 // deno-lint-ignore-file
+// oxlint-disable
 
 const isOpenClass = "modal-is-open";
 const openingClass = "modal-is-opening";
@@ -13,11 +14,11 @@ const scrollbarWidthCssVar = "--pico-scrollbar-width";
 const animationDuration = 400; // ms
 let visibleModal = null;
 // toggle modal
-const _toggleModal = (event) => {
+// deno-lint-ignore no-unused-vars
+const toggleModal = (event) => {
 	event.preventDefault();
 	const modal = document.getElementById(event.currentTarget.dataset.target);
 	if (!modal) return;
-	// oxlint-disable-next-line no-unused-expressions
 	modal && (modal.open ? closeModal(modal) : openModal(modal));
 };
 // open modal
@@ -50,7 +51,6 @@ document.addEventListener("click", (event) => {
 	if (visibleModal === null) return;
 	const modalContent = visibleModal.querySelector("article");
 	const isClickInside = modalContent.contains(event.target);
-	// oxlint-disable-next-line no-unused-expressions
 	!isClickInside && closeModal(visibleModal);
 });
 // close with Esc key
