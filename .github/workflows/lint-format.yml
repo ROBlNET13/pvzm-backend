@@ -44,7 +44,7 @@ jobs:
                   git config user.name github-actions
                   git config user.email github-actions@github.com
                   git add .
-                  git commit -m "${{ github.actor }} - ${{ steps.get_commit_message.outputs.message }}
+                  git commit -m "${{ steps.get_commit_message.outputs.message }}
                   Original commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
                   
                   Co-authored-by: ${{ github.actor }} <${{ steps.get_commit_message.outputs.author_email }}>" || exit 0
