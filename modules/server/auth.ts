@@ -17,7 +17,7 @@ class SqliteSessionStore extends session.Store {
 				sess TEXT NOT NULL,
 				expire INTEGER NOT NULL
 			);
-			CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions(expire);`,
+			CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions(expire);`
 		);
 	}
 
@@ -43,9 +43,7 @@ class SqliteSessionStore extends session.Store {
 	get(sid: string, cb: (err?: any, session?: any | null) => void) {
 		try {
 			const nowMs = Date.now();
-			const row = this.db.prepare("SELECT sess, expire FROM sessions WHERE sid = ?").get(sid) as
-				| { sess: string; expire: number }
-				| undefined;
+			const row = this.db.prepare("SELECT sess, expire FROM sessions WHERE sid = ?").get(sid) as { sess: string; expire: number } | undefined;
 			if (!row) return cb(null, null);
 			if (row.expire < nowMs) {
 				this.db.prepare("DELETE FROM sessions WHERE sid = ?").run(sid);
@@ -62,9 +60,9 @@ class SqliteSessionStore extends session.Store {
 			const nowMs = Date.now();
 			this.cleanupExpired(nowMs);
 			const expire = this.computeExpireMs(sess);
-			this.db.prepare(
-				"INSERT INTO sessions (sid, sess, expire) VALUES (?, ?, ?) ON CONFLICT(sid) DO UPDATE SET sess=excluded.sess, expire=excluded.expire",
-			).run(sid, JSON.stringify(sess), expire);
+			this.db
+				.prepare("INSERT INTO sessions (sid, sess, expire) VALUES (?, ?, ?) ON CONFLICT(sid) DO UPDATE SET sess=excluded.sess, expire=excluded.expire")
+				.run(sid, JSON.stringify(sess), expire);
 			return cb(null);
 		} catch (err) {
 			return cb(err);
