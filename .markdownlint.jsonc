@@ -2,5 +2,5 @@
 	"MD013": false, // line length
 	"MD010": false, // hard tabs
 	"MD033": false, // inline HTML
-	"MD007": { "indent": 4 } // unordered list indentation
+	"MD007": { "indent": 4 }, // unordered list indentation
 }
