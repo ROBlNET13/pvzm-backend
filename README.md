@@ -1,6 +1,7 @@
 # PVZM Backend
 
-> v0.2.0
+<sup><sub>v0.2.0</sup></sub>
+
 > A Deno-powered backend service for [Plants vs. Zombies: MODDED](https://github.com/roblnet13/pvz). This service provides APIs for uploading, downloading, listing, favoriting, and reporting user-created _I, Zombie_ levels.
 
 ## Features
@@ -20,12 +21,12 @@ The backend includes an admin dashboard for managing levels directly in the data
 
 - **Access**: Navigate to `/admin.html` or click the "Admin Dashboard" link on the main page
 - **Features**:
-    - View all levels with pagination
-    - Search levels by name, author, or ID
-    - Edit level properties (name, author, sun, water status, difficulty, statistics)
-    - Delete levels (including related files and database entries) > Authentication: The admin UI supports optional GitHub OAuth. If `USE_GITHUB_AUTH=true`, users must sign in with GitHub and be included in `GITHUB_ALLOWED_USERS` to access admin endpoints. If `USE_GITHUB_AUTH=false`, the admin endpoints are not protected (not recommended in production). > The admin dashboard also supports one-time-token links for a single edit/delete action:
-    - Edit: `/admin.html?token=...&action=edit&level=123`
-    - Delete: `/admin.html?token=...&action=delete&level=123`
+  - View all levels with pagination
+  - Search levels by name, author, or ID
+  - Edit level properties (name, author, sun, water status, difficulty, statistics)
+  - Delete levels (including related files and database entries) > Authentication: The admin UI supports optional GitHub OAuth. If `USE_GITHUB_AUTH=true`, users must sign in with GitHub and be included in `GITHUB_ALLOWED_USERS` to access admin endpoints. If `USE_GITHUB_AUTH=false`, the admin endpoints are not protected (not recommended in production). > The admin dashboard also supports one-time-token links for a single edit/delete action:
+  - Edit: `/admin.html?token=...&action=edit&level=123`
+  - Delete: `/admin.html?token=...&action=delete&level=123`
       After a successful token-based edit/delete, the page attempts to call `window.close()` (some browsers only allow this for windows opened by script).
 
 ## Getting Started
@@ -81,42 +82,42 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
 - **URL:** `/api/levels`
 - **Method:** `POST`
 - **Content Types:**
-    - `application/octet-stream`
+  - `application/octet-stream`
 - **URL Params:** None
 - **Query Params:** (for octet-stream)
-    - `author`: Author name
-    - `turnstileResponse`: Captcha verification token (if enabled)
+  - `author`: Author name
+  - `turnstileResponse`: Captcha verification token (if enabled)
 - **Notes:** Only IZL3 is supported (v2 is deprecated).
 - **Request Body:** Raw binary level data (`.izl3`), sent as the request body.
 - **Success Response:**
-    - **Code:** 201
-    - **Content:**
+  - **Code:** 201
+  - **Content:**
 
-                                  ```json
-                                  {
-                                  	"id": 123,
-                                  	"name": "Level Name",
-                                  	"author": "Author Name",
-                                  	"created_at": 1714680000,
-                                  	"sun": 100,
-                                  	"is_water": true,
-                                  	"version": 3
-                                  }
-                                  ```
+```json
+{
+	"id": 123,
+	"name": "Level Name",
+	"author": "Author Name",
+	"created_at": 1714680000,
+	"sun": 100,
+	"is_water": true,
+	"version": 3
+}
+```
 
-                                  Note: `is_water` is stored as `0/1` in the database and is returned as `0/1` in list/detail endpoints.
+Note: `is_water` is stored as `0/1` in the database and is returned as `0/1` in list/detail endpoints.
 
 - **Error Responses:**
-    - **Code:** 400
-    - **Content:** `{ "error": "Missing required fields" }`
-    - **Code:** 400
-    - **Content:** `{ "error": "Content contains inappropriate language or content" }`
-    - **Code:** 400
-    - **Content:** `{ "error": "Captcha verification required" }`
-    - **Code:** 400
-    - **Content:** `{ "error": "Invalid captcha" }`
-    - **Code:** 500
-    - **Content:** `{ "error": "Failed to upload level" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "Missing required fields" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "Content contains inappropriate language or content" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "Captcha verification required" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "Invalid captcha" }`
+  - **Code:** 500
+  - **Content:** `{ "error": "Failed to upload level" }`
 
 ##### List Levels
 
@@ -124,100 +125,100 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
 - **Method:** `GET`
 - **URL Params:** None
 - **Query Params:**
-    - `page`: Page number (default: 1)
-    - `limit`: Results per page (default: 10)
-    - `author`: Filter by author name (partial match)
-    - `is_water`: Filter by water levels ("true"/"false")
-    - `version`: Filter by level version (currently always `3`; reserved for future versions)
-    - `sort`: Sorting mode. Default is by play count (`plays`). Use `recent` to sort by creation time (`created_at`) and `favorites` to sort by favorite count.
-    - `reversed_order`: Reverse the sort order (`true` or `1`). By default, sorting is descending.
-    - `token`: One-time token. If provided and valid, the response is filtered to the single level associated with that token (and pagination becomes `page=1`, `limit=1`). If the token is invalid, the endpoint returns `401`.
+  - `page`: Page number (default: 1)
+  - `limit`: Results per page (default: 10)
+  - `author`: Filter by author name (partial match)
+  - `is_water`: Filter by water levels ("true"/"false")
+  - `version`: Filter by level version (currently always `3`; reserved for future versions)
+  - `sort`: Sorting mode. Default is by play count (`plays`). Use `recent` to sort by creation time (`created_at`) and `favorites` to sort by favorite count.
+  - `reversed_order`: Reverse the sort order (`true` or `1`). By default, sorting is descending.
+  - `token`: One-time token. If provided and valid, the response is filtered to the single level associated with that token (and pagination becomes `page=1`, `limit=1`). If the token is invalid, the endpoint returns `401`.
 - **Success Response:**
-    - **Code:** 200
-    - **Content:**
+  - **Code:** 200
+  - **Content:**
 
-                                  ```json
-                                  {
-                                  	"levels": [
-                                  		{
-                                  			"id": 123,
-                                  			"name": "Level Name",
-                                  			"author": "Author Name",
-                                  			"created_at": 1714680000,
-                                  			"sun": 100,
-                                  			"is_water": 1,
-                                  			"favorites": 5,
-                                  			"plays": 10,
-                                  			"difficulty": 7,
-                                  			"thumbnail": [[0, 10, 10, 40, 40, 1]],
-                                  			"version": 3
-                                  		}
-                                  	],
-                                  	"pagination": {
-                                  		"total": 50,
-                                  		"page": 1,
-                                  		"limit": 10,
-                                  		"pages": 5
-                                  	}
-                                  }
-                                  ```
+```json
+{
+	"levels": [
+		{
+			"id": 123,
+			"name": "Level Name",
+			"author": "Author Name",
+			"created_at": 1714680000,
+			"sun": 100,
+			"is_water": 1,
+			"favorites": 5,
+			"plays": 10,
+			"difficulty": 7,
+			"thumbnail": [[0, 10, 10, 40, 40, 1]],
+			"version": 3
+		}
+	],
+	"pagination": {
+		"total": 50,
+		"page": 1,
+		"limit": 10,
+		"pages": 5
+	}
+}
+```
 
 - **Error Response:**
-    - **Code:** 401
-    - **Content:** `{ "error": "Invalid token" }`
-    - **Code:** 500
-    - **Content:** `{ "error": "Failed to list levels" }`
+  - **Code:** 401
+  - **Content:** `{ "error": "Invalid token" }`
+  - **Code:** 500
+  - **Content:** `{ "error": "Failed to list levels" }`
 
 ##### Get Level Details
 
 - **URL:** `/api/levels/:id`
 - **Method:** `GET`
 - **URL Params:**
-    - `id`: Level ID
+  - `id`: Level ID
 - **Success Response:**
-    - **Code:** 200
-    - **Content:**
+  - **Code:** 200
+  - **Content:**
 
-                                  ```json
-                                  {
-                                  	"id": 123,
-                                  	"name": "Level Name",
-                                  	"author": "Author Name",
-                                  	"created_at": 1714680000,
-                                  	"sun": 100,
-                                  	"is_water": 1,
-                                  	"favorites": 5,
-                                  	"plays": 10,
-                                  	"difficulty": 7,
-                                  	"thumbnail": null,
-                                  	"version": 3
-                                  }
-                                  ```
+```json
+{
+	"id": 123,
+	"name": "Level Name",
+	"author": "Author Name",
+	"created_at": 1714680000,
+	"sun": 100,
+	"is_water": 1,
+	"favorites": 5,
+	"plays": 10,
+	"difficulty": 7,
+	"thumbnail": null,
+	"version": 3
+}
+```
 
 - **Error Responses:**
-    - **Code:** 400
-    - **Content:** `{ "error": "Invalid level ID" }`
-    - **Code:** 404
-    - **Content:** `{ "error": "Level not found" }`
-    - **Code:** 500
-    - **Content:** `{ "error": "Failed to get level" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "Invalid level ID" }`
+  - **Code:** 404
+  - **Content:** `{ "error": "Level not found" }`
+  - **Code:** 500
+  - **Content:** `{ "error": "Failed to get level" }`
 
 ##### Download Level
 
 - **URL:** `/api/levels/:id/download`
 - **Method:** `GET`
 - **URL Params:**
-    - `id`: Level ID
+  - `id`: Level ID
 - **Success Response:**
-    - **Code:** 200
-    - **Content:** Binary file download with `.izl3` extension
+  - **Code:** 200
+  - **Content:** Binary file download with `.izl3` extension
 - **Error Responses:**
-    - **Code:** 400
-    - **Content:** `{ "error": "Invalid level ID" }`
-    - **Code:** 404
-    - **Content:** `{ "error": "Level not found" }` or `{ "error": "Level file not found" }`
-    - **Code:** 500
-    - **Content:** `{ "error": "Failed to download level" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "Invalid level ID" }`
+  - **Code:** 404
+  - **Content:** `{ "error": "Level not found" }` or `{ "error": "Level file not found" }`
+  - **Code:** 500
+  - **Content:** `{ "error": "Failed to download level" }`
 
 #### Favorites
 
@@ -226,18 +227,18 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
 - **URL:** `/api/levels/:id/favorite`
 - **Method:** `POST`
 - **URL Params:**
-    - `id`: Level ID
+  - `id`: Level ID
 - **Request Body:** None (this endpoint always toggles favorite on/off)
 - **Success Response:**
-    - **Code:** 200
-    - **Content:** `{ "success": true, "level": { "id": 123, "favorites": 5, ... } }`
+  - **Code:** 200
+  - **Content:** `{ "success": true, "level": { "id": 123, "favorites": 5, ... } }`
 - **Error Responses:**
-    - **Code:** 400
-    - **Content:** `{ "error": "Invalid level ID" }`
-    - **Code:** 404
-    - **Content:** `{ "error": "Level not found" }`
-    - **Code:** 500
-    - **Content:** `{ "error": "Failed to favorite level" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "Invalid level ID" }`
+  - **Code:** 404
+  - **Content:** `{ "error": "Level not found" }`
+  - **Code:** 500
+  - **Content:** `{ "error": "Failed to favorite level" }`
       Note: Captcha verification is not required for favoriting.
 
 #### Reporting
@@ -247,7 +248,7 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
 - **URL:** `/api/levels/:id/report`
 - **Method:** `POST`
 - **URL Params:**
-    - `id`: Level ID
+  - `id`: Level ID
 - **Request Body:**
 
     ```json
@@ -257,19 +258,19 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
     ```
 
 - **Behavior:**
-    - If `USE_REPORTING=false`, this endpoint returns 404.
-    - If `DISCORD_REPORT_WEBHOOK_URL` is configured, the server sends the report to the Discord webhook (and attaches the level file if available).
-    - If no webhook is configured, the server still accepts the report and returns success.
+  - If `USE_REPORTING=false`, this endpoint returns 404.
+  - If `DISCORD_REPORT_WEBHOOK_URL` is configured, the server sends the report to the Discord webhook (and attaches the level file if available).
+  - If no webhook is configured, the server still accepts the report and returns success.
 - **Success Response:**
-    - **Code:** 200
-    - **Content:** `{ "success": true }`
+  - **Code:** 200
+  - **Content:** `{ "success": true }`
 - **Error Responses:**
-    - **Code:** 400
-    - **Content:** `{ "error": "Invalid input" }`
-    - **Code:** 404
-    - **Content:** `{ "error": "Level not found" }`
-    - **Code:** 500
-    - **Content:** `{ "error": "Failed to report level" }`
+  - **Code:** 400
+  - **Content:** `{ "error": "Invalid input" }`
+  - **Code:** 404
+  - **Content:** `{ "error": "Level not found" }`
+  - **Code:** 500
+  - **Content:** `{ "error": "Failed to report level" }`
 
 #### Configuration
 
@@ -278,16 +279,16 @@ Admin endpoints under `/api/admin/*` are protected when `USE_GITHUB_AUTH=true` (
 - **URL:** `/api/config`
 - **Method:** `GET`
 - **Success Response:**
-    - **Code:** 200
-    - **Content:**
+  - **Code:** 200
+  - **Content:**
 
-                                  ```json
-                                  {
-                                  	"turnstileEnabled": true,
-                                  	"turnstileSiteKey": "0x0000000000000000000000",
-                                  	"moderationEnabled": true
-                                  }
-                                  ```
+```json
+{
+	"turnstileEnabled": true,
+	"turnstileSiteKey": "0x0000000000000000000000",
+	"moderationEnabled": true
+}
+```
 
 ## Environment Variables
 
