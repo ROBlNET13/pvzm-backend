@@ -26,9 +26,7 @@ export type CloneLike = Clone;
 
 export const IZL3_HEADER = new Uint8Array([0x49, 0x5a, 0x4c, 0x33]); // "IZL3"
 
-type DecodeLevelResult =
-	| { decoded: ReturnType<typeof decodeFile>; decodeError: null }
-	| { decoded: null; decodeError: string };
+type DecodeLevelResult = { decoded: ReturnType<typeof decodeFile>; decodeError: null } | { decoded: null; decodeError: string };
 
 export async function decodeLevelFromDisk(dataFolderPath: string, levelId: number, version: number): Promise<DecodeLevelResult> {
 	try {
@@ -64,9 +62,7 @@ const TINYIFIER_MAP = {
 	eleHeight: 15,
 };
 
-const REVERSE_TINYIFIER_MAP: Record<number, string> = Object.fromEntries(
-	Object.entries(TINYIFIER_MAP).map(([key, value]) => [value, key])
-);
+const REVERSE_TINYIFIER_MAP: Record<number, string> = Object.fromEntries(Object.entries(TINYIFIER_MAP).map(([key, value]) => [value, key]));
 
 export const allPlantsStringArray = [
 	"oPeashooter",
@@ -205,7 +201,7 @@ function reverseKeys(obj: any): any {
 	if (Array.isArray(obj)) {
 		return obj.map((item) => reverseKeys(item));
 	}
-	
+
 	if (obj !== null && typeof obj === "object") {
 		const result: any = {};
 		for (const [key, value] of Object.entries(obj)) {
@@ -219,7 +215,7 @@ function reverseKeys(obj: any): any {
 		}
 		return result;
 	}
-	
+
 	return obj;
 }
 
@@ -355,13 +351,7 @@ function stringToBytesIZL(str: string): Uint8Array {
 }
 
 export function detectFileVersion(bytes: Uint8Array): number {
-	if (
-		bytes.length >= 4 &&
-		bytes[0] === IZL3_HEADER[0] &&
-		bytes[1] === IZL3_HEADER[1] &&
-		bytes[2] === IZL3_HEADER[2] &&
-		bytes[3] === IZL3_HEADER[3]
-	) {
+	if (bytes.length >= 4 && bytes[0] === IZL3_HEADER[0] && bytes[1] === IZL3_HEADER[1] && bytes[2] === IZL3_HEADER[2] && bytes[3] === IZL3_HEADER[3]) {
 		return 3;
 	}
 
