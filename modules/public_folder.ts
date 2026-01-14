@@ -14,10 +14,13 @@ export function setupPublicFolder(app: any, config: ServerConfig) {
 		} else {
 			console.error(`Error creating public folder: ${(error as Error).message}`);
 		}
-	} // add conditional route handlers BEFORE static file serving
+	}
+
+	// add conditional route handlers BEFORE static file serving
 	if (!config.useTestUI) {
-		app.get("/index.html", (_req: any, res: any) => {
-			res.status(404).send("Test UI is disabled");
+		// express.static serves index.html for "/" by default; block that too.
+		app.get(["/", "/index.html"], (_req: any, res: any) => {
+			res.redirect(config.gameUrl);
 		});
 	}
 
@@ -27,5 +30,10 @@ export function setupPublicFolder(app: any, config: ServerConfig) {
 		});
 	}
 
-	app.use(express.static(config.publicFolderPath));
+	app.use(
+		express.static(config.publicFolderPath, {
+			// prevent "/" from implicitly serving index.html when the test UI is disabled.
+			index: config.useTestUI ? "index.html" : false,
+		}),
+	);
 }
