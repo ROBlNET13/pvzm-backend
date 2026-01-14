@@ -1,5 +1,5 @@
 {
 	"MD013": false, // line length
 	"MD010": false, // hard tabs
-	"MD033": false  // inline HTML
+	"MD033": false, // inline HTML
 }
