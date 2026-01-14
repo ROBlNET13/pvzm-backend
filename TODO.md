@@ -23,7 +23,7 @@
     - Implement API key authentication for programmatic access
     - Add request size limits for file uploads
     - Consider adding CSRF protection for admin endpoints
-    - _(Handled by Cloudflare)_ ~~Add rate limiting for API endpoints (especially `/api/levels` POST)~~
+    - Add rate limiting for API endpoints (especially `/api/levels` POST)
 
 - [ ] **Database Improvements**
     - Add database migrations system for schema changes

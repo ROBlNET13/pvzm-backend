@@ -11,6 +11,18 @@ export type DbContext = {
 	consumeOneTimeTokenForLevel: (token: string, levelId: number) => boolean;
 };
 
+export type LevelRecord = {
+	id: number;
+	name: string;
+	author: string;
+	sun: number;
+	is_water: number;
+	difficulty: number;
+	favorites: number;
+	plays: number;
+	version: number;
+};
+
 function tableHasColumn(db: Database, tableName: string, columnName: string) {
 	try {
 		const cols = db.prepare(`PRAGMA table_info(${tableName})`).all() as any[];

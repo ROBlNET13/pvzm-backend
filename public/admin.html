@@ -190,7 +190,7 @@
 
 							<div>
 								<label>
-									<input type="checkbox" id="editIsWater" role="switch" />
+									<input type="checkbox" id="editIsWater" role="switch" disabled />
 									Water Level
 								</label>
 							</div>
@@ -253,6 +253,30 @@
 					return true;
 				}
 
+				function showAuthedUI(user) {
+					document.getElementById("login-container").classList.add("hidden");
+					document.getElementById("user-profile").classList.remove("hidden");
+					document.getElementById("admin-content").classList.remove("hidden");
+
+					if (user) {
+						document.getElementById("user-name").textContent = user.displayName || user.username || "Admin";
+						if (user.avatarUrl) {
+							document.getElementById("user-avatar").src = user.avatarUrl;
+						}
+					}
+				}
+
+				function showLoginUI() {
+					document.getElementById("login-container").classList.remove("hidden");
+					document.getElementById("user-profile").classList.add("hidden");
+					// token-flow should still be able to open the requested modal.
+					if (hasTokenFlowParams) {
+						document.getElementById("admin-content").classList.remove("hidden");
+					} else {
+						document.getElementById("admin-content").classList.add("hidden");
+					}
+				}
+
 				async function validateTokenFlow() {
 					if (!hasTokenFlowParams) return false;
 					try {
@@ -283,40 +307,21 @@
 				// check authentication status
 				try {
 					const authResponse = await fetch("/api/auth/status");
-					const authData = await authResponse.json();
-
-					if (authData.authenticated) {
-						// user is authenticated, show admin content
-						document.getElementById("login-container").classList.add("hidden");
-						document.getElementById("user-profile").classList.remove("hidden");
-						document.getElementById("admin-content").classList.remove("hidden");
-
-						// update user profile
-						document.getElementById("user-name").textContent = authData.user.displayName;
-						if (authData.user.avatarUrl) {
-							document.getElementById("user-avatar").src = authData.user.avatarUrl;
-						}
+					// if github auth is disabled server-side, this route won't exist.
+					if (authResponse.status === 404) {
+						showAuthedUI({ displayName: "Auth disabled" });
 					} else {
-						// user is not authenticated, show login button
-						document.getElementById("login-container").classList.remove("hidden");
-						document.getElementById("user-profile").classList.add("hidden");
-						// token-flow should still be able to open the requested modal.
-						if (hasTokenFlowParams) {
-							document.getElementById("admin-content").classList.remove("hidden");
+						const authData = await authResponse.json();
+						if (authData.authenticated) {
+							showAuthedUI(authData.user);
 						} else {
-							document.getElementById("admin-content").classList.add("hidden");
+							showLoginUI();
 						}
 					}
 				} catch (error) {
 					console.error("Error checking authentication:", error);
-					// fallback to showing login
-					document.getElementById("login-container").classList.remove("hidden");
-					document.getElementById("user-profile").classList.add("hidden");
-					if (hasTokenFlowParams) {
-						document.getElementById("admin-content").classList.remove("hidden");
-					} else {
-						document.getElementById("admin-content").classList.add("hidden");
-					}
+					// fallback to showing login (if server is down, etc.)
+					showLoginUI();
 				}
 
 				const API_BASE_URL = "/api";
@@ -427,11 +432,12 @@
 					// check if user is authenticated before fetching
 					try {
 						const authResponse = await fetch("/api/auth/status");
-						const authData = await authResponse.json();
-
-						if (!authData.authenticated) {
-							console.log("User not authenticated, skipping level fetch");
-							return;
+						if (authResponse.status !== 404) {
+							const authData = await authResponse.json();
+							if (!authData.authenticated) {
+								console.log("User not authenticated, skipping level fetch");
+								return;
+							}
 						}
 					} catch (error) {
 						console.error("Error checking authentication:", error);

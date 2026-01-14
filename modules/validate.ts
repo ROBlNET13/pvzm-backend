@@ -1,4 +1,4 @@
-import type { decodeFile } from "./decode.ts";
+import type { decodeFile } from "./levels_io.ts";
 
 type Clone = ReturnType<typeof decodeFile>;
 
@@ -191,67 +191,67 @@ function plantsHasAllRequiredFields(clone: Clone): boolean {
 	return true;
 }
 
-export function validateClone(clone: Clone): boolean {
+export function validateClone(clone: Clone): [boolean, string?] {
 	const [doesCloneHaveAllRequiredFields, missingFields] = cloneHasAllRequiredFields(clone);
 	if (!doesCloneHaveAllRequiredFields) {
 		console.error("Clone is missing required fields:", missingFields);
-		return false;
+		return [false, `Clone is missing required fields: ${missingFields}`];
 	}
 
 	if (!plantsHasAllRequiredFields(clone)) {
 		console.error("Plants are missing required fields.");
-		return false;
+		return [false, "Plants are missing required fields."];
 	}
 
 	if (!max3PlantsIn1Tile(clone)) {
 		console.error("Too many plants in one tile.");
-		return false;
+		return [false, "Too many plants in one tile."];
 	}
 
 	if (!maxLfLength7(clone)) {
 		console.error("LF value length exceeds 7.");
-		return false;
+		return [false, "LF value length exceeds 7."];
 	}
 
 	if (!maxSun9990(clone)) {
 		console.error("Sun value exceeds 9990.");
-		return false;
+		return [false, "Sun value exceeds 9990."];
 	}
 
 	if (!validMusic(clone)) {
 		console.error("Invalid music track.");
-		return false;
+		return [false, "Invalid music track."];
 	}
 
 	if (!validStripeCol(clone)) {
 		console.error("Invalid stripe column.");
-		return false;
+		return [false, "Invalid stripe column."];
 	}
 
 	if (!hasValidPlantCount(clone)) {
 		console.error("Too many plants in the clone.");
-		return false;
+		return [false, "Too many plants in the clone."];
 	}
 
 	if (!noPlantsAfterStripe(clone)) {
 		console.error("Plants are placed after the stripe column.");
-		return false;
+		return [false, "Plants are placed after the stripe column."];
 	}
 
 	if (!noDuplicatePlantTypesInTile(clone)) {
 		console.error("Duplicate plant types in the same tile.");
-		return false;
+		return [false, "Duplicate plant types in the same tile."];
 	}
 
 	if (!noInvalidPlants(clone)) {
 		console.error("Clone contains invalid plants.");
-		return false;
+		return [false, "Clone contains invalid plants."];
 	}
 
 	if (!hasAllRequiredProperties(clone)) {
 		console.error("Clone is missing some required properties.");
-		return false;
+		return [false, "Clone is missing some required properties."];
 	}
 
-	return true;
+	return [true];
 }

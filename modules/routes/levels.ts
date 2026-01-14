@@ -1,13 +1,12 @@
 import { Buffer } from "node:buffer";
 import { EmbedBuilder, type WebhookClient } from "discord.js";
 
-import { allPlantsStringArray, decodeFile } from "../../decode.ts";
-import { validateClone } from "../../validate.ts";
+import { allPlantsStringArray, decodeFile, decodeLevelFromDisk, detectFileVersion } from "../levels_io.ts";
+import { validateClone } from "../validate.ts";
 
 import type { ServerConfig } from "../config.ts";
-import type { DbContext } from "../db.ts";
+import type { DbContext, LevelRecord } from "../db.ts";
 import { trySendDiscordWebhook } from "../discord.ts";
-import { decodeLevelFromDisk, detectVersion } from "../levels_io.ts";
 import type { ModerationResult } from "../moderation.ts";
 import type { TurnstileResponse } from "../turnstile.ts";
 import { getClientIP } from "../request.ts";
@@ -93,7 +92,7 @@ export function registerLevelRoutes(
 				});
 			}
 
-			author = req.query.author as string;
+			author = (req.query.author as string).slice(0, 11);
 			turnstileResponse = req.query.turnstileResponse as string;
 			levelBinary = req.body;
 
@@ -122,7 +121,7 @@ export function registerLevelRoutes(
 				}
 			}
 
-			const version = detectVersion(levelBinary);
+			const version = detectFileVersion(levelBinary);
 			if (version !== 3) {
 				return res.status(400).json({
 					error: "Invalid level data format",
@@ -134,11 +133,12 @@ export function registerLevelRoutes(
 			let cloneData;
 			try {
 				cloneData = decodeFile(levelBinary);
+				const [isValid, errorMessage] = validateClone(cloneData);
 
-				if (!validateClone(cloneData)) {
+				if (!isValid) {
 					return res.status(400).json({
 						error: "Invalid level data",
-						message: "The level data failed validation checks",
+						message: "The level data failed validation checks: " + errorMessage,
 					});
 				}
 
@@ -190,7 +190,8 @@ export function registerLevelRoutes(
 				const levelId = queryResult ? (queryResult as { id: number }).id : 0;
 
 				// store the level binary data
-				const levelFilename = `${levelId}.izl${version}`;
+				// @ts-expect-error -- 3 is the only valid version right now but this will change in future
+				const levelFilename = `${levelId}.izl${version === 1 ? "" : version}`;
 				const levelPath = `${dbCtx.dataFolderPath}/${levelFilename}`;
 				await Deno.writeFile(levelPath, levelBinary);
 
@@ -478,14 +479,6 @@ export function registerLevelRoutes(
 
 			dbCtx.db.prepare("UPDATE levels SET plays = plays + 1 WHERE id = ?").run(levelId);
 
-			type LevelRecord = {
-				id: number;
-				name: string;
-				author: string;
-				version: number;
-				is_water: number;
-			};
-
 			const typedLevel = level as LevelRecord;
 
 			const fileExtension = `izl${typedLevel.version || 3}`;
@@ -526,13 +519,6 @@ export function registerLevelRoutes(
 			if (!level) {
 				return res.status(404).json({ error: "Level not found" });
 			}
-
-			type LevelRecord = {
-				id: number;
-				name: string;
-				author: string;
-				version?: number | null;
-			};
 
 			const typedLevel = level as LevelRecord;
 

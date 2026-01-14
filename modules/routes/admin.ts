@@ -1,4 +1,5 @@
-import type { DbContext } from "../db.ts";
+import type { DbContext, LevelRecord } from "../db.ts";
+import { decodeLevelFromDisk, encodeIZL3FileToDisk } from "../levels_io.ts";
 
 export function registerAdminRoutes(
 	app: any,
@@ -83,7 +84,7 @@ export function registerAdminRoutes(
 	});
 
 	// update a level (admin only)
-	app.put("/api/admin/levels/:id", deps.ensureAuthenticatedOrConsumeTokenForLevelParam, (req: any, res: any) => {
+	app.put("/api/admin/levels/:id", deps.ensureAuthenticatedOrConsumeTokenForLevelParam, async (req: any, res: any) => {
 		try {
 			const levelId = parseInt(req.params.id);
 
@@ -91,7 +92,7 @@ export function registerAdminRoutes(
 				return res.status(400).json({ error: "Invalid level ID" });
 			}
 
-			const existingLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+			const existingLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId) as LevelRecord | undefined;
 
 			if (!existingLevel) {
 				return res.status(404).json({ error: "Level not found" });
@@ -116,6 +117,16 @@ export function registerAdminRoutes(
 
 			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
 
+			// now update the level file on disk if name or sun changed
+			if (name !== existingLevel.name || sun !== existingLevel.sun) {
+				const levelData = await decodeLevelFromDisk(dbCtx.dataFolderPath, levelId, existingLevel.version);
+				if (levelData.decoded) {
+					levelData.decoded.name = name;
+					levelData.decoded.sun = sun;
+
+					encodeIZL3FileToDisk(dbCtx.dataFolderPath, levelId, levelData.decoded);
+				}
+			}
 			res.json({
 				success: true,
 				level: updatedLevel,
@@ -144,10 +155,6 @@ export function registerAdminRoutes(
 				return res.status(404).json({ error: "Level not found" });
 			}
 
-			type LevelRecord = {
-				id: number;
-				version: number;
-			};
 			const typedLevel = existingLevel as LevelRecord;
 
 			dbCtx.db.prepare("DELETE FROM favorites WHERE level_id = ?").run(levelId);
