@@ -34,6 +34,6 @@ export function setupPublicFolder(app: any, config: ServerConfig) {
 		express.static(config.publicFolderPath, {
 			// prevent "/" from implicitly serving index.html when the test UI is disabled.
 			index: config.useTestUI ? "index.html" : false,
-		}),
+		})
 	);
 }
