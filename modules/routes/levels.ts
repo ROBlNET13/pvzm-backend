@@ -189,6 +189,11 @@ export function registerLevelRoutes(
 				const queryResult = dbCtx.db.prepare("SELECT last_insert_rowid() as id").get();
 				const levelId = queryResult ? (queryResult as { id: number }).id : 0;
 
+				if (author === "Anonymous") {
+					author = `Anon${levelId}`;
+					dbCtx.db.prepare("UPDATE levels SET author = ? WHERE id = ?").run(author, levelId);
+				}
+
 				// store the level binary data
 				// @ts-expect-error -- 3 is the only valid version right now but this will change in future
 				const levelFilename = `${levelId}.izl${version === 1 ? "" : version}`;
