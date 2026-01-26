@@ -147,9 +147,7 @@ export function registerAdminRoutes(
 
 			updateParams.push(levelId);
 
-			dbCtx.db
-				.prepare(`UPDATE levels SET ${updates.join(", ")} WHERE id = ?`)
-				.run(...updateParams);
+			dbCtx.db.prepare(`UPDATE levels SET ${updates.join(", ")} WHERE id = ?`).run(...updateParams);
 
 			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
 
