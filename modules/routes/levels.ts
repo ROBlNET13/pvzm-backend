@@ -293,6 +293,7 @@ export function registerLevelRoutes(
 			const orderDirection = reversedOrder ? "ASC" : "DESC";
 
 			let orderClause: string;
+			let useDiversitySort = false;
 			if (sort === "featured") {
 				// Check if database has mature engagement data (any level with 100+ plays)
 				const maxPlaysResult = dbCtx.db.prepare("SELECT MAX(plays) as max_plays FROM levels").get() as { max_plays: number } | undefined;
@@ -302,13 +303,14 @@ export function registerLevelRoutes(
 				if (hasMatureData) {
 					// Balanced approach: recency + quality
 					// Recency weight: 1 point per day since epoch, quality: favorites * 100 + plays
-					orderClause = `featured DESC, (created_at / 86400.0 + favorites * 100 + plays) DESC`;
+					orderClause = `(created_at / 86400.0 + favorites * 100 + plays) DESC`;
 				} else {
 					// New database: heavily favor recency with minimal quality impact
 					// Recency weight: 1 point per day, quality: favorites * 10 + plays / 10
 					// This makes recency ~100x more important than in the mature formula
-					orderClause = `featured DESC, (created_at / 86400.0 + favorites * 10 + plays / 10.0) DESC`;
+					orderClause = `(created_at / 86400.0 + favorites * 10 + plays / 10.0) DESC`;
 				}
+				useDiversitySort = true;
 			} else {
 				const orderColumn = sort === "recent" ? "created_at" : sort === "favorites" ? "favorites" : "plays";
 				orderClause = `${orderColumn} ${orderDirection}, id ${orderDirection}`;
@@ -338,16 +340,74 @@ export function registerLevelRoutes(
 				params.push(version);
 			}
 
+			// Featured sort only shows featured levels
+			if (tokenLevelId === null && sort === "featured") {
+				filters.push("featured = ?");
+				params.push(1);
+			}
+
 			let query = `SELECT id, name, author, created_at, sun, is_water, favorites, plays, difficulty, version, featured, featured_at FROM levels`;
 
 			if (filters.length > 0) {
 				query += " WHERE " + filters.join(" AND ");
 			}
 
-			query += ` ORDER BY ${orderClause} LIMIT ? OFFSET ?`;
-			params.push(limit, offset);
+			// For featured sort with diversity, fetch more results to allow for re-ranking
+			const shouldApplyDiversity = useDiversitySort && tokenLevelId === null;
+			const fetchLimit = shouldApplyDiversity ? limit * 3 : limit;
+			const fetchOffset = shouldApplyDiversity ? offset : offset;
 
-			const levels = dbCtx.db.prepare(query).all(...params);
+			query += ` ORDER BY ${orderClause} LIMIT ? OFFSET ?`;
+			params.push(fetchLimit, fetchOffset);
+
+			let levels = dbCtx.db.prepare(query).all(...params);
+
+			// Apply author diversity algorithm for featured sort
+			if (shouldApplyDiversity && Array.isArray(levels) && levels.length > 0) {
+				type LevelWithScore = {
+					id: number;
+					author: string;
+					created_at: number;
+					favorites: number;
+					plays: number;
+					featured: number;
+					score: number;
+					[key: string]: unknown;
+				};
+
+				const authorCounts = new Map<string, number>();
+				const maxPlaysResult = dbCtx.db.prepare("SELECT MAX(plays) as max_plays FROM levels").get() as { max_plays: number } | undefined;
+				const hasMatureData = (maxPlaysResult?.max_plays ?? 0) >= 100;
+
+				// Calculate scores and apply diversity penalties
+				const levelsWithScores = (levels as LevelWithScore[]).map(level => {
+					// Calculate base score (same formula as SQL)
+					let baseScore: number;
+					if (hasMatureData) {
+						baseScore = level.created_at / 86400.0 + level.favorites * 100 + level.plays;
+					} else {
+						baseScore = level.created_at / 86400.0 + level.favorites * 10 + level.plays / 10.0;
+					}
+
+					// Apply diversity penalty
+					const authorCount = authorCounts.get(level.author) || 0;
+					authorCounts.set(level.author, authorCount + 1);
+
+					// Penalty increases exponentially: 0, -500, -1500, -3500, -7500...
+					const diversityPenalty = authorCount === 0 ? 0 : -500 * (Math.pow(2, authorCount) - 1);
+
+					return {
+						...level,
+						score: baseScore + diversityPenalty
+					};
+				});
+
+				// Re-sort by adjusted scores
+				levelsWithScores.sort((a, b) => b.score - a.score);
+
+				// Take only the requested limit
+				levels = levelsWithScores.slice(0, limit);
+			}
 
 			type LevelRow = {
 				id: number;
