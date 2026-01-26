@@ -294,9 +294,11 @@ export function registerLevelRoutes(
 
 			let orderClause: string;
 			if (sort === "featured") {
-				// Featured sort: featured levels first, then by quality score (favorites + plays) and recency
-				// Quality score: favorites weighted more heavily, plus plays divided by 10
-				orderClause = `featured DESC, (favorites * 2 + plays / 10.0) DESC, created_at DESC`;
+				// Featured sort: featured levels first, then by a combined score
+				// Score combines recency (heavily weighted) with quality (favorites > plays)
+				// Recency weight: 1 point per day since epoch, quality: favorites * 100 + plays
+				// This ensures recent levels rank higher than old popular ones
+				orderClause = `featured DESC, (created_at / 86400.0 + favorites * 100 + plays) DESC`;
 			} else {
 				const orderColumn = sort === "recent" ? "created_at" : sort === "favorites" ? "favorites" : "plays";
 				orderClause = `${orderColumn} ${orderDirection}, id ${orderDirection}`;
