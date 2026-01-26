@@ -34,7 +34,7 @@ export function registerAdminRoutes(
 			const total = countResult ? (countResult as { count: number }).count : 0;
 
 			const query = `
-				SELECT id, name, author, created_at, sun, is_water, favorites, plays, difficulty, version
+				SELECT id, name, author, created_at, sun, is_water, favorites, plays, difficulty, version, featured, featured_at
 				FROM levels ${whereClause}
 				ORDER BY id DESC
 				LIMIT ? OFFSET ?
@@ -98,22 +98,58 @@ export function registerAdminRoutes(
 				return res.status(404).json({ error: "Level not found" });
 			}
 
-			const { name, author, sun, is_water, difficulty, favorites, plays } = req.body;
+			const { name, author, sun, is_water, difficulty, favorites, plays, featured, featured_at } = req.body;
+
+			// Build update query dynamically to only update provided fields
+			const updates: string[] = [];
+			const updateParams: any[] = [];
+
+			if (name !== undefined) {
+				updates.push("name = ?");
+				updateParams.push(name);
+			}
+			if (author !== undefined) {
+				updates.push("author = ?");
+				updateParams.push(author);
+			}
+			if (sun !== undefined) {
+				updates.push("sun = ?");
+				updateParams.push(sun);
+			}
+			if (is_water !== undefined) {
+				updates.push("is_water = ?");
+				updateParams.push(is_water);
+			}
+			if (difficulty !== undefined) {
+				updates.push("difficulty = ?");
+				updateParams.push(difficulty);
+			}
+			if (favorites !== undefined) {
+				updates.push("favorites = ?");
+				updateParams.push(favorites);
+			}
+			if (plays !== undefined) {
+				updates.push("plays = ?");
+				updateParams.push(plays);
+			}
+			if (featured !== undefined) {
+				updates.push("featured = ?");
+				updateParams.push(featured);
+			}
+			if (featured_at !== undefined) {
+				updates.push("featured_at = ?");
+				updateParams.push(featured_at);
+			}
+
+			if (updates.length === 0) {
+				return res.status(400).json({ error: "No fields to update" });
+			}
+
+			updateParams.push(levelId);
 
 			dbCtx.db
-				.prepare(`
-					UPDATE levels
-					SET 
-						name = ?,
-						author = ?,
-						sun = ?,
-						is_water = ?,
-						difficulty = ?,
-						favorites = ?,
-						plays = ?
-					WHERE id = ?
-				`)
-				.run(name, author, sun, is_water, difficulty, favorites, plays, levelId);
+				.prepare(`UPDATE levels SET ${updates.join(", ")} WHERE id = ?`)
+				.run(...updateParams);
 
 			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
 
@@ -135,6 +171,61 @@ export function registerAdminRoutes(
 			console.error("Error updating level:", error);
 			res.status(500).json({
 				error: "Failed to update level",
+				message: (error as Error).message,
+			});
+		}
+	});
+
+	// feature a level (admin only)
+	app.post("/api/admin/levels/:id/feature", deps.ensureAuthenticated, (req: any, res: any) => {
+		try {
+			const levelId = parseInt(req.params.id);
+
+			if (!Number.isFinite(levelId) || levelId <= 0) {
+				return res.status(400).json({ error: "Invalid level ID" });
+			}
+
+			const exists = dbCtx.db.prepare("SELECT 1 FROM levels WHERE id = ?").get(levelId);
+			if (!exists) {
+				return res.status(404).json({ error: "Level not found" });
+			}
+
+			const now = Math.floor(Date.now() / 1000);
+			dbCtx.db.prepare("UPDATE levels SET featured = 1, featured_at = ? WHERE id = ?").run(now, levelId);
+
+			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+			res.json({ success: true, level: updatedLevel });
+		} catch (error) {
+			console.error("Error featuring level:", error);
+			res.status(500).json({
+				error: "Failed to feature level",
+				message: (error as Error).message,
+			});
+		}
+	});
+
+	// unfeature a level (admin only)
+	app.delete("/api/admin/levels/:id/feature", deps.ensureAuthenticated, (req: any, res: any) => {
+		try {
+			const levelId = parseInt(req.params.id);
+
+			if (!Number.isFinite(levelId) || levelId <= 0) {
+				return res.status(400).json({ error: "Invalid level ID" });
+			}
+
+			const exists = dbCtx.db.prepare("SELECT 1 FROM levels WHERE id = ?").get(levelId);
+			if (!exists) {
+				return res.status(404).json({ error: "Level not found" });
+			}
+
+			dbCtx.db.prepare("UPDATE levels SET featured = 0, featured_at = NULL WHERE id = ?").run(levelId);
+
+			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+			res.json({ success: true, level: updatedLevel });
+		} catch (error) {
+			console.error("Error unfeaturing level:", error);
+			res.status(500).json({
+				error: "Failed to unfeature level",
 				message: (error as Error).message,
 			});
 		}

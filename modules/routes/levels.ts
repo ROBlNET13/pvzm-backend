@@ -291,7 +291,16 @@ export function registerLevelRoutes(
 			const sort = String(req.query.sort ?? "").toLowerCase();
 			const reversedOrder = req.query.reversed_order === "true" || req.query.reversed_order === "1";
 			const orderDirection = reversedOrder ? "ASC" : "DESC";
-			const orderColumn = sort === "recent" ? "created_at" : sort === "favorites" ? "favorites" : "plays";
+
+			let orderClause: string;
+			if (sort === "featured") {
+				// Featured sort: featured levels first, then by quality score (favorites + plays) and recency
+				// Quality score: favorites weighted more heavily, plus plays divided by 10
+				orderClause = `featured DESC, (favorites * 2 + plays / 10.0) DESC, created_at DESC`;
+			} else {
+				const orderColumn = sort === "recent" ? "created_at" : sort === "favorites" ? "favorites" : "plays";
+				orderClause = `${orderColumn} ${orderDirection}, id ${orderDirection}`;
+			}
 
 			const filters: string[] = [];
 			const params: (string | number)[] = [];
@@ -317,13 +326,13 @@ export function registerLevelRoutes(
 				params.push(version);
 			}
 
-			let query = `SELECT id, name, author, created_at, sun, is_water, favorites, plays, difficulty, version FROM levels`;
+			let query = `SELECT id, name, author, created_at, sun, is_water, favorites, plays, difficulty, version, featured, featured_at FROM levels`;
 
 			if (filters.length > 0) {
 				query += " WHERE " + filters.join(" AND ");
 			}
 
-			query += ` ORDER BY ${orderColumn} ${orderDirection}, id ${orderDirection} LIMIT ? OFFSET ?`;
+			query += ` ORDER BY ${orderClause} LIMIT ? OFFSET ?`;
 			params.push(limit, offset);
 
 			const levels = dbCtx.db.prepare(query).all(...params);

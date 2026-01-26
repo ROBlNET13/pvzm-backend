@@ -21,6 +21,8 @@ export type LevelRecord = {
 	favorites: number;
 	plays: number;
 	version: number;
+	featured: number;
+	featured_at: number | null;
 };
 
 function tableHasColumn(db: Database, tableName: string, columnName: string) {
@@ -128,6 +130,18 @@ export function initDatabase(config: ServerConfig): DbContext {
 		).run();
 	} catch (migrationError) {
 		console.error("Favorites migration error:", migrationError);
+	}
+
+	// lightweight runtime migration: featured system
+	try {
+		if (!tableHasColumn(db, "levels", "featured")) {
+			db.prepare("ALTER TABLE levels ADD COLUMN featured INTEGER NOT NULL DEFAULT 0").run();
+		}
+		if (!tableHasColumn(db, "levels", "featured_at")) {
+			db.prepare("ALTER TABLE levels ADD COLUMN featured_at INTEGER").run();
+		}
+	} catch (migrationError) {
+		console.error("Featured migration error:", migrationError);
 	}
 
 	function createOneTimeTokenForLevel(levelId: number): string {

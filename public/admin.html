@@ -152,6 +152,7 @@
 									<th>Date</th>
 									<th>Stats</th>
 									<th>Difficulty</th>
+									<th>Featured</th>
 									<th>Actions</th>
 								</tr>
 							</thead>
@@ -399,14 +400,20 @@
 					closeModal(editModal);
 				});
 
-				// add event delegation for edit and delete buttons
-				tbody.addEventListener("click", (e) => {
+				// add event delegation for edit, delete, feature, and unfeature buttons
+				tbody.addEventListener("click", async (e) => {
 					if (e.target.classList.contains("edit-btn")) {
 						const levelId = e.target.getAttribute("data-id");
 						openEditModal(levelId);
 					} else if (e.target.classList.contains("delete-btn")) {
 						const levelId = e.target.getAttribute("data-id");
 						openDeleteModal(levelId);
+					} else if (e.target.classList.contains("feature-btn")) {
+						const levelId = e.target.getAttribute("data-id");
+						await featureLevel(levelId);
+					} else if (e.target.classList.contains("unfeature-btn")) {
+						const levelId = e.target.getAttribute("data-id");
+						await unfeatureLevel(levelId);
 					}
 				});
 
@@ -475,7 +482,7 @@
 
 					if (!levels || levels.length === 0) {
 						const tr = document.createElement("tr");
-						tr.innerHTML = `<td colspan="7" style="text-align: center;">No levels found</td>`;
+						tr.innerHTML = `<td colspan="8" style="text-align: center;">No levels found</td>`;
 						tbody.appendChild(tr);
 						return;
 					}
@@ -489,6 +496,12 @@
 						const difficultyDisplay = level.difficulty
 							? `<span class="difficulty-marker ${difficultyClass}"></span>${level.difficulty}/10`
 							: "Not set";
+
+						const isFeatured = level.featured === 1;
+						const featuredDisplay = isFeatured ? "✓ Yes" : "No";
+						const featureButton = isFeatured
+							? `<button class="outline unfeature-btn" data-id="${level.id}">Unfeature</button>`
+							: `<button class="feature-btn" data-id="${level.id}">Feature</button>`;
 
 						tr.innerHTML = `
 					<td>${level.id}</td>
@@ -513,8 +526,10 @@
 						</div>
 					</td>
 					<td>${difficultyDisplay}</td>
+					<td>${featuredDisplay}</td>
 					<td class="level-actions">
 						<a role="button" class="outline" href="/api/levels/${level.id}/download" target="_blank" rel="noopener">Download</a>
+						${featureButton}
 						<button class="edit-btn" data-id="${level.id}">Edit</button>
 						<button class="outline delete-btn" data-id="${level.id}">Delete</button>
 					</td>
@@ -638,6 +653,42 @@
 					} catch (error) {
 						console.error("Error deleting level:", error);
 						alert(`Failed to delete level: ${error.message}`);
+					}
+				}
+
+				async function featureLevel(levelId) {
+					try {
+						const response = await fetch(`${API_BASE_URL}/admin/levels/${levelId}/feature`, {
+							method: "POST",
+						});
+
+						if (!response.ok) {
+							const errorData = await response.json();
+							throw new Error(errorData.message || "Failed to feature level");
+						}
+
+						fetchLevels(); // refresh the table
+					} catch (error) {
+						console.error("Error featuring level:", error);
+						alert(`Failed to feature level: ${error.message}`);
+					}
+				}
+
+				async function unfeatureLevel(levelId) {
+					try {
+						const response = await fetch(`${API_BASE_URL}/admin/levels/${levelId}/feature`, {
+							method: "DELETE",
+						});
+
+						if (!response.ok) {
+							const errorData = await response.json();
+							throw new Error(errorData.message || "Failed to unfeature level");
+						}
+
+						fetchLevels(); // refresh the table
+					} catch (error) {
+						console.error("Error unfeaturing level:", error);
+						alert(`Failed to unfeature level: ${error.message}`);
 					}
 				}
 			});
