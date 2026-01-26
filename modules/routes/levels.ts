@@ -380,7 +380,7 @@ export function registerLevelRoutes(
 				const hasMatureData = (maxPlaysResult?.max_plays ?? 0) >= 100;
 
 				// Calculate scores and apply diversity penalties
-				const levelsWithScores = (levels as LevelWithScore[]).map(level => {
+				const levelsWithScores = (levels as LevelWithScore[]).map((level) => {
 					// Calculate base score (same formula as SQL)
 					let baseScore: number;
 					if (hasMatureData) {
@@ -398,7 +398,7 @@ export function registerLevelRoutes(
 
 					return {
 						...level,
-						score: baseScore + diversityPenalty
+						score: baseScore + diversityPenalty,
 					};
 				});
 
