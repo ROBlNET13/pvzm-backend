@@ -294,11 +294,21 @@ export function registerLevelRoutes(
 
 			let orderClause: string;
 			if (sort === "featured") {
-				// Featured sort: featured levels first, then by a combined score
-				// Score combines recency (heavily weighted) with quality (favorites > plays)
-				// Recency weight: 1 point per day since epoch, quality: favorites * 100 + plays
-				// This ensures recent levels rank higher than old popular ones
-				orderClause = `featured DESC, (created_at / 86400.0 + favorites * 100 + plays) DESC`;
+				// Check if database has mature engagement data (any level with 100+ plays)
+				const maxPlaysResult = dbCtx.db.prepare("SELECT MAX(plays) as max_plays FROM levels").get() as { max_plays: number } | undefined;
+				const maxPlays = maxPlaysResult?.max_plays ?? 0;
+				const hasMatureData = maxPlays >= 100;
+
+				if (hasMatureData) {
+					// Balanced approach: recency + quality
+					// Recency weight: 1 point per day since epoch, quality: favorites * 100 + plays
+					orderClause = `featured DESC, (created_at / 86400.0 + favorites * 100 + plays) DESC`;
+				} else {
+					// New database: heavily favor recency with minimal quality impact
+					// Recency weight: 1 point per day, quality: favorites * 10 + plays / 10
+					// This makes recency ~100x more important than in the mature formula
+					orderClause = `featured DESC, (created_at / 86400.0 + favorites * 10 + plays / 10.0) DESC`;
+				}
 			} else {
 				const orderColumn = sort === "recent" ? "created_at" : sort === "favorites" ? "favorites" : "plays";
 				orderClause = `${orderColumn} ${orderDirection}, id ${orderDirection}`;
