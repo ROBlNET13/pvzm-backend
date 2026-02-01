@@ -1,6 +1,9 @@
 import OpenAI from "@openai/openai";
+import { Filter } from "bad-words";
 
 import type { ServerConfig } from "./config.ts";
+
+const filter = new Filter();
 
 export interface ModerationCategories {
 	[key: string]: boolean;
@@ -29,6 +32,10 @@ export function initModeration(config: ServerConfig) {
 	}
 
 	return async function moderateContent(text: string): Promise<ModerationResult> {
+		if (filter.isProfane(text)) {
+			return { flagged: true };
+		}
+
 		if (!config.useOpenAIModeration || !openai) return { flagged: false };
 
 		try {

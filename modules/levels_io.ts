@@ -14,6 +14,7 @@ export interface Plant {
 
 export interface Clone {
 	plants: Plant[];
+	selectedZombies: string[];
 	music: string;
 	sun: number;
 	name: string;
@@ -60,6 +61,8 @@ const TINYIFIER_MAP = {
 	eleTop: 13,
 	eleWidth: 14,
 	eleHeight: 15,
+	// zombies
+	selectedZombies: 16,
 };
 
 const REVERSE_TINYIFIER_MAP: Record<number, string> = Object.fromEntries(Object.entries(TINYIFIER_MAP).map(([key, value]) => [value, key]));
@@ -118,7 +121,22 @@ export const allPlantsStringArray = [
 	"oFlamesMushroom",
 ];
 
-// Client name for this list (kept as alias for API familiarity)
+export const iZombies = [
+	"oIImp",
+	"oIConeheadZombie",
+	"oIPoleVaultingZombie",
+	"oIBucketheadZombie",
+	"oIFootballZombie",
+	"oIJackinTheBoxZombie",
+	"oIScreenDoorZombie",
+	"oIZombie",
+	"oIDuckyTubeZombie1",
+	"oIDuckyTubeZombie2",
+	"oIDuckyTubeZombie3",
+	"oIBalloonZombie",
+];
+
+// client name for this list (kept as alias for API familiarity)
 export const izombiePlantsMap = allPlantsStringArray;
 
 function packFromArray(arr: number[]): number {

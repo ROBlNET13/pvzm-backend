@@ -36,6 +36,7 @@
 		"@types/express": "npm:@types/express@^5.0.3",
 		"@types/node": "npm:@types/node@^24.3.1",
 		"@types/pako": "npm:@types/pako@^2.0.4",
+		"bad-words": "npm:bad-words@^4.0.0",
 		"cors": "npm:cors@^2.8.5",
 		"discord.js": "npm:discord.js@^14.25.1",
 		"express-msgpack": "npm:express-msgpack@^6.0.0",

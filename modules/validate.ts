@@ -1,3 +1,5 @@
+import { iZombies } from "./levels_io.ts";
+
 import type { decodeFile } from "./levels_io.ts";
 
 type Clone = ReturnType<typeof decodeFile>;
@@ -112,6 +114,19 @@ function noDuplicatePlantTypesInTile(clone: Clone): boolean {
 	return true;
 }
 
+function noDuplicateZombies(clone: Clone): boolean {
+	const zombieSet = new Set<string>();
+
+	for (const zombie of clone.selectedZombies) {
+		if (zombieSet.has(zombie)) {
+			return false;
+		}
+		zombieSet.add(zombie);
+	}
+
+	return true;
+}
+
 function noInvalidPlants(clone: Clone): boolean {
 	const validPlants = [
 		"oPeashooter",
@@ -148,6 +163,19 @@ function noInvalidPlants(clone: Clone): boolean {
 	for (const plant of clone.plants) {
 		if (!validPlants.includes(plant.plantName)) {
 			console.log(plant.plantName, "is bad");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function noInvalidZombies(clone: Clone): boolean {
+	const validZombies = new Set(iZombies);
+
+	for (const zombie of clone.selectedZombies) {
+		if (!validZombies.has(zombie)) {
+			console.log(zombie, "is an invalid zombie type");
 			return false;
 		}
 	}
@@ -243,9 +271,19 @@ export function validateClone(clone: Clone): [boolean, string?] {
 		return [false, "Duplicate plant types in the same tile."];
 	}
 
+	if (!noDuplicateZombies(clone)) {
+		console.error("Duplicate zombies in selected zombies.");
+		return [false, "Duplicate zombies in selected zombies."];
+	}
+
 	if (!noInvalidPlants(clone)) {
 		console.error("Clone contains invalid plants.");
 		return [false, "Clone contains invalid plants."];
+	}
+
+	if (!noInvalidZombies(clone)) {
+		console.error("Clone contains invalid zombies.");
+		return [false, "Clone contains invalid zombies."];
 	}
 
 	if (!hasAllRequiredProperties(clone)) {
