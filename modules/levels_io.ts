@@ -192,6 +192,14 @@ function tinyifyKeys(obj: any): any {
 				continue;
 			}
 
+			if (key === "selectedZombies" && Array.isArray(value)) {
+				result[mappedKey] = value.map((zombieName) => {
+					const index = iZombies.indexOf(zombieName);
+					return index !== -1 ? index : zombieName;
+				});
+				continue;
+			}
+
 			result[mappedKey] = tinyifyKeys(value);
 		}
 		return result;
@@ -209,6 +217,13 @@ function reverseKeys(obj: any): any {
 
 			if (mapped === "plantName" && typeof v === "number") {
 				result[mapped] = allPlantsStringArray[v] || v;
+			} else if (mapped === "selectedZombies" && Array.isArray(v)) {
+				result[mapped] = v.map((zombieIndex: unknown) => {
+					if (typeof zombieIndex === "number" && iZombies[zombieIndex]) {
+						return iZombies[zombieIndex];
+					}
+					return zombieIndex;
+				});
 			} else {
 				result[mapped] = reverseKeys(v);
 			}
@@ -227,6 +242,13 @@ function reverseKeys(obj: any): any {
 
 			if (mapped === "plantName" && typeof value === "number") {
 				result[mapped] = allPlantsStringArray[value] || value;
+			} else if (mapped === "selectedZombies" && Array.isArray(value)) {
+				result[mapped] = value.map((zombieIndex: unknown) => {
+					if (typeof zombieIndex === "number" && iZombies[zombieIndex]) {
+						return iZombies[zombieIndex];
+					}
+					return zombieIndex;
+				});
 			} else {
 				result[mapped] = reverseKeys(value);
 			}
