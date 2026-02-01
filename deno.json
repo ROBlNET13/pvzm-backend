@@ -1,9 +1,10 @@
 {
+	"version": "0.4.1",
 	"tasks": {
 		"dev": "deno run --watch -P=dev --env-file=.env main.ts",
 		"start": "deno run -P --env-file=.env main.ts",
 		"compile": "deno compile -P main.ts",
-		"compile-aarch64": "deno compile -P --target=aarch64-unknown-linux-gnu main.ts",
+		"compile-aarch64": "deno compile -P --target=aarch64-unknown-linux-gnu main.ts"
 	},
 	"permissions": {
 		"default": {
@@ -11,20 +12,20 @@
 			"net": true,
 			"ffi": true,
 			"read": true,
-			"write": true,
+			"write": true
 		},
 		"dev": {
 			"env": true,
 			"net": true,
 			"ffi": true,
 			"read": true,
-			"write": true,
-		},
+			"write": true
+		}
 	},
 	"lint": {
 		"rules": {
-			"exclude": ["no-explicit-any"],
-		},
+			"exclude": ["no-explicit-any"]
+		}
 	},
 	"imports": {
 		"@db/sqlite": "jsr:@db/sqlite@^0.12.0",
@@ -45,10 +46,10 @@
 		"memorystore": "npm:memorystore@^1.6.7",
 		"passport": "npm:passport@^0.7.0",
 		"passport-github2": "npm:passport-github2@^0.1.12",
-		"pako": "npm:pako@^2.1.0",
+		"pako": "npm:pako@^2.1.0"
 	},
 	"compilerOptions": {
 		"strict": true,
-		"strictNullChecks": true,
-	},
+		"strictNullChecks": true
+	}
 }

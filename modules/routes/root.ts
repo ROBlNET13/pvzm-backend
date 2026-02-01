@@ -1,3 +1,5 @@
+import denoJson from "../../deno.json" with { type: "json" };
+
 import type { ServerConfig } from "../config.ts";
 
 export function registerRootRoute(app: any, config: ServerConfig) {
@@ -12,6 +14,6 @@ export function registerRootRoute(app: any, config: ServerConfig) {
 	});
 
 	app.get("/api/health", (_req: any, res: any) => {
-		res.json({ status: "ok", timestamp: new Date().toISOString() });
+		res.json({ status: "ok", timestamp: new Date().toISOString(), version: denoJson.version });
 	});
 }
