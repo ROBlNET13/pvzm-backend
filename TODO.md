@@ -7,10 +7,10 @@
     - Keep `USE_PUBLIC_FOLDER` for admin UI but add conditional routing for test interface
     - This would allow production deployments to disable testing while keeping admin functionality
 
-- [x] _(Removed in favor of NGINX)_ ~~**Fix SSL/HTTPS Implementation**: The current SSL implementation is incomplete and non-functional~~
-    - The SSL certificate and key are read but not actually used to create an HTTPS server
-    - Need to implement proper HTTPS server with Express.js or migrate to native Deno HTTPS
-    - Add proper SSL error handling and validation
+- [x] _(Removed in favor of NGINX)_ ~~**Fix SSL/HTTPS Implementation**: The previous SSL implementation was incomplete and non-functional~~
+    - The SSL certificate and key were read but not actually used to create an HTTPS server
+    - Needed to implement proper HTTPS server with Express.js or migrate to native Deno HTTPS
+    - Needed to add proper SSL error handling and validation
 
 ## Medium Priority
 

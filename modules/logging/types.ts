@@ -11,6 +11,10 @@ export type AdminLevelInfo = LevelInfo & {
 	deleteUrl: string;
 };
 
+export type FeaturedLevelInfo = LevelInfo & {
+	featuredAt: number;
+};
+
 export type AuditLogEntry = {
 	action: "edit" | "delete" | "feature" | "unfeature";
 	levelId: number;

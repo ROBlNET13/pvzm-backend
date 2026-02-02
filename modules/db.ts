@@ -24,7 +24,6 @@ export type LevelRecord = {
 	featured: number;
 	featured_at: number | null;
 	logging_data: string | null;
-	admin_logging_data: string | null;
 };
 
 function tableHasColumn(db: Database, tableName: string, columnName: string) {
@@ -147,8 +146,68 @@ export function initDatabase(config: ServerConfig): DbContext {
 		if (!tableHasColumn(db, "levels", "logging_data")) {
 			db.prepare("ALTER TABLE levels ADD COLUMN logging_data TEXT").run();
 		}
-		if (!tableHasColumn(db, "levels", "admin_logging_data")) {
-			db.prepare("ALTER TABLE levels ADD COLUMN admin_logging_data TEXT").run();
+
+		// migrate old flat logging_data format to nested structure
+		// old: { "discord": "msg_id" } -> new: { "discord": { "public": "msg_id" } }
+		const levelsWithOldFormat = db
+			.prepare("SELECT id, logging_data FROM levels WHERE logging_data IS NOT NULL")
+			.all() as { id: number; logging_data: string }[];
+
+		let migratedCount = 0;
+		for (const level of levelsWithOldFormat) {
+			try {
+				const data = JSON.parse(level.logging_data);
+				let needsMigration = false;
+
+				// check if any provider has flat string value instead of object
+				for (const [provider, value] of Object.entries(data)) {
+					if (typeof value === "string") {
+						needsMigration = true;
+						data[provider] = { public: value };
+					}
+				}
+
+				if (needsMigration) {
+					db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(JSON.stringify(data), level.id);
+					migratedCount++;
+				}
+			} catch {
+				// skip levels with invalid JSON
+			}
+		}
+		if (migratedCount > 0) {
+			console.log(`Migrated ${migratedCount} levels from flat to nested logging_data format`);
+		}
+
+		// migrate old admin_logging_data into unified logging_data structure
+		if (tableHasColumn(db, "levels", "admin_logging_data")) {
+			const levelsToMigrate = db
+				.prepare("SELECT id, logging_data, admin_logging_data FROM levels WHERE admin_logging_data IS NOT NULL")
+				.all() as { id: number; logging_data: string | null; admin_logging_data: string | null }[];
+
+			for (const level of levelsToMigrate) {
+				try {
+					const existingData = level.logging_data ? JSON.parse(level.logging_data) : {};
+					const adminData = JSON.parse(level.admin_logging_data!);
+
+					// merge admin message IDs into unified structure
+					// old format: { "discord": "msg_id" }
+					// new format: { "discord": { "public": "...", "admin": "msg_id" } }
+					for (const [provider, messageId] of Object.entries(adminData)) {
+						if (!existingData[provider]) existingData[provider] = {};
+						existingData[provider].admin = messageId;
+					}
+
+					db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(JSON.stringify(existingData), level.id);
+				} catch {
+					// skip levels with invalid JSON
+				}
+			}
+			console.log(`Migrated ${levelsToMigrate.length} levels from admin_logging_data to unified logging_data`);
+
+			// drop the old column
+			db.prepare("ALTER TABLE levels DROP COLUMN admin_logging_data").run();
+			console.log("Dropped admin_logging_data column");
 		}
 	} catch (migrationError) {
 		console.error("Logging data migration error:", migrationError);

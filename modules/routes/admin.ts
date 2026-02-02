@@ -104,7 +104,7 @@ export function registerAdminRoutes(
 
 			const { name, author, sun, is_water, difficulty, favorites, plays, featured, featured_at } = req.body;
 
-			// Build update query dynamically to only update provided fields
+				// build update query dynamically to only update provided fields
 			const updates: string[] = [];
 			const updateParams: any[] = [];
 
@@ -199,8 +199,7 @@ export function registerAdminRoutes(
 
 				if (typedUpdatedLevel.logging_data) {
 					await deps.loggingManager.editLevelMessage(typedUpdatedLevel.logging_data, levelInfo);
-				}
-				if (typedUpdatedLevel.admin_logging_data) {
+
 					const adminLevelInfo = {
 						...levelInfo,
 						editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
@@ -210,7 +209,7 @@ export function registerAdminRoutes(
 							dbCtx.createOneTimeTokenForLevel(levelId)
 						)}&action=delete&level=${levelId}`,
 					};
-					await deps.loggingManager.editAdminLevelMessage(typedUpdatedLevel.admin_logging_data, adminLevelInfo);
+					await deps.loggingManager.editAdminLevelMessage(typedUpdatedLevel.logging_data, adminLevelInfo);
 				}
 
 				await deps.loggingManager.sendAuditLog({
@@ -244,7 +243,7 @@ export function registerAdminRoutes(
 				return res.status(400).json({ error: "Invalid level ID" });
 			}
 
-			const exists = dbCtx.db.prepare("SELECT 1 FROM levels WHERE id = ?").get(levelId);
+			const exists = dbCtx.db.prepare("SELECT logging_data FROM levels WHERE id = ?").get(levelId) as { logging_data: string | null } | undefined;
 			if (!exists) {
 				return res.status(404).json({ error: "Level not found" });
 			}
@@ -260,6 +259,23 @@ export function registerAdminRoutes(
 				levelName: updatedLevel.name,
 				author: updatedLevel.author,
 			});
+
+			// send featured message to logging providers (e.g., bluesky)
+			const loggingData = await deps.loggingManager.sendFeaturedMessage(
+				{
+					id: levelId,
+					name: updatedLevel.name,
+					author: updatedLevel.author,
+					gameUrl: config.gameUrl,
+					backendUrl: config.backendUrl,
+					featuredAt: now,
+				},
+				exists.logging_data
+			);
+
+			if (loggingData) {
+				dbCtx.db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(loggingData, levelId);
+			}
 
 			res.json({ success: true, level: updatedLevel });
 		} catch (error) {
@@ -280,12 +296,15 @@ export function registerAdminRoutes(
 				return res.status(400).json({ error: "Invalid level ID" });
 			}
 
-			const exists = dbCtx.db.prepare("SELECT 1 FROM levels WHERE id = ?").get(levelId);
-			if (!exists) {
+			const levelRow = dbCtx.db.prepare("SELECT logging_data FROM levels WHERE id = ?").get(levelId) as { logging_data: string | null } | undefined;
+			if (!levelRow) {
 				return res.status(404).json({ error: "Level not found" });
 			}
 
-			dbCtx.db.prepare("UPDATE levels SET featured = 0, featured_at = NULL WHERE id = ?").run(levelId);
+			// delete featured message from logging providers (e.g., bluesky)
+			const loggingData = await deps.loggingManager.deleteFeaturedMessage(levelRow.logging_data);
+
+			dbCtx.db.prepare("UPDATE levels SET featured = 0, featured_at = NULL, logging_data = ? WHERE id = ?").run(loggingData, levelId);
 
 			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId) as LevelRecord;
 
@@ -326,9 +345,8 @@ export function registerAdminRoutes(
 			// delete logging messages if they exist
 			if (typedLevel.logging_data) {
 				await deps.loggingManager.deleteLevelMessage(typedLevel.logging_data);
-			}
-			if (typedLevel.admin_logging_data) {
-				await deps.loggingManager.deleteAdminLevelMessage(typedLevel.admin_logging_data);
+				await deps.loggingManager.deleteAdminLevelMessage(typedLevel.logging_data);
+				await deps.loggingManager.deleteFeaturedMessage(typedLevel.logging_data);
 			}
 
 			await deps.loggingManager.sendAuditLog({

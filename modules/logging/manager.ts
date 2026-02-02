@@ -1,9 +1,20 @@
-import type { LevelInfo, AdminLevelInfo, LoggingProvider, ReportInfo, AuditLogEntry } from "./types.ts";
+import type { LevelInfo, AdminLevelInfo, FeaturedLevelInfo, LoggingProvider, ReportInfo, AuditLogEntry } from "./types.ts";
 
 /**
- * stores message IDs for each provider as JSON: { "discord": "123", "slack": "456" }
+ * unified logging data structure stored as JSON in the database.
+ * each provider has its own object with message IDs for different contexts.
+ * example:
+ * {
+ *   "discord": { "public": "123", "admin": "456" },
+ *   "bluesky": { "public": "uri", "featured": "uri" }
+ * }
  */
-export type ProviderMessageIds = Record<string, string>;
+export type ProviderMessageData = {
+	public?: string;
+	admin?: string;
+	featured?: string;
+};
+export type LoggingData = Record<string, ProviderMessageData>;
 
 export class LoggingManager {
 	private providers: LoggingProvider[] = [];
@@ -40,68 +51,106 @@ export class LoggingManager {
 	}
 
 	/**
-	 * send a level message to all providers
-	 * returns a JSON string of provider -> messageId mappings
+	 * parse logging data from JSON string, returns empty object on failure
 	 */
-	async sendLevelMessage(level: LevelInfo): Promise<string | null> {
-		if (this.providers.length === 0) return null;
+	private parseLoggingData(json: string | null): LoggingData {
+		if (!json) return {};
+		try {
+			return JSON.parse(json);
+		} catch {
+			return {};
+		}
+	}
 
-		const messageIds: ProviderMessageIds = {};
+	/**
+	 * stringify logging data to JSON, returns null if empty
+	 */
+	private stringifyLoggingData(data: LoggingData): string | null {
+		if (Object.keys(data).length === 0) return null;
+		return JSON.stringify(data);
+	}
+
+	/**
+	 * send a level message to all providers
+	 * returns updated logging data JSON string
+	 */
+	async sendLevelMessage(level: LevelInfo, existingDataJson: string | null = null): Promise<string | null> {
+		if (this.providers.length === 0) return existingDataJson;
+
+		const data = this.parseLoggingData(existingDataJson);
 
 		await Promise.allSettled(
 			this.providers.map(async (provider) => {
 				const messageId = await provider.sendLevelMessage(level);
 				if (messageId) {
-					messageIds[provider.name] = messageId;
+					if (!data[provider.name]) data[provider.name] = {};
+					data[provider.name].public = messageId;
 				}
 			})
 		);
 
-		if (Object.keys(messageIds).length === 0) return null;
-		return JSON.stringify(messageIds);
+		return this.stringifyLoggingData(data);
 	}
 
 	/**
 	 * send an admin level message to all providers
-	 * returns a JSON string of provider -> messageId mappings
+	 * returns updated logging data JSON string
 	 */
-	async sendAdminLevelMessage(level: AdminLevelInfo): Promise<string | null> {
-		if (this.providers.length === 0) return null;
+	async sendAdminLevelMessage(level: AdminLevelInfo, existingDataJson: string | null = null): Promise<string | null> {
+		if (this.providers.length === 0) return existingDataJson;
 
-		const messageIds: ProviderMessageIds = {};
+		const data = this.parseLoggingData(existingDataJson);
 
 		await Promise.allSettled(
 			this.providers.map(async (provider) => {
 				if ("sendAdminLevelMessage" in provider) {
 					const messageId = await (provider as any).sendAdminLevelMessage(level);
 					if (messageId) {
-						messageIds[provider.name] = messageId;
+						if (!data[provider.name]) data[provider.name] = {};
+						data[provider.name].admin = messageId;
 					}
 				}
 			})
 		);
 
-		if (Object.keys(messageIds).length === 0) return null;
-		return JSON.stringify(messageIds);
+		return this.stringifyLoggingData(data);
+	}
+
+	/**
+	 * send a featured level message to all providers
+	 * returns updated logging data JSON string
+	 */
+	async sendFeaturedMessage(level: FeaturedLevelInfo, existingDataJson: string | null = null): Promise<string | null> {
+		if (this.providers.length === 0) return existingDataJson;
+
+		const data = this.parseLoggingData(existingDataJson);
+
+		await Promise.allSettled(
+			this.providers.map(async (provider) => {
+				if ("sendFeaturedMessage" in provider) {
+					const messageId = await (provider as any).sendFeaturedMessage(level);
+					if (messageId) {
+						if (!data[provider.name]) data[provider.name] = {};
+						data[provider.name].featured = messageId;
+					}
+				}
+			})
+		);
+
+		return this.stringifyLoggingData(data);
 	}
 
 	/**
 	 * edit a level message across all providers
-	 * messageIdsJson is the JSON string stored in the database
 	 */
-	async editLevelMessage(messageIdsJson: string | null, level: LevelInfo): Promise<void> {
-		if (!messageIdsJson || this.providers.length === 0) return;
+	async editLevelMessage(loggingDataJson: string | null, level: LevelInfo): Promise<void> {
+		if (!loggingDataJson || this.providers.length === 0) return;
 
-		let messageIds: ProviderMessageIds;
-		try {
-			messageIds = JSON.parse(messageIdsJson);
-		} catch {
-			return;
-		}
+		const data = this.parseLoggingData(loggingDataJson);
 
 		await Promise.allSettled(
 			this.providers.map(async (provider) => {
-				const messageId = messageIds[provider.name];
+				const messageId = data[provider.name]?.public;
 				if (messageId) {
 					await provider.editLevelMessage(messageId, level);
 				}
@@ -110,22 +159,16 @@ export class LoggingManager {
 	}
 
 	/**
-	 * edits an admin level message across all providers
-	 * messageIdsJson is the JSON string stored in the database
+	 * edit an admin level message across all providers
 	 */
-	async editAdminLevelMessage(messageIdsJson: string | null, level: AdminLevelInfo): Promise<void> {
-		if (!messageIdsJson || this.providers.length === 0) return;
+	async editAdminLevelMessage(loggingDataJson: string | null, level: AdminLevelInfo): Promise<void> {
+		if (!loggingDataJson || this.providers.length === 0) return;
 
-		let messageIds: ProviderMessageIds;
-		try {
-			messageIds = JSON.parse(messageIdsJson);
-		} catch {
-			return;
-		}
+		const data = this.parseLoggingData(loggingDataJson);
 
 		await Promise.allSettled(
 			this.providers.map(async (provider) => {
-				const messageId = messageIds[provider.name];
+				const messageId = data[provider.name]?.admin;
 				if (messageId && "editAdminLevelMessage" in provider) {
 					await (provider as any).editAdminLevelMessage(messageId, level);
 				}
@@ -135,54 +178,84 @@ export class LoggingManager {
 
 	/**
 	 * delete a level message across all providers
-	 * messageIdsJson is the JSON string stored in the database
+	 * returns updated logging data JSON string with public message IDs removed
 	 */
-	async deleteLevelMessage(messageIdsJson: string | null): Promise<void> {
-		if (!messageIdsJson || this.providers.length === 0) return;
+	async deleteLevelMessage(loggingDataJson: string | null): Promise<string | null> {
+		if (!loggingDataJson || this.providers.length === 0) return loggingDataJson;
 
-		let messageIds: ProviderMessageIds;
-		try {
-			messageIds = JSON.parse(messageIdsJson);
-		} catch {
-			return;
-		}
+		const data = this.parseLoggingData(loggingDataJson);
 
 		await Promise.allSettled(
 			this.providers.map(async (provider) => {
-				const messageId = messageIds[provider.name];
+				const messageId = data[provider.name]?.public;
 				if (messageId) {
 					await provider.deleteLevelMessage(messageId);
+					delete data[provider.name].public;
+					// clean up empty provider objects
+					if (Object.keys(data[provider.name]).length === 0) {
+						delete data[provider.name];
+					}
 				}
 			})
 		);
+
+		return this.stringifyLoggingData(data);
 	}
 
 	/**
-	 * delete an admin level message across all providers
-	 * messageIdsJson is the JSON string stored in the database
+	 * Delete an admin level message across all providers
+	 * Returns updated logging data JSON string with admin message IDs removed
 	 */
-	async deleteAdminLevelMessage(messageIdsJson: string | null): Promise<void> {
-		if (!messageIdsJson || this.providers.length === 0) return;
+	async deleteAdminLevelMessage(loggingDataJson: string | null): Promise<string | null> {
+		if (!loggingDataJson || this.providers.length === 0) return loggingDataJson;
 
-		let messageIds: ProviderMessageIds;
-		try {
-			messageIds = JSON.parse(messageIdsJson);
-		} catch {
-			return;
-		}
+		const data = this.parseLoggingData(loggingDataJson);
 
 		await Promise.allSettled(
 			this.providers.map(async (provider) => {
-				const messageId = messageIds[provider.name];
+				const messageId = data[provider.name]?.admin;
 				if (messageId && "deleteAdminLevelMessage" in provider) {
 					await (provider as any).deleteAdminLevelMessage(messageId);
+					delete data[provider.name].admin;
+					// clean up empty provider objects
+					if (Object.keys(data[provider.name]).length === 0) {
+						delete data[provider.name];
+					}
 				}
 			})
 		);
+
+		return this.stringifyLoggingData(data);
 	}
 
 	/**
-	 * send a report message to all providers
+	 * Delete a featured level message across all providers
+	 * Returns updated logging data JSON string with featured message IDs removed
+	 */
+	async deleteFeaturedMessage(loggingDataJson: string | null): Promise<string | null> {
+		if (!loggingDataJson || this.providers.length === 0) return loggingDataJson;
+
+		const data = this.parseLoggingData(loggingDataJson);
+
+		await Promise.allSettled(
+			this.providers.map(async (provider) => {
+				const messageId = data[provider.name]?.featured;
+				if (messageId && "deleteFeaturedMessage" in provider) {
+					await (provider as any).deleteFeaturedMessage(messageId);
+					delete data[provider.name].featured;
+					// clean up empty provider objects
+					if (Object.keys(data[provider.name]).length === 0) {
+						delete data[provider.name];
+					}
+				}
+			})
+		);
+
+		return this.stringifyLoggingData(data);
+	}
+
+	/**
+	 * Send a report message to all providers
 	 */
 	async sendReportMessage(report: ReportInfo): Promise<void> {
 		if (this.providers.length === 0) return;
@@ -191,7 +264,7 @@ export class LoggingManager {
 	}
 
 	/**
-	 * send an audit log entry to all providers
+	 * Send an audit log entry to all providers
 	 */
 	async sendAuditLog(entry: AuditLogEntry): Promise<void> {
 		if (this.providers.length === 0) return;

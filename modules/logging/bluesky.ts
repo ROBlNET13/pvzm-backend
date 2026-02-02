@@ -1,5 +1,5 @@
 import { AtpAgent, RichText } from "@atproto/api";
-import type { LevelInfo, LoggingProvider } from "./types.ts";
+import type { FeaturedLevelInfo, LevelInfo, LoggingProvider } from "./types.ts";
 
 export type BlueskyProviderConfig = {
 	enabled?: boolean;
@@ -62,7 +62,7 @@ export class BlueskyLoggingProvider implements LoggingProvider {
 				facets: rt.facets,
 			});
 
-			// return the post URI as the message ID
+			// return the post uri as the message id
 			return response.uri;
 		} catch (error) {
 			console.error("Bluesky logging provider: sendLevelMessage failed:", error);
@@ -88,7 +88,41 @@ export class BlueskyLoggingProvider implements LoggingProvider {
 	}
 
 	async sendReportMessage(): Promise<boolean> {
-		// reports not supported on Bluesky
+		// reports not supported on bluesky
 		return false;
+	}
+
+	async sendFeaturedMessage(level: FeaturedLevelInfo): Promise<string | null> {
+		if (!this.agent) return null;
+
+		try {
+			const playUrl = `${level.gameUrl}/?izl_id=${level.id}`;
+			const message = `Newly featured level!\n\n"${level.name}" by ${level.author}\n\n${playUrl}`;
+
+			const rt = new RichText({ text: message });
+			await rt.detectFacets(this.agent);
+
+			const response = await this.agent.post({
+				text: rt.text,
+				facets: rt.facets,
+			});
+
+			return response.uri;
+		} catch (error) {
+			console.error("Bluesky logging provider: sendFeaturedMessage failed:", error);
+			return null;
+		}
+	}
+
+	async deleteFeaturedMessage(messageId: string): Promise<boolean> {
+		if (!this.agent || !messageId) return false;
+
+		try {
+			await this.agent.deletePost(messageId);
+			return true;
+		} catch (error) {
+			console.error("Bluesky logging provider: deleteFeaturedMessage failed:", error);
+			return false;
+		}
 	}
 }
