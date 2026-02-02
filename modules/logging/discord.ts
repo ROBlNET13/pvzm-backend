@@ -1,4 +1,15 @@
-import { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Client, EmbedBuilder, GatewayIntentBits, Message, TextChannel } from "discord.js";
+import {
+	AttachmentBuilder,
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	ChannelType,
+	Client,
+	EmbedBuilder,
+	GatewayIntentBits,
+	Message,
+	TextChannel,
+} from "discord.js";
 import { Buffer } from "node:buffer";
 
 import type { LevelInfo, AdminLevelInfo, LoggingProvider, ReportInfo, AuditLogEntry } from "./types.ts";
@@ -167,7 +178,9 @@ export class DiscordLoggingProvider implements LoggingProvider {
 
 			// send a link to the admin message in the audit channel
 			if (this.auditChannel) {
-				const auditMessage = await this.auditChannel.send(`https://discord.com/channels/${this.adminChannel.guildId}/${this.adminChannel.id}/${message.id}`);
+				const auditMessage = await this.auditChannel.send(
+					`https://discord.com/channels/${this.adminChannel.guildId}/${this.adminChannel.id}/${message.id}`
+				);
 				await this.tryPublish(auditMessage);
 			}
 
