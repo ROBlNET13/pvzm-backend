@@ -1,12 +1,16 @@
+import type { ServerConfig } from "../config.ts";
 import type { DbContext, LevelRecord } from "../db.ts";
+import type { LoggingManager } from "../logging/index.ts";
 import { decodeLevelFromDisk, encodeIZL3FileToDisk } from "../levels_io.ts";
 
 export function registerAdminRoutes(
 	app: any,
+	config: ServerConfig,
 	dbCtx: DbContext,
 	deps: {
 		ensureAuthenticated: any;
 		ensureAuthenticatedOrConsumeTokenForLevelParam: any;
+		loggingManager: LoggingManager;
 	}
 ) {
 	// get all levels with pagination and search
@@ -161,6 +165,63 @@ export function registerAdminRoutes(
 					encodeIZL3FileToDisk(dbCtx.dataFolderPath, levelId, levelData.decoded);
 				}
 			}
+
+			// update logging messages if name or author changed
+			const typedUpdatedLevel = updatedLevel as LevelRecord;
+			const changes: string[] = [];
+			if (name !== undefined && name !== existingLevel.name) {
+				changes.push(`Name: "${existingLevel.name}" → "${name}"`);
+			}
+			if (author !== undefined && author !== existingLevel.author) {
+				changes.push(`Author: "${existingLevel.author}" → "${author}"`);
+			}
+			if (sun !== undefined && sun !== existingLevel.sun) {
+				changes.push(`Sun: ${existingLevel.sun} → ${sun}`);
+			}
+			if (difficulty !== undefined && difficulty !== existingLevel.difficulty) {
+				changes.push(`Difficulty: ${existingLevel.difficulty} → ${difficulty}`);
+			}
+			if (favorites !== undefined && favorites !== existingLevel.favorites) {
+				changes.push(`Favorites: ${existingLevel.favorites} → ${favorites}`);
+			}
+			if (plays !== undefined && plays !== existingLevel.plays) {
+				changes.push(`Plays: ${existingLevel.plays} → ${plays}`);
+			}
+
+			if (changes.length > 0) {
+				const levelInfo = {
+					id: levelId,
+					name: typedUpdatedLevel.name,
+					author: typedUpdatedLevel.author,
+					gameUrl: config.gameUrl,
+					backendUrl: config.backendUrl,
+				};
+
+				if (typedUpdatedLevel.logging_data) {
+					await deps.loggingManager.editLevelMessage(typedUpdatedLevel.logging_data, levelInfo);
+				}
+				if (typedUpdatedLevel.admin_logging_data) {
+					const adminLevelInfo = {
+						...levelInfo,
+						editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
+							dbCtx.createOneTimeTokenForLevel(levelId)
+						)}&action=edit&level=${levelId}`,
+						deleteUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
+							dbCtx.createOneTimeTokenForLevel(levelId)
+						)}&action=delete&level=${levelId}`,
+					};
+					await deps.loggingManager.editAdminLevelMessage(typedUpdatedLevel.admin_logging_data, adminLevelInfo);
+				}
+
+				await deps.loggingManager.sendAuditLog({
+					action: "edit",
+					levelId,
+					levelName: typedUpdatedLevel.name,
+					author: typedUpdatedLevel.author,
+					changes: changes.join("\n"),
+				});
+			}
+
 			res.json({
 				success: true,
 				level: updatedLevel,
@@ -175,7 +236,7 @@ export function registerAdminRoutes(
 	});
 
 	// feature a level (admin only)
-	app.post("/api/admin/levels/:id/feature", deps.ensureAuthenticated, (req: any, res: any) => {
+	app.post("/api/admin/levels/:id/feature", deps.ensureAuthenticated, async (req: any, res: any) => {
 		try {
 			const levelId = parseInt(req.params.id);
 
@@ -191,7 +252,15 @@ export function registerAdminRoutes(
 			const now = Math.floor(Date.now() / 1000);
 			dbCtx.db.prepare("UPDATE levels SET featured = 1, featured_at = ? WHERE id = ?").run(now, levelId);
 
-			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId) as LevelRecord;
+
+			await deps.loggingManager.sendAuditLog({
+				action: "feature",
+				levelId,
+				levelName: updatedLevel.name,
+				author: updatedLevel.author,
+			});
+
 			res.json({ success: true, level: updatedLevel });
 		} catch (error) {
 			console.error("Error featuring level:", error);
@@ -203,7 +272,7 @@ export function registerAdminRoutes(
 	});
 
 	// unfeature a level (admin only)
-	app.delete("/api/admin/levels/:id/feature", deps.ensureAuthenticated, (req: any, res: any) => {
+	app.delete("/api/admin/levels/:id/feature", deps.ensureAuthenticated, async (req: any, res: any) => {
 		try {
 			const levelId = parseInt(req.params.id);
 
@@ -218,7 +287,15 @@ export function registerAdminRoutes(
 
 			dbCtx.db.prepare("UPDATE levels SET featured = 0, featured_at = NULL WHERE id = ?").run(levelId);
 
-			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId) as LevelRecord;
+
+			await deps.loggingManager.sendAuditLog({
+				action: "unfeature",
+				levelId,
+				levelName: updatedLevel.name,
+				author: updatedLevel.author,
+			});
+
 			res.json({ success: true, level: updatedLevel });
 		} catch (error) {
 			console.error("Error unfeaturing level:", error);
@@ -245,6 +322,21 @@ export function registerAdminRoutes(
 			}
 
 			const typedLevel = existingLevel as LevelRecord;
+
+			// delete logging messages if they exist
+			if (typedLevel.logging_data) {
+				await deps.loggingManager.deleteLevelMessage(typedLevel.logging_data);
+			}
+			if (typedLevel.admin_logging_data) {
+				await deps.loggingManager.deleteAdminLevelMessage(typedLevel.admin_logging_data);
+			}
+
+			await deps.loggingManager.sendAuditLog({
+				action: "delete",
+				levelId,
+				levelName: typedLevel.name,
+				author: typedLevel.author,
+			});
 
 			dbCtx.db.prepare("DELETE FROM favorites WHERE level_id = ?").run(levelId);
 			dbCtx.db.prepare("DELETE FROM levels WHERE id = ?").run(levelId);

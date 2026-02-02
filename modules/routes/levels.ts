@@ -1,12 +1,9 @@
-import { Buffer } from "node:buffer";
-import { EmbedBuilder, type WebhookClient } from "discord.js";
-
 import { allPlantsStringArray, decodeFile, decodeLevelFromDisk, detectFileVersion } from "../levels_io.ts";
 import { validateClone } from "../validate.ts";
 
 import type { ServerConfig } from "../config.ts";
 import type { DbContext, LevelRecord } from "../db.ts";
-import { trySendDiscordWebhook } from "../discord.ts";
+import type { LoggingManager } from "../logging/index.ts";
 import type { ModerationResult } from "../moderation.ts";
 import type { TurnstileResponse } from "../turnstile.ts";
 import { getClientIP } from "../request.ts";
@@ -18,8 +15,7 @@ export function registerLevelRoutes(
 	deps: {
 		validateTurnstile: (response: string, remoteip: string) => Promise<TurnstileResponse>;
 		moderateContent: (text: string) => Promise<ModerationResult>;
-		reportWebhookClient?: WebhookClient;
-		uploadWebhookClient?: WebhookClient;
+		loggingManager: LoggingManager;
 	}
 ) {
 	const uploadRateLimitByIp = new Map<string, number>();
@@ -231,23 +227,33 @@ export function registerLevelRoutes(
 						.run(author, levelId, now, JSON.stringify([levelId]), clientIP);
 				}
 
-				if (config.useUploadLogging) {
-					await trySendDiscordWebhook(deps.uploadWebhookClient, {
-						username: "Level Uploads",
-						content: "",
-						embeds: [
-							new EmbedBuilder()
-								.setTitle(name)
-								.setDescription(
-									`By **${author}**\n\n` +
-										`**[Play](<${config.gameUrl}/?izl_id=${levelId}>)** | ` +
-										`[Download](<${config.backendUrl}/api/levels/${levelId}/download>)`
-								)
-								.setAuthor({
-									name: "New level uploaded",
-								}),
-						],
-					});
+				if (config.useUploadLogging && deps.loggingManager.hasProviders) {
+					const levelInfo = {
+						id: levelId,
+						name,
+						author,
+						gameUrl: config.gameUrl,
+						backendUrl: config.backendUrl,
+					};
+
+					const adminLevelInfo = {
+						...levelInfo,
+						editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
+							dbCtx.createOneTimeTokenForLevel(levelId)
+						)}&action=edit&level=${levelId}`,
+						deleteUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
+							dbCtx.createOneTimeTokenForLevel(levelId)
+						)}&action=delete&level=${levelId}`,
+					};
+
+					const messageIds = await deps.loggingManager.sendLevelMessage(levelInfo);
+					const adminMessageIds = await deps.loggingManager.sendAdminLevelMessage(adminLevelInfo);
+
+					if (messageIds || adminMessageIds) {
+						dbCtx.db
+							.prepare("UPDATE levels SET logging_data = ?, admin_logging_data = ? WHERE id = ?")
+							.run(messageIds, adminMessageIds, levelId);
+					}
 				}
 
 				res.status(201).json({
@@ -608,54 +614,39 @@ export function registerLevelRoutes(
 
 			const typedLevel = level as LevelRecord;
 
-			if (deps.reportWebhookClient) {
-				const version = typedLevel.version ?? 3;
-				const fileExtension = `izl${version || 3}`;
-				const filePath = `${dbCtx.dataFolderPath}/${levelId}.${fileExtension}`;
+			const version = typedLevel.version ?? 3;
+			const fileExtension = `izl${version || 3}`;
+			const filePath = `${dbCtx.dataFolderPath}/${levelId}.${fileExtension}`;
+			const safeName = (typedLevel.name || `level_${levelId}`).replace(/[^a-zA-Z0-9]/g, "_");
 
-				const safeName = (typedLevel.name || `level_${levelId}`).replace(/[^a-zA-Z0-9]/g, "_");
-
-				let fileContent: Uint8Array | null = null;
-				try {
-					fileContent = Deno.readFileSync(filePath);
-				} catch (fileError) {
-					console.error("Error reading level file for report:", fileError);
-				}
-
-				const mentionString = (function (): string {
-					if (config.discordMentionUserIds.length === 0) return "";
-					return config.discordMentionUserIds.map((m) => `<@${m}>`).join(" ");
-				})();
-
-				await trySendDiscordWebhook(deps.reportWebhookClient, {
-					username: "Level Reports",
-					content:
-						`${mentionString} New level report received:\n` +
-						`Level ID: ${levelId}\n` +
-						`Level Name: ${typedLevel.name}\n` +
-						`Author: ${typedLevel.author}\n` +
-						`Reason: ${reason}\n` +
-						`Reported from IP: ${getClientIP(req)}\n` +
-						`**[Edit level metadata](<${config.backendUrl}/admin.html?token=${encodeURIComponent(
-							dbCtx.createOneTimeTokenForLevel(levelId)
-						)}&action=edit&level=${levelId}>)**` +
-						` | **[Delete level](<${config.backendUrl}/admin.html?token=${encodeURIComponent(
-							dbCtx.createOneTimeTokenForLevel(levelId)
-						)}&action=delete&level=${levelId}>)**` +
-						` | **[View level](<${config.gameUrl}/?izl_id=${levelId}>)**` +
-						(fileContent ? "" : "\n\n(Attachment missing: level file not found)"),
-					...(fileContent
-						? {
-								files: [
-									{
-										attachment: Buffer.from(fileContent),
-										name: `${safeName}.${fileExtension}`,
-									},
-								],
-							}
-						: {}),
-				});
+			let fileContent: Uint8Array | null = null;
+			try {
+				fileContent = Deno.readFileSync(filePath);
+			} catch (fileError) {
+				console.error("Error reading level file for report:", fileError);
 			}
+
+			await deps.loggingManager.sendReportMessage({
+				levelId,
+				levelName: typedLevel.name,
+				author: typedLevel.author,
+				reason,
+				reporterIp: getClientIP(req),
+				editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
+					dbCtx.createOneTimeTokenForLevel(levelId)
+				)}&action=edit&level=${levelId}`,
+				deleteUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
+					dbCtx.createOneTimeTokenForLevel(levelId)
+				)}&action=delete&level=${levelId}`,
+				viewUrl: `${config.gameUrl}/?izl_id=${levelId}`,
+				mentionUserIds: config.discordMentionUserIds,
+				fileAttachment: fileContent
+					? {
+							content: fileContent,
+							fileName: `${safeName}.${fileExtension}`,
+						}
+					: undefined,
+			});
 
 			res.json({ success: true });
 		} catch (error) {

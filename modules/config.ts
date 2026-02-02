@@ -14,11 +14,21 @@ export type ServerConfig = {
 	usePublicFolder: boolean;
 	publicFolderPath: string;
 
-	discordReportWebhookUrl: string;
-	discordUploadWebhookUrl: string;
 	useReporting: boolean;
 	useUploadLogging: boolean;
+
+	discordProviderEnabled: boolean;
+	discordBotToken: string;
+	discordUploadChannelId: string;
+	discordAdminUploadChannelId: string;
+	discordReportChannelId: string;
+	discordAuditChannelId: string;
 	discordMentionUserIds: string[];
+
+	blueskyProviderEnabled: boolean;
+	blueskyIdentifier: string;
+	blueskyPassword: string;
+	blueskyPds: string;
 
 	gameUrl: string;
 	backendUrl: string;
@@ -60,12 +70,22 @@ export function loadConfig(): ServerConfig {
 	const usePublicFolder = (Deno.env.get("USE_PUBLIC_FOLDER") ?? "true") === "true";
 	const publicFolderPath = Deno.env.get("PUBLIC_FOLDER_PATH") || "./public";
 
-	const discordReportWebhookUrl = Deno.env.get("DISCORD_REPORT_WEBHOOK_URL") || "";
-	const discordUploadWebhookUrl = Deno.env.get("DISCORD_UPLOAD_WEBHOOK_URL") || "";
 	const useReporting = Deno.env.get("USE_REPORTING") !== "false";
 	const useUploadLogging = Deno.env.get("USE_UPLOAD_LOGGING") === "true";
+
+	const discordProviderEnabled = (Deno.env.get("DISCORD_PROVIDER_ENABLED") ?? "true") === "true";
+	const discordBotToken = Deno.env.get("DISCORD_BOT_TOKEN") || "";
+	const discordUploadChannelId = Deno.env.get("DISCORD_UPLOAD_CHANNEL_ID") || "";
+	const discordAdminUploadChannelId = Deno.env.get("DISCORD_ADMIN_UPLOAD_CHANNEL_ID") || "";
+	const discordReportChannelId = Deno.env.get("DISCORD_REPORT_CHANNEL_ID") || "";
+	const discordAuditChannelId = Deno.env.get("DISCORD_AUDIT_CHANNEL_ID") || "";
 	const discordMentionUserIdsString = Deno.env.get("DISCORD_MENTION_USER_IDS") || "";
 	const discordMentionUserIds = discordMentionUserIdsString ? splitCsv(discordMentionUserIdsString) : [];
+
+	const blueskyProviderEnabled = (Deno.env.get("BLUESKY_PROVIDER_ENABLED") ?? "true") === "true";
+	const blueskyIdentifier = Deno.env.get("BLUESKY_IDENTIFIER") || "";
+	const blueskyPassword = Deno.env.get("BLUESKY_PASSWORD") || "";
+	const blueskyPds = Deno.env.get("BLUESKY_PDS") || "https://bsky.social";
 
 	const gameUrl = Deno.env.get("GAME_URL") || "https://pvzm.net";
 	const backendUrl = Deno.env.get("BACKEND_URL") || "https://backend.pvzm.net";
@@ -98,11 +118,21 @@ export function loadConfig(): ServerConfig {
 		usePublicFolder,
 		publicFolderPath,
 
-		discordReportWebhookUrl,
-		discordUploadWebhookUrl,
 		useReporting,
 		useUploadLogging,
+
+		discordProviderEnabled,
+		discordBotToken,
+		discordUploadChannelId,
+		discordAdminUploadChannelId,
+		discordReportChannelId,
+		discordAuditChannelId,
 		discordMentionUserIds,
+
+		blueskyProviderEnabled,
+		blueskyIdentifier,
+		blueskyPassword,
+		blueskyPds,
 
 		gameUrl,
 		backendUrl,

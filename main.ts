@@ -1,8 +1,8 @@
 import { createExpressApp, setupBodyParsers, setupCors } from "./modules/app_middleware.ts";
 import { ensureAuthenticated, ensureAuthenticatedOrConsumeTokenForLevelParam, setupGithubAuth, setupSession } from "./modules/auth.ts";
 import { loadConfig } from "./modules/config.ts";
-import { createDiscordClients } from "./modules/discord.ts";
 import { ensureDataFolder, initDatabase } from "./modules/db.ts";
+import { DiscordLoggingProvider, BlueskyLoggingProvider, LoggingManager } from "./modules/logging/index.ts";
 import { initModeration } from "./modules/moderation.ts";
 import { setupPublicFolder } from "./modules/public_folder.ts";
 import { registerAdminRoutes } from "./modules/routes/admin.ts";
@@ -24,28 +24,60 @@ setupPublicFolder(app, config);
 ensureDataFolder(config);
 
 const dbCtx = initDatabase(config);
-const { reportWebhookClient, uploadWebhookClient } = createDiscordClients(config);
 const validateTurnstile = initTurnstile(config);
 const moderateContent = initModeration(config);
 
-registerRootRoute(app, config);
-registerConfigRoute(app, config);
-registerLevelRoutes(app, config, dbCtx, {
-	validateTurnstile,
-	moderateContent,
-	reportWebhookClient,
-	uploadWebhookClient,
-});
+async function startServer() {
+	// initialize logging providers
+	const loggingManager = new LoggingManager();
 
-const ensureAuth = ensureAuthenticated(config);
-const ensureAuthOrToken = ensureAuthenticatedOrConsumeTokenForLevelParam(config, dbCtx.consumeOneTimeTokenForLevel);
-registerAdminRoutes(app, dbCtx, {
-	ensureAuthenticated: ensureAuth,
-	ensureAuthenticatedOrConsumeTokenForLevelParam: ensureAuthOrToken,
-});
+	if (config.useUploadLogging || config.useReporting) {
+		loggingManager.addProvider(
+			new DiscordLoggingProvider({
+				enabled: config.discordProviderEnabled,
+				botToken: config.discordBotToken,
+				channelId: config.discordUploadChannelId,
+				adminChannelId: config.discordAdminUploadChannelId,
+				reportChannelId: config.discordReportChannelId,
+				auditChannelId: config.discordAuditChannelId,
+			})
+		);
+		loggingManager.addProvider(
+			new BlueskyLoggingProvider({
+				enabled: config.blueskyProviderEnabled,
+				pds: config.blueskyPds,
+				identifier: config.blueskyIdentifier,
+				password: config.blueskyPassword
+			})
+		);
+		// add more providers here in the future:
+		// loggingManager.addProvider(new SlackLoggingProvider({ ... }));
+		// loggingManager.addProvider(new BlueskyLoggingProvider({ ... }));
+	}
 
-console.log(`UI Status - Test UI: ${config.useTestUI ? "enabled" : "disabled"}, Admin UI: ${config.useAdminUI ? "enabled" : "disabled"}`);
+	await loggingManager.initAll();
 
-app.listen(config.port, () => {
-	console.log(`HTTP server running on http://localhost:${config.port}`);
-});
+	registerRootRoute(app, config);
+	registerConfigRoute(app, config);
+	registerLevelRoutes(app, config, dbCtx, {
+		validateTurnstile,
+		moderateContent,
+		loggingManager,
+	});
+
+	const ensureAuth = ensureAuthenticated(config);
+	const ensureAuthOrToken = ensureAuthenticatedOrConsumeTokenForLevelParam(config, dbCtx.consumeOneTimeTokenForLevel);
+	registerAdminRoutes(app, config, dbCtx, {
+		ensureAuthenticated: ensureAuth,
+		ensureAuthenticatedOrConsumeTokenForLevelParam: ensureAuthOrToken,
+		loggingManager,
+	});
+
+	console.log(`UI Status - Test UI: ${config.useTestUI ? "enabled" : "disabled"}, Admin UI: ${config.useAdminUI ? "enabled" : "disabled"}`);
+
+	app.listen(config.port, () => {
+		console.log(`HTTP server running on http://localhost:${config.port}`);
+	});
+}
+
+startServer();

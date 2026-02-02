@@ -115,6 +115,8 @@ function noDuplicatePlantTypesInTile(clone: Clone): boolean {
 }
 
 function noDuplicateZombies(clone: Clone): boolean {
+	if (!clone.selectedZombies) return true;
+
 	const zombieSet = new Set<string>();
 
 	for (const zombie of clone.selectedZombies) {
@@ -171,6 +173,8 @@ function noInvalidPlants(clone: Clone): boolean {
 }
 
 function noInvalidZombies(clone: Clone): boolean {
+	if (!clone.selectedZombies) return true;
+
 	const validZombies = new Set(iZombies);
 
 	for (const zombie of clone.selectedZombies) {

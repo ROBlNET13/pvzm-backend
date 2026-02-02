@@ -23,6 +23,8 @@ export type LevelRecord = {
 	version: number;
 	featured: number;
 	featured_at: number | null;
+	logging_data: string | null;
+	admin_logging_data: string | null;
 };
 
 function tableHasColumn(db: Database, tableName: string, columnName: string) {
@@ -59,56 +61,52 @@ export function initDatabase(config: ServerConfig): DbContext {
 
 	// levels
 	db.prepare(`
-  CREATE TABLE IF NOT EXISTS levels (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    author TEXT NOT NULL,
-    created_at INTEGER NOT NULL, 
-    sun INTEGER NOT NULL,
-    is_water INTEGER NOT NULL, 
-		favorites INTEGER NOT NULL DEFAULT 0,
-    plays INTEGER NOT NULL DEFAULT 0,
-    difficulty INTEGER, 
-    author_id INTEGER,
-		version INTEGER DEFAULT 3
-  )
-`).run();
+  		CREATE TABLE IF NOT EXISTS levels (
+    		id INTEGER PRIMARY KEY AUTOINCREMENT,
+    		name TEXT NOT NULL,
+    		author TEXT NOT NULL,
+    		created_at INTEGER NOT NULL, 
+    		sun INTEGER NOT NULL,
+    		is_water INTEGER NOT NULL, 
+			favorites INTEGER NOT NULL DEFAULT 0,
+    		plays INTEGER NOT NULL DEFAULT 0,
+    		difficulty INTEGER, 
+    		author_id INTEGER,
+			version INTEGER DEFAULT 3
+  		)
+	`).run();
 
 	// authors
 	db.prepare(`
-  CREATE TABLE IF NOT EXISTS authors (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    names TEXT NOT NULL, 
-    first_level_id INTEGER NOT NULL,
-    first_level_created_at INTEGER NOT NULL, 
-    level_ids TEXT NOT NULL, 
-    origin_ip TEXT NOT NULL
-  )
-`).run();
+		CREATE TABLE IF NOT EXISTS authors (
+		  id INTEGER PRIMARY KEY AUTOINCREMENT,
+		  names TEXT NOT NULL, 
+		  first_level_id INTEGER NOT NULL,
+		  first_level_created_at INTEGER NOT NULL, 
+		  level_ids TEXT NOT NULL, 
+		  origin_ip TEXT NOT NULL
+		)
+	`).run();
 
 	// favorites
-	db.prepare(
-		`
-  CREATE TABLE IF NOT EXISTS favorites (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    level_id INTEGER NOT NULL,
-    ip_address TEXT NOT NULL,
-    created_at INTEGER NOT NULL,
-    UNIQUE(level_id, ip_address)
-  )
-`
-	).run();
+	db.prepare(`
+		CREATE TABLE IF NOT EXISTS favorites (
+		  id INTEGER PRIMARY KEY AUTOINCREMENT,
+		  level_id INTEGER NOT NULL,
+		  ip_address TEXT NOT NULL,
+		  created_at INTEGER NOT NULL,
+		  UNIQUE(level_id, ip_address)
+		)
+	`).run();
 
 	// one-time admin tokens
-	db.prepare(
-		`
-	CREATE TABLE IF NOT EXISTS admin_tokens (
-		token TEXT PRIMARY KEY,
-		level_id INTEGER NOT NULL,
-		created_at INTEGER NOT NULL
-	)
-`
-	).run();
+	db.prepare(`
+		CREATE TABLE IF NOT EXISTS admin_tokens (
+			token TEXT PRIMARY KEY,
+			level_id INTEGER NOT NULL,
+			created_at INTEGER NOT NULL
+		)
+	`).run();
 
 	try {
 		db.prepare("CREATE INDEX IF NOT EXISTS idx_admin_tokens_level_id ON admin_tokens(level_id)").run();
@@ -142,6 +140,18 @@ export function initDatabase(config: ServerConfig): DbContext {
 		}
 	} catch (migrationError) {
 		console.error("Featured migration error:", migrationError);
+	}
+
+	// lightweight runtime migration: logging data (provider message IDs as JSON)
+	try {
+		if (!tableHasColumn(db, "levels", "logging_data")) {
+			db.prepare("ALTER TABLE levels ADD COLUMN logging_data TEXT").run();
+		}
+		if (!tableHasColumn(db, "levels", "admin_logging_data")) {
+			db.prepare("ALTER TABLE levels ADD COLUMN admin_logging_data TEXT").run();
+		}
+	} catch (migrationError) {
+		console.error("Logging data migration error:", migrationError);
 	}
 
 	function createOneTimeTokenForLevel(levelId: number): string {
