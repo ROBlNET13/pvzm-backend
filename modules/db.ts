@@ -149,9 +149,10 @@ export function initDatabase(config: ServerConfig): DbContext {
 
 		// migrate old flat logging_data format to nested structure
 		// old: { "discord": "msg_id" } -> new: { "discord": { "public": "msg_id" } }
-		const levelsWithOldFormat = db
-			.prepare("SELECT id, logging_data FROM levels WHERE logging_data IS NOT NULL")
-			.all() as { id: number; logging_data: string }[];
+		const levelsWithOldFormat = db.prepare("SELECT id, logging_data FROM levels WHERE logging_data IS NOT NULL").all() as {
+			id: number;
+			logging_data: string;
+		}[];
 
 		let migratedCount = 0;
 		for (const level of levelsWithOldFormat) {
@@ -181,9 +182,11 @@ export function initDatabase(config: ServerConfig): DbContext {
 
 		// migrate old admin_logging_data into unified logging_data structure
 		if (tableHasColumn(db, "levels", "admin_logging_data")) {
-			const levelsToMigrate = db
-				.prepare("SELECT id, logging_data, admin_logging_data FROM levels WHERE admin_logging_data IS NOT NULL")
-				.all() as { id: number; logging_data: string | null; admin_logging_data: string | null }[];
+			const levelsToMigrate = db.prepare("SELECT id, logging_data, admin_logging_data FROM levels WHERE admin_logging_data IS NOT NULL").all() as {
+				id: number;
+				logging_data: string | null;
+				admin_logging_data: string | null;
+			}[];
 
 			for (const level of levelsToMigrate) {
 				try {

@@ -104,7 +104,7 @@ export function registerAdminRoutes(
 
 			const { name, author, sun, is_water, difficulty, favorites, plays, featured, featured_at } = req.body;
 
-				// build update query dynamically to only update provided fields
+			// build update query dynamically to only update provided fields
 			const updates: string[] = [];
 			const updateParams: any[] = [];
 
