@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, GatewayIntentBits, TextChannel } from "discord.js";
+import { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Client, EmbedBuilder, GatewayIntentBits, Message, TextChannel } from "discord.js";
 import { Buffer } from "node:buffer";
 
 import type { LevelInfo, AdminLevelInfo, LoggingProvider, ReportInfo, AuditLogEntry } from "./types.ts";
@@ -127,6 +127,16 @@ export class DiscordLoggingProvider implements LoggingProvider {
 		return new ActionRowBuilder<ButtonBuilder>().addComponents(playButton, downloadButton, editButton, deleteButton);
 	}
 
+	private async tryPublish(message: Message): Promise<void> {
+		try {
+			if (message.channel.type === ChannelType.GuildAnnouncement) {
+				await message.crosspost();
+			}
+		} catch (error) {
+			console.error("Discord logging provider: failed to publish message:", error);
+		}
+	}
+
 	async sendLevelMessage(level: LevelInfo): Promise<string | null> {
 		if (!this.channel) return null;
 
@@ -136,6 +146,7 @@ export class DiscordLoggingProvider implements LoggingProvider {
 				embeds: [this.buildEmbed(level)],
 				components: [this.buildPublicUploadButtons(level)],
 			});
+			await this.tryPublish(message);
 			return message.id;
 		} catch (error) {
 			console.error("Discord logging provider: send failed:", error);
@@ -152,10 +163,12 @@ export class DiscordLoggingProvider implements LoggingProvider {
 				embeds: [this.buildEmbed(level)],
 				components: [this.buildAdminUploadButtons(level)],
 			});
+			await this.tryPublish(message);
 
 			// send a link to the admin message in the audit channel
 			if (this.auditChannel) {
-				await this.auditChannel.send(`https://discord.com/channels/${this.adminChannel.guildId}/${this.adminChannel.id}/${message.id}`);
+				const auditMessage = await this.auditChannel.send(`https://discord.com/channels/${this.adminChannel.guildId}/${this.adminChannel.id}/${message.id}`);
+				await this.tryPublish(auditMessage);
 			}
 
 			return message.id;
@@ -259,7 +272,8 @@ export class DiscordLoggingProvider implements LoggingProvider {
 				? [new AttachmentBuilder(Buffer.from(report.fileAttachment.content), { name: report.fileAttachment.fileName })]
 				: [];
 
-			await this.reportChannel.send({ content, files });
+			const message = await this.reportChannel.send({ content, files });
+			await this.tryPublish(message);
 			return true;
 		} catch (error) {
 			console.error("Discord logging provider: report send failed:", error);
@@ -288,7 +302,8 @@ export class DiscordLoggingProvider implements LoggingProvider {
 				.setTimestamp()
 				.setColor(entry.action === "delete" ? 0xff0000 : entry.action === "feature" ? 0xffd700 : 0x3498db);
 
-			await this.auditChannel.send({ embeds: [embed] });
+			const message = await this.auditChannel.send({ embeds: [embed] });
+			await this.tryPublish(message);
 			return true;
 		} catch (error) {
 			console.error("Discord logging provider: audit log failed:", error);
