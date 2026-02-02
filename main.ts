@@ -47,7 +47,7 @@ async function startServer() {
 				enabled: config.blueskyProviderEnabled,
 				pds: config.blueskyPds,
 				identifier: config.blueskyIdentifier,
-				password: config.blueskyPassword
+				password: config.blueskyPassword,
 			})
 		);
 		// add more providers here in the future:

@@ -7,6 +7,7 @@ import type { LoggingManager } from "../logging/index.ts";
 import type { ModerationResult } from "../moderation.ts";
 import type { TurnstileResponse } from "../turnstile.ts";
 import { getClientIP } from "../request.ts";
+import { Buffer } from "node:buffer";
 
 export function registerLevelRoutes(
 	app: any,
@@ -250,9 +251,7 @@ export function registerLevelRoutes(
 					const adminMessageIds = await deps.loggingManager.sendAdminLevelMessage(adminLevelInfo);
 
 					if (messageIds || adminMessageIds) {
-						dbCtx.db
-							.prepare("UPDATE levels SET logging_data = ?, admin_logging_data = ? WHERE id = ?")
-							.run(messageIds, adminMessageIds, levelId);
+						dbCtx.db.prepare("UPDATE levels SET logging_data = ?, admin_logging_data = ? WHERE id = ?").run(messageIds, adminMessageIds, levelId);
 					}
 				}
 
@@ -632,9 +631,7 @@ export function registerLevelRoutes(
 				author: typedLevel.author,
 				reason,
 				reporterIp: getClientIP(req),
-				editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
-					dbCtx.createOneTimeTokenForLevel(levelId)
-				)}&action=edit&level=${levelId}`,
+				editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(dbCtx.createOneTimeTokenForLevel(levelId))}&action=edit&level=${levelId}`,
 				deleteUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
 					dbCtx.createOneTimeTokenForLevel(levelId)
 				)}&action=delete&level=${levelId}`,
