@@ -44,6 +44,10 @@ export type ServerConfig = {
 	useOpenAIModeration: boolean;
 	openAiApiKey: string | null;
 	turnstileSiteKey: string | null;
+
+	usePostHogAnalytics: boolean;
+	postHogApiKey: string;
+	postHogHost: string;
 };
 
 function splitCsv(value: string): string[] {
@@ -102,6 +106,10 @@ export function loadConfig(): ServerConfig {
 	const openAiApiKey = Deno.env.get("OPENAI_API_KEY") || null;
 	const turnstileSiteKey = Deno.env.get("TURNSTILE_SITE_KEY") || null;
 
+	const usePostHogAnalytics = (Deno.env.get("USE_POSTHOG_ANALYTICS") ?? "false") === "true";
+	const postHogApiKey = Deno.env.get("POSTHOG_API_KEY") || "";
+	const postHogHost = Deno.env.get("POSTHOG_HOST") || "https://us.i.posthog.com";
+
 	return {
 		port,
 		corsEnabled,
@@ -148,5 +156,9 @@ export function loadConfig(): ServerConfig {
 		useOpenAIModeration,
 		openAiApiKey,
 		turnstileSiteKey,
+
+		usePostHogAnalytics,
+		postHogApiKey,
+		postHogHost,
 	};
 }

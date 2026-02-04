@@ -10,6 +10,7 @@ import { registerConfigRoute } from "./modules/routes/config.ts";
 import { registerLevelRoutes } from "./modules/routes/levels.ts";
 import { registerRootRoute } from "./modules/routes/root.ts";
 import { initTurnstile } from "./modules/turnstile.ts";
+import { initPostHog, shutdownPostHog } from "./modules/posthog.ts";
 
 const config = loadConfig();
 
@@ -26,6 +27,7 @@ ensureDataFolder(config);
 const dbCtx = initDatabase(config);
 const validateTurnstile = initTurnstile(config);
 const moderateContent = initModeration(config);
+const postHogClient = initPostHog(config);
 
 async function startServer() {
 	// initialize logging providers
@@ -81,3 +83,9 @@ async function startServer() {
 }
 
 startServer();
+
+Deno.addSignalListener("SIGINT", () => {
+	console.log("Shutting down...");
+	shutdownPostHog(postHogClient);
+	Deno.exit();
+});

@@ -1,5 +1,5 @@
 {
-	"version": "0.5.2",
+	"version": "0.5.3",
 	"tasks": {
 		"dev": "deno run --watch -P=dev --env-file=.env main.ts",
 		"start": "deno run -P --env-file=.env main.ts",
@@ -47,7 +47,8 @@
 		"memorystore": "npm:memorystore@^1.6.7",
 		"passport": "npm:passport@^0.7.0",
 		"passport-github2": "npm:passport-github2@^0.1.12",
-		"pako": "npm:pako@^2.1.0"
+		"pako": "npm:pako@^2.1.0",
+		"posthog-node": "npm:posthog-node@^5.24.9"
 	},
 	"compilerOptions": {
 		"strict": true,

@@ -1,23 +1,32 @@
-import { allPlantsStringArray, decodeFile, decodeLevelFromDisk, detectFileVersion } from "../levels_io.ts";
+import { getClientIP } from "../request.ts";
+import { Buffer } from "node:buffer";
+import {
+	allPlantsStringArray,
+	decodeFile,
+	decodeLevelFromDisk,
+	detectFileVersion,
+} from "../levels_io.ts";
 import { validateClone } from "../validate.ts";
+import { postHogClient } from "../posthog.ts";
 
 import type { ServerConfig } from "../config.ts";
 import type { DbContext, LevelRecord } from "../db.ts";
 import type { LoggingManager } from "../logging/index.ts";
 import type { ModerationResult } from "../moderation.ts";
 import type { TurnstileResponse } from "../turnstile.ts";
-import { getClientIP } from "../request.ts";
-import { Buffer } from "node:buffer";
 
 export function registerLevelRoutes(
 	app: any,
 	config: ServerConfig,
 	dbCtx: DbContext,
 	deps: {
-		validateTurnstile: (response: string, remoteip: string) => Promise<TurnstileResponse>;
+		validateTurnstile: (
+			response: string,
+			remoteip: string,
+		) => Promise<TurnstileResponse>;
 		moderateContent: (text: string) => Promise<ModerationResult>;
 		loggingManager: LoggingManager;
-	}
+	},
 ) {
 	const uploadRateLimitByIp = new Map<string, number>();
 	const UPLOAD_WINDOW_MS = 60_000;
@@ -30,7 +39,10 @@ export function registerLevelRoutes(
 	const FAVORITE_WINDOW_MS = 10_000;
 	const FAVORITE_LIMIT = 30;
 
-	const downloadRateLimitByIp = new Map<string, { events: number[]; blockedUntilMs: number }>();
+	const downloadRateLimitByIp = new Map<
+		string,
+		{ events: number[]; blockedUntilMs: number }
+	>();
 	const DOWNLOAD_WINDOW_MS = 5_000;
 	const DOWNLOAD_LIMIT = 5;
 	const DOWNLOAD_BLOCK_MS = 30_000;
@@ -51,7 +63,9 @@ export function registerLevelRoutes(
 		pruneOldestTimestamps(timestamps, nowMs - API_LEVELS_WINDOW_MS);
 		if (timestamps.length >= API_LEVELS_LIMIT) {
 			const retryAfterSeconds =
-				timestamps.length === 0 ? Math.ceil(API_LEVELS_WINDOW_MS / 1000) : Math.ceil((timestamps[0] + API_LEVELS_WINDOW_MS - nowMs) / 1000);
+				timestamps.length === 0
+					? Math.ceil(API_LEVELS_WINDOW_MS / 1000)
+					: Math.ceil((timestamps[0] + API_LEVELS_WINDOW_MS - nowMs) / 1000);
 			setRetryAfter(res, retryAfterSeconds);
 			return res.status(429).json({
 				error: "Rate limit exceeded",
@@ -151,7 +165,10 @@ export function registerLevelRoutes(
 				}
 
 				// validate turnstile
-				const turnstileResult = await deps.validateTurnstile(turnstileResponse, clientIP);
+				const turnstileResult = await deps.validateTurnstile(
+					turnstileResponse,
+					clientIP,
+				);
 
 				if (!turnstileResult.valid) {
 					return res.status(400).json({
@@ -179,7 +196,7 @@ export function registerLevelRoutes(
 						`
         			INSERT INTO levels (name, author, created_at, sun, is_water, version)
         			VALUES (?, ?, ?, ?, ?, ?)
-      		`
+      		`,
 					)
 					.run(name, author, now, sun, is_water ? 1 : 0, version);
 
@@ -188,7 +205,9 @@ export function registerLevelRoutes(
 
 				if (author === "Anonymous") {
 					author = `Anon${levelId}`;
-					dbCtx.db.prepare("UPDATE levels SET author = ? WHERE id = ?").run(author, levelId);
+					dbCtx.db
+						.prepare("UPDATE levels SET author = ? WHERE id = ?")
+						.run(author, levelId);
 				}
 
 				// store the level binary data
@@ -197,8 +216,29 @@ export function registerLevelRoutes(
 				const levelPath = `${dbCtx.dataFolderPath}/${levelFilename}`;
 				await Deno.writeFile(levelPath, levelBinary);
 
+				// send to posthog
+				if (postHogClient) {
+					postHogClient.capture({
+						distinctId: clientIP,
+						event: "level_uploaded",
+						properties: {
+							$set: {
+								name: author,
+							},
+							$set_once: {
+								first_level: levelId,
+							},
+							level_id: levelId,
+							level_name: name,
+							author_name: author,
+						},
+					});
+				}
+
 				// save author information
-				const authorStmt = dbCtx.db.prepare(`SELECT * FROM authors WHERE names = ? AND origin_ip = ? LIMIT 1`);
+				const authorStmt = dbCtx.db.prepare(
+					`SELECT * FROM authors WHERE names = ? AND origin_ip = ? LIMIT 1`,
+				);
 				const existingAuthor = authorStmt.get(author, clientIP);
 
 				type AuthorRecord = {
@@ -216,14 +256,14 @@ export function registerLevelRoutes(
 						.prepare(
 							`UPDATE authors
           			SET level_ids = ?
-          			WHERE id = ?`
+          			WHERE id = ?`,
 						)
 						.run(JSON.stringify(levelIds), authorRecord.id);
 				} else {
 					dbCtx.db
 						.prepare(
 							`INSERT INTO authors (names, first_level_id, first_level_created_at, level_ids, origin_ip)
-          			VALUES (?, ?, ?, ?, ?)`
+          			VALUES (?, ?, ?, ?, ?)`,
 						)
 						.run(author, levelId, now, JSON.stringify([levelId]), clientIP);
 				}
@@ -240,18 +280,23 @@ export function registerLevelRoutes(
 					const adminLevelInfo = {
 						...levelInfo,
 						editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
-							dbCtx.createOneTimeTokenForLevel(levelId)
+							dbCtx.createOneTimeTokenForLevel(levelId),
 						)}&action=edit&level=${levelId}`,
 						deleteUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
-							dbCtx.createOneTimeTokenForLevel(levelId)
+							dbCtx.createOneTimeTokenForLevel(levelId),
 						)}&action=delete&level=${levelId}`,
 					};
 
 					let loggingData = await deps.loggingManager.sendLevelMessage(levelInfo);
-					loggingData = await deps.loggingManager.sendAdminLevelMessage(adminLevelInfo, loggingData);
+					loggingData = await deps.loggingManager.sendAdminLevelMessage(
+						adminLevelInfo,
+						loggingData,
+					);
 
 					if (loggingData) {
-						dbCtx.db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(loggingData, levelId);
+						dbCtx.db
+							.prepare("UPDATE levels SET logging_data = ? WHERE id = ?")
+							.run(loggingData, levelId);
 					}
 				}
 
@@ -283,41 +328,35 @@ export function registerLevelRoutes(
 	// get all levels with optional filtering
 	app.get("/api/levels", async (req: any, res: any) => {
 		try {
-			const requestedToken = typeof req.query?.token === "string" ? req.query.token : "";
-			const tokenLevelId = requestedToken ? dbCtx.getTokenLevelId(requestedToken) : null;
+			const requestedToken =
+				typeof req.query?.token === "string" ? req.query.token : "";
+			const tokenLevelId = requestedToken
+				? dbCtx.getTokenLevelId(requestedToken)
+				: null;
 			if (requestedToken && tokenLevelId === null) {
 				return res.status(401).json({ error: "Invalid token" });
 			}
 
 			const page = tokenLevelId !== null ? 1 : parseInt(String(req.query.page)) || 1;
-			const limit = tokenLevelId !== null ? 1 : parseInt(String(req.query.limit)) || 10;
+			const limit =
+				tokenLevelId !== null ? 1 : parseInt(String(req.query.limit)) || 10;
 			const offset = tokenLevelId !== null ? 0 : (page - 1) * limit;
 
 			const sort = String(req.query.sort ?? "").toLowerCase();
-			const reversedOrder = req.query.reversed_order === "true" || req.query.reversed_order === "1";
+			const reversedOrder =
+				req.query.reversed_order === "true" || req.query.reversed_order === "1";
 			const orderDirection = reversedOrder ? "ASC" : "DESC";
 
 			let orderClause: string;
 			let useDiversitySort = false;
 			if (sort === "featured") {
-				// check if database has mature engagement data (any level with 100+ plays)
-				const maxPlaysResult = dbCtx.db.prepare("SELECT MAX(plays) as max_plays FROM levels").get() as { max_plays: number } | undefined;
-				const maxPlays = maxPlaysResult?.max_plays ?? 0;
-				const hasMatureData = maxPlays >= 100;
-
-				if (hasMatureData) {
-					// balanced approach: recency + quality
-					// recency weight: 1 point per day since epoch, quality: favorites * 100 + plays
-					orderClause = `(created_at / 86400.0 + favorites * 100 + plays) DESC`;
-				} else {
-					// new database: heavily favor recency with minimal quality impact
-					// recency weight: 1 point per day, quality: favorites * 10 + plays / 10
-					// this makes recency ~100x more important than in the mature formula
-					orderClause = `(created_at / 86400.0 + favorites * 10 + plays / 10.0) DESC`;
-				}
+				// recency weight: 1 point per day, quality: favorites * 10 + plays / 10
+				// this makes recency ~100x more important than in the mature formula
+				orderClause = `(created_at / 86400.0 + favorites * 10 + plays / 10.0) DESC`;
 				useDiversitySort = true;
 			} else {
-				const orderColumn = sort === "recent" ? "created_at" : sort === "favorites" ? "favorites" : "plays";
+				const orderColumn =
+					sort === "recent" ? "created_at" : sort === "favorites" ? "favorites" : "plays";
 				orderClause = `${orderColumn} ${orderDirection}, id ${orderDirection}`;
 			}
 
@@ -367,7 +406,7 @@ export function registerLevelRoutes(
 
 			let levels = dbCtx.db.prepare(query).all(...params);
 
-			// Apply author diversity algorithm for featured sort
+			// apply author diversity algorithm for featured sort
 			if (shouldApplyDiversity && Array.isArray(levels) && levels.length > 0) {
 				type LevelWithScore = {
 					id: number;
@@ -381,25 +420,22 @@ export function registerLevelRoutes(
 				};
 
 				const authorCounts = new Map<string, number>();
-				const maxPlaysResult = dbCtx.db.prepare("SELECT MAX(plays) as max_plays FROM levels").get() as { max_plays: number } | undefined;
-				const hasMatureData = (maxPlaysResult?.max_plays ?? 0) >= 100;
 
-				// Calculate scores and apply diversity penalties
+				// calculate scores and apply diversity penalties
 				const levelsWithScores = (levels as LevelWithScore[]).map((level) => {
 					// Calculate base score (same formula as SQL)
 					let baseScore: number;
-					if (hasMatureData) {
-						baseScore = level.created_at / 86400.0 + level.favorites * 100 + level.plays;
-					} else {
-						baseScore = level.created_at / 86400.0 + level.favorites * 10 + level.plays / 10.0;
-					}
+
+					baseScore =
+						level.created_at / 86400.0 + level.favorites * 10 + level.plays / 10.0;
 
 					// Apply diversity penalty
 					const authorCount = authorCounts.get(level.author) || 0;
 					authorCounts.set(level.author, authorCount + 1);
 
 					// Penalty increases exponentially: 0, -500, -1500, -3500, -7500...
-					const diversityPenalty = authorCount === 0 ? 0 : -500 * (Math.pow(2, authorCount) - 1);
+					const diversityPenalty =
+						authorCount === 0 ? 0 : -500 * (Math.pow(2, authorCount) - 1);
 
 					return {
 						...level,
@@ -422,7 +458,11 @@ export function registerLevelRoutes(
 
 			const levelsWithThumbnail = await Promise.all(
 				(levels as LevelRow[]).map(async (level) => {
-					const { decoded, decodeError } = await decodeLevelFromDisk(dbCtx.dataFolderPath, level.id, level.version);
+					const { decoded, decodeError } = await decodeLevelFromDisk(
+						dbCtx.dataFolderPath,
+						level.id,
+						level.version,
+					);
 					if (decodeError || !decoded) {
 						return { ...level, thumbnail: null };
 					}
@@ -435,7 +475,7 @@ export function registerLevelRoutes(
 						plant.zIndex,
 					]);
 					return { ...level, thumbnail };
-				})
+				}),
 			);
 
 			let countQuery = "SELECT COUNT(*) as count FROM levels";
@@ -487,7 +527,7 @@ export function registerLevelRoutes(
 			const level = dbCtx.db
 				.prepare(
 					`SELECT id, name, author, created_at, sun, is_water, favorites, plays, difficulty, version
-      				FROM levels WHERE id = ?`
+      				FROM levels WHERE id = ?`,
 				)
 				.get(levelId);
 
@@ -496,7 +536,11 @@ export function registerLevelRoutes(
 			}
 
 			const typedLevel = level as LevelRow;
-			const { decoded, decodeError } = await decodeLevelFromDisk(dbCtx.dataFolderPath, typedLevel.id, typedLevel.version);
+			const { decoded, decodeError } = await decodeLevelFromDisk(
+				dbCtx.dataFolderPath,
+				typedLevel.id,
+				typedLevel.version,
+			);
 			if (decodeError || !decoded) {
 				return res.json({ ...typedLevel, thumbnail: null });
 			}
@@ -525,7 +569,10 @@ export function registerLevelRoutes(
 		try {
 			const clientIP = getClientIP(req);
 			const nowMs = Date.now();
-			const state = downloadRateLimitByIp.get(clientIP) ?? { events: [], blockedUntilMs: 0 };
+			const state = downloadRateLimitByIp.get(clientIP) ?? {
+				events: [],
+				blockedUntilMs: 0,
+			};
 			if (nowMs < state.blockedUntilMs) {
 				const retryAfterSeconds = Math.ceil((state.blockedUntilMs - nowMs) / 1000);
 				setRetryAfter(res, retryAfterSeconds);
@@ -552,7 +599,8 @@ export function registerLevelRoutes(
 			downloadRateLimitByIp.set(clientIP, state);
 			if (downloadRateLimitByIp.size > 20_000) {
 				for (const [ip, s] of downloadRateLimitByIp) {
-					if (nowMs > s.blockedUntilMs + 2 * DOWNLOAD_BLOCK_MS) downloadRateLimitByIp.delete(ip);
+					if (nowMs > s.blockedUntilMs + 2 * DOWNLOAD_BLOCK_MS)
+						downloadRateLimitByIp.delete(ip);
 				}
 			}
 
@@ -562,13 +610,30 @@ export function registerLevelRoutes(
 				return res.status(400).json({ error: "Invalid level ID" });
 			}
 
-			const level = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+			const level = dbCtx.db
+				.prepare("SELECT * FROM levels WHERE id = ?")
+				.get(levelId);
 
 			if (!level) {
 				return res.status(404).json({ error: "Level not found" });
 			}
 
-			dbCtx.db.prepare("UPDATE levels SET plays = plays + 1 WHERE id = ?").run(levelId);
+			dbCtx.db
+				.prepare("UPDATE levels SET plays = plays + 1 WHERE id = ?")
+				.run(levelId);
+			
+			// send to posthog
+			if (postHogClient) {
+				postHogClient.capture({
+					distinctId: clientIP,
+					event: "level_downloaded",
+					properties: {
+						level_id: levelId,
+						level_name: (level as LevelRecord).name,
+						author_name: (level as LevelRecord).author,
+					},
+				});
+			}
 
 			const typedLevel = level as LevelRecord;
 
@@ -579,7 +644,10 @@ export function registerLevelRoutes(
 				const fileContent = Deno.readFileSync(filePath);
 
 				res.setHeader("Content-Type", "application/octet-stream");
-				res.setHeader("Content-Disposition", `attachment; filename="${typedLevel.name.replace(/[^a-zA-Z0-9]/g, "_")}.${fileExtension}"`);
+				res.setHeader(
+					"Content-Disposition",
+					`attachment; filename="${typedLevel.name.replace(/[^a-zA-Z0-9]/g, "_")}.${fileExtension}"`,
+				);
 				res.send(Buffer.from(fileContent));
 			} catch (fileError) {
 				console.error("Error reading level file:", fileError);
@@ -605,7 +673,9 @@ export function registerLevelRoutes(
 
 			const levelId = parseInt(req.params.id);
 			const { reason } = req.body as { reason: string };
-			const level = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+			const level = dbCtx.db
+				.prepare("SELECT * FROM levels WHERE id = ?")
+				.get(levelId);
 
 			if (!level) {
 				return res.status(404).json({ error: "Level not found" });
@@ -616,7 +686,10 @@ export function registerLevelRoutes(
 			const version = typedLevel.version ?? 3;
 			const fileExtension = `izl${version || 3}`;
 			const filePath = `${dbCtx.dataFolderPath}/${levelId}.${fileExtension}`;
-			const safeName = (typedLevel.name || `level_${levelId}`).replace(/[^a-zA-Z0-9]/g, "_");
+			const safeName = (typedLevel.name || `level_${levelId}`).replace(
+				/[^a-zA-Z0-9]/g,
+				"_",
+			);
 
 			let fileContent: Uint8Array | null = null;
 			try {
@@ -633,7 +706,7 @@ export function registerLevelRoutes(
 				reporterIp: getClientIP(req),
 				editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(dbCtx.createOneTimeTokenForLevel(levelId))}&action=edit&level=${levelId}`,
 				deleteUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
-					dbCtx.createOneTimeTokenForLevel(levelId)
+					dbCtx.createOneTimeTokenForLevel(levelId),
 				)}&action=delete&level=${levelId}`,
 				viewUrl: `${config.gameUrl}/?izl_id=${levelId}`,
 				mentionUserIds: config.discordMentionUserIds,
@@ -644,6 +717,21 @@ export function registerLevelRoutes(
 						}
 					: undefined,
 			});
+
+			// send to posthog
+			const clientIP = getClientIP(req);
+			if (postHogClient) {
+				postHogClient.capture({
+					distinctId: clientIP,
+					event: "level_reported",
+					properties: {
+						level_id: levelId,
+						level_name: typedLevel.name,
+						author_name: typedLevel.author,
+						reason,
+					},
+				});
+			}
 
 			res.json({ success: true });
 		} catch (error) {
@@ -658,9 +746,15 @@ export function registerLevelRoutes(
 	function setFavorite(levelId: number, clientIP: string, favorite: boolean) {
 		const now = Math.floor(Date.now() / 1000);
 		if (favorite) {
-			dbCtx.db.prepare("INSERT OR IGNORE INTO favorites (level_id, ip_address, created_at) VALUES (?, ?, ?)").run(levelId, clientIP, now);
+			dbCtx.db
+				.prepare(
+					"INSERT OR IGNORE INTO favorites (level_id, ip_address, created_at) VALUES (?, ?, ?)",
+				)
+				.run(levelId, clientIP, now);
 		} else {
-			dbCtx.db.prepare("DELETE FROM favorites WHERE level_id = ? AND ip_address = ?").run(levelId, clientIP);
+			dbCtx.db
+				.prepare("DELETE FROM favorites WHERE level_id = ? AND ip_address = ?")
+				.run(levelId, clientIP);
 		}
 		dbCtx.recomputeFavorites(levelId);
 	}
@@ -697,19 +791,25 @@ export function registerLevelRoutes(
 				return res.status(400).json({ error: "Invalid level ID" });
 			}
 
-			const level = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId);
+			const level = dbCtx.db
+				.prepare("SELECT * FROM levels WHERE id = ?")
+				.get(levelId);
 
 			if (!level) {
 				return res.status(404).json({ error: "Level not found" });
 			}
 
-			const existingFavorite = dbCtx.db.prepare("SELECT 1 FROM favorites WHERE level_id = ? AND ip_address = ? LIMIT 1").get(levelId, clientIP);
+			const existingFavorite = dbCtx.db
+				.prepare(
+					"SELECT 1 FROM favorites WHERE level_id = ? AND ip_address = ? LIMIT 1",
+				)
+				.get(levelId, clientIP);
 			setFavorite(levelId, clientIP, !existingFavorite);
 
 			const updatedLevel = dbCtx.db
 				.prepare(
 					`SELECT id, name, author, favorites
-					 FROM levels WHERE id = ?`
+					 FROM levels WHERE id = ?`,
 				)
 				.get(levelId);
 

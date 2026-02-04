@@ -2,6 +2,8 @@ import type { ServerConfig } from "../config.ts";
 import type { DbContext, LevelRecord } from "../db.ts";
 import type { LoggingManager } from "../logging/index.ts";
 import { decodeLevelFromDisk, encodeIZL3FileToDisk } from "../levels_io.ts";
+import { postHogClient } from "../posthog.ts";
+import { getClientIP } from "../request.ts";
 
 export function registerAdminRoutes(
 	app: any,
@@ -221,6 +223,18 @@ export function registerAdminRoutes(
 				});
 			}
 
+			// send to posthog
+			if (postHogClient) {
+				postHogClient.capture({
+					distinctId: req.user?.username ?? getClientIP(req),
+					event: "admin_level_edited",
+					properties: {
+						level_id: levelId,
+						changes: changes,
+					},
+				});
+			}
+
 			res.json({
 				success: true,
 				level: updatedLevel,
@@ -277,6 +291,17 @@ export function registerAdminRoutes(
 				dbCtx.db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(loggingData, levelId);
 			}
 
+			// send to posthog
+			if (postHogClient) {
+				postHogClient.capture({
+					distinctId: req.user?.username ?? getClientIP(req),
+					event: "admin_level_featured",
+					properties: {
+						level_id: levelId,
+					},
+				});
+			}
+
 			res.json({ success: true, level: updatedLevel });
 		} catch (error) {
 			console.error("Error featuring level:", error);
@@ -314,6 +339,17 @@ export function registerAdminRoutes(
 				levelName: updatedLevel.name,
 				author: updatedLevel.author,
 			});
+
+			// send to posthog
+			if (postHogClient) {
+				postHogClient.capture({
+					distinctId: req.user?.username ?? getClientIP(req),
+					event: "admin_level_unfeatured",
+					properties: {
+						level_id: levelId,
+					},
+				});
+			}
 
 			res.json({ success: true, level: updatedLevel });
 		} catch (error) {
@@ -379,6 +415,17 @@ export function registerAdminRoutes(
 				} catch (parseError) {
 					console.error("Error parsing level_ids for author:", parseError);
 				}
+			}
+
+			// send to posthog
+			if (postHogClient) {
+				postHogClient.capture({
+					distinctId: req.user?.username ?? getClientIP(req),
+					event: "admin_level_deleted",
+					properties: {
+						level_id: levelId,
+					},
+				});
 			}
 
 			res.json({ success: true });
