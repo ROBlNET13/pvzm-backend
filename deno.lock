@@ -1,32 +1,30 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@db/sqlite@0.12": "0.12.0",
+    "jsr:@db/sqlite@0.13": "0.13.0",
     "jsr:@denosaurs/plug@1": "1.1.0",
     "jsr:@mathis/turnstile-verify@^1.2.0": "1.2.0",
-    "jsr:@openai/openai@^5.20.1": "5.23.2",
-    "jsr:@std/assert@0.217": "0.217.0",
+    "jsr:@openai/openai@^6.17.0": "6.17.0",
     "jsr:@std/encoding@1": "1.0.10",
-    "jsr:@std/fmt@1": "1.0.8",
-    "jsr:@std/fs@1": "1.0.19",
-    "jsr:@std/fs@^1.0.19": "1.0.19",
+    "jsr:@std/fmt@1": "1.0.9",
+    "jsr:@std/fs@1": "1.0.22",
+    "jsr:@std/fs@^1.0.22": "1.0.22",
     "jsr:@std/internal@^1.0.12": "1.0.12",
-    "jsr:@std/internal@^1.0.9": "1.0.12",
-    "jsr:@std/path@0.217": "0.217.0",
-    "jsr:@std/path@1": "1.1.3",
-    "jsr:@std/path@^1.1.1": "1.1.3",
+    "jsr:@std/path@1": "1.1.4",
+    "jsr:@std/path@1.0": "1.0.9",
+    "jsr:@std/path@^1.1.4": "1.1.4",
     "npm:@atproto/api@~0.18.20": "0.18.20",
-    "npm:@msgpack/msgpack@^3.1.2": "3.1.3",
+    "npm:@msgpack/msgpack@^3.1.3": "3.1.3",
     "npm:@types/cors@^2.8.19": "2.8.19",
-    "npm:@types/express@^5.0.3": "5.0.6",
-    "npm:@types/node@^24.3.1": "24.10.4",
+    "npm:@types/express@^5.0.6": "5.0.6",
+    "npm:@types/node@^25.2.0": "25.2.0",
     "npm:@types/pako@^2.0.4": "2.0.4",
     "npm:bad-words@4": "4.0.0",
-    "npm:cors@^2.8.5": "2.8.5",
+    "npm:cors@^2.8.6": "2.8.6",
     "npm:discord.js@^14.25.1": "14.25.1",
     "npm:express-msgpack@6": "6.0.0_express@5.2.1",
-    "npm:express-session@^1.18.0": "1.18.2",
-    "npm:express@^5.1.0": "5.2.1",
+    "npm:express-session@^1.19.0": "1.19.0",
+    "npm:express@^5.2.1": "5.2.1",
     "npm:memorystore@^1.6.7": "1.6.7",
     "npm:pako@^2.1.0": "2.1.0",
     "npm:passport-github2@~0.1.12": "0.1.12",
@@ -35,11 +33,11 @@
     "npm:zod@3": "3.25.76"
   },
   "jsr": {
-    "@db/sqlite@0.12.0": {
-      "integrity": "dd1ef7f621ad50fc1e073a1c3609c4470bd51edc0994139c5bf9851de7a6d85f",
+    "@db/sqlite@0.13.0": {
+      "integrity": "4545c635e0b3d4ddfdc0f2240f932f24b8ad0178e9c2e3a0f9403e7b18ae2fb5",
       "dependencies": [
         "jsr:@denosaurs/plug",
-        "jsr:@std/path@0.217"
+        "jsr:@std/path@1.0"
       ]
     },
     "@denosaurs/plug@1.1.0": {
@@ -54,41 +52,35 @@
     "@mathis/turnstile-verify@1.2.0": {
       "integrity": "52fb351400780627660e0fbb4c1ff1000fcd0b28d7eebf13753ac9548fa77030"
     },
-    "@openai/openai@5.23.2": {
-      "integrity": "283883704f9e16df3b2984f3c211eb323d4179cad021ed430238379c4a925d73",
+    "@openai/openai@6.17.0": {
+      "integrity": "0e8947550cea8759af370b3ed3c646a88624054f397fb84c9bf76e843c580824",
       "dependencies": [
         "npm:zod"
       ]
     },
-    "@std/assert@0.217.0": {
-      "integrity": "c98e279362ca6982d5285c3b89517b757c1e3477ee9f14eb2fdf80a45aaa9642"
-    },
     "@std/encoding@1.0.10": {
       "integrity": "8783c6384a2d13abd5e9e87a7ae0520a30e9f56aeeaa3bdf910a3eaaf5c811a1"
     },
-    "@std/fmt@1.0.8": {
-      "integrity": "71e1fc498787e4434d213647a6e43e794af4fd393ef8f52062246e06f7e372b7"
+    "@std/fmt@1.0.9": {
+      "integrity": "2487343e8899fb2be5d0e3d35013e54477ada198854e52dd05ed0422eddcabe0"
     },
-    "@std/fs@1.0.19": {
-      "integrity": "051968c2b1eae4d2ea9f79a08a3845740ef6af10356aff43d3e2ef11ed09fb06",
+    "@std/fs@1.0.22": {
+      "integrity": "de0f277a58a867147a8a01bc1b181d0dfa80bfddba8c9cf2bacd6747bcec9308",
       "dependencies": [
-        "jsr:@std/internal@^1.0.9",
-        "jsr:@std/path@^1.1.1"
+        "jsr:@std/internal",
+        "jsr:@std/path@^1.1.4"
       ]
     },
     "@std/internal@1.0.12": {
       "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
     },
-    "@std/path@0.217.0": {
-      "integrity": "1217cc25534bca9a2f672d7fe7c6f356e4027df400c0e85c0ef3e4343bc67d11",
-      "dependencies": [
-        "jsr:@std/assert"
-      ]
+    "@std/path@1.0.9": {
+      "integrity": "260a49f11edd3db93dd38350bf9cd1b4d1366afa98e81b86167b4e3dd750129e"
     },
-    "@std/path@1.1.3": {
-      "integrity": "b015962d82a5e6daea980c32b82d2c40142149639968549c649031a230b1afb3",
+    "@std/path@1.1.4": {
+      "integrity": "1d2d43f39efb1b42f0b1882a25486647cb851481862dc7313390b2bb044314b5",
       "dependencies": [
-        "jsr:@std/internal@^1.0.12"
+        "jsr:@std/internal"
       ]
     }
   },
@@ -256,8 +248,8 @@
         "@types/node"
       ]
     },
-    "@types/express-serve-static-core@5.1.0": {
-      "integrity": "sha512-jnHMsrd0Mwa9Cf4IdOzbz543y4XJepXrbia2T4b6+spXC2We3t1y6K44D3mR8XMFSXMCf3/l7rCgddfx7UNVBA==",
+    "@types/express-serve-static-core@5.1.1": {
+      "integrity": "sha512-v4zIMr/cX7/d2BpAEX3KNKL/JrT1s43s96lLvvdTmza1oEvDudCqK9aF/djc/SWgy8Yh0h30TZx5VpzqFCxk5A==",
       "dependencies": [
         "@types/node",
         "@types/qs",
@@ -276,8 +268,8 @@
     "@types/http-errors@2.0.5": {
       "integrity": "sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg=="
     },
-    "@types/node@24.10.4": {
-      "integrity": "sha512-vnDVpYPMzs4wunl27jHrfmwojOGKya0xyM3sH+UE5iv5uPS6vX7UIoh6m+vQc5LGBq52HBKPIn/zcSZVzeDEZg==",
+    "@types/node@25.2.0": {
+      "integrity": "sha512-DZ8VwRFUNzuqJ5khrvwMXHmvPe+zGayJhr2CDNiKB1WBE1ST8Djl00D0IC4vvNmHMdj6DlbYRIaFE7WHjlDl5w==",
       "dependencies": [
         "undici-types"
       ]
@@ -381,8 +373,8 @@
     "cookie@0.7.2": {
       "integrity": "sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w=="
     },
-    "cors@2.8.5": {
-      "integrity": "sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==",
+    "cors@2.8.6": {
+      "integrity": "sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==",
       "dependencies": [
         "object-assign",
         "vary"
@@ -474,8 +466,8 @@
         "@msgpack/msgpack@2.8.0"
       ]
     },
-    "express-session@1.18.2": {
-      "integrity": "sha512-SZjssGQC7TzTs9rpPDuUrR23GNZ9+2+IkA/+IJWmvQilTr5OSliEHGF+D9scbIpdC6yGtTI0/VhaHoVes2AN/A==",
+    "express-session@1.19.0": {
+      "integrity": "sha512-0csaMkGq+vaiZTmSMMGkfdCOabYv192VbytFypcvI0MANrp+4i/7yEkJ0sbAEhycQjntaKGzYfjfXQyVb7BHMA==",
       "dependencies": [
         "cookie",
         "cookie-signature@1.0.7",
@@ -932,22 +924,22 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@db/sqlite@0.12",
+      "jsr:@db/sqlite@0.13",
       "jsr:@mathis/turnstile-verify@^1.2.0",
-      "jsr:@openai/openai@^5.20.1",
-      "jsr:@std/fs@^1.0.19",
+      "jsr:@openai/openai@^6.17.0",
+      "jsr:@std/fs@^1.0.22",
       "npm:@atproto/api@~0.18.20",
-      "npm:@msgpack/msgpack@^3.1.2",
+      "npm:@msgpack/msgpack@^3.1.3",
       "npm:@types/cors@^2.8.19",
-      "npm:@types/express@^5.0.3",
-      "npm:@types/node@^24.3.1",
+      "npm:@types/express@^5.0.6",
+      "npm:@types/node@^25.2.0",
       "npm:@types/pako@^2.0.4",
       "npm:bad-words@4",
-      "npm:cors@^2.8.5",
+      "npm:cors@^2.8.6",
       "npm:discord.js@^14.25.1",
       "npm:express-msgpack@6",
-      "npm:express-session@^1.18.0",
-      "npm:express@^5.1.0",
+      "npm:express-session@^1.19.0",
+      "npm:express@^5.2.1",
       "npm:memorystore@^1.6.7",
       "npm:pako@^2.1.0",
       "npm:passport-github2@~0.1.12",
