@@ -1,8 +1,10 @@
 import { getClientIP } from "../request.ts";
 import { Buffer } from "node:buffer";
-import { allPlantsStringArray, decodeFile, decodeLevelFromDisk, detectFileVersion } from "../levels_io.ts";
+import { allPlantsStringArray, decodeFile, decodeLevelFromDisk, detectFileVersion, encodeIZL3File } from "../levels_io.ts";
 import { validateClone } from "../validate.ts";
 import { postHogClient } from "../posthog.ts";
+import { getPlantImages, type PlantData } from "../plantImages.ts";
+import { renderThumbnailCanvas } from "../renderThumbnail.ts";
 
 import type { ServerConfig } from "../config.ts";
 import type { DbContext, LevelRecord } from "../db.ts";
@@ -20,6 +22,7 @@ export function registerLevelRoutes(
 		loggingManager: LoggingManager;
 	}
 ) {
+	let plantImagesCache: { [key: string]: PlantData } | null = null;
 	const uploadRateLimitByIp = new Map<string, number>();
 	const UPLOAD_WINDOW_MS = 60_000;
 
@@ -173,6 +176,19 @@ export function registerLevelRoutes(
 					});
 				}
 
+				// build thumbnail data before pixel positioning is stripped
+				const thumbData = cloneData.plants.map((plant: any) => [
+					allPlantsStringArray.indexOf(plant.plantName),
+					plant.eleLeft,
+					plant.eleTop,
+					plant.eleWidth,
+					plant.eleHeight,
+					plant.zIndex,
+				]);
+
+				// re-encode the modified level data
+				levelBinary = encodeIZL3File(cloneData);
+
 				// store in database
 				const now = Math.floor(Date.now() / 1000);
 				dbCtx.db
@@ -249,12 +265,24 @@ export function registerLevelRoutes(
 				}
 
 				if (config.useUploadLogging && deps.loggingManager.hasProviders) {
+					// render thumbnail for logging
+					let thumbnailPng: Uint8Array | undefined;
+					try {
+						if (!plantImagesCache) {
+							plantImagesCache = await getPlantImages(config);
+						}
+						thumbnailPng = await renderThumbnailCanvas(thumbData, is_water, plantImagesCache, config);
+					} catch (e) {
+						console.error("Failed to render thumbnail for logging:", e);
+					}
+
 					const levelInfo = {
 						id: levelId,
 						name,
 						author,
 						gameUrl: config.gameUrl,
 						backendUrl: config.backendUrl,
+						thumbnail: thumbnailPng,
 					};
 
 					const adminLevelInfo = {
@@ -597,9 +625,19 @@ export function registerLevelRoutes(
 			try {
 				const fileContent = Deno.readFileSync(filePath);
 
+				// strip position data before sending to client (not needed for gameplay)
+				const decoded = decodeFile(fileContent);
+				for (const plant of decoded.plants) {
+					delete plant.eleLeft;
+					delete plant.eleTop;
+					delete plant.eleWidth;
+					delete plant.eleHeight;
+				}
+				const strippedContent = encodeIZL3File(decoded);
+
 				res.setHeader("Content-Type", "application/octet-stream");
 				res.setHeader("Content-Disposition", `attachment; filename="${typedLevel.name.replace(/[^a-zA-Z0-9]/g, "_")}.${fileExtension}"`);
-				res.send(Buffer.from(fileContent));
+				res.send(Buffer.from(strippedContent));
 			} catch (fileError) {
 				console.error("Error reading level file:", fileError);
 				res.status(404).json({

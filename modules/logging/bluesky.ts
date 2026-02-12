@@ -47,6 +47,21 @@ export class BlueskyLoggingProvider implements LoggingProvider {
 		}
 	}
 
+	private async uploadImageEmbed(png: Uint8Array, alt: string) {
+		if (!this.agent) return undefined;
+		const uploadResponse = await this.agent.uploadBlob(png, { encoding: "image/png" });
+		return {
+			$type: "app.bsky.embed.images" as const,
+			images: [
+				{
+					alt,
+					image: uploadResponse.data.blob,
+					aspectRatio: { width: 900, height: 600 },
+				},
+			],
+		};
+	}
+
 	async sendLevelMessage(level: LevelInfo): Promise<string | null> {
 		if (!this.agent) return null;
 
@@ -57,9 +72,12 @@ export class BlueskyLoggingProvider implements LoggingProvider {
 			const rt = new RichText({ text: message });
 			await rt.detectFacets(this.agent);
 
+			const embed = level.thumbnail ? await this.uploadImageEmbed(level.thumbnail, level.name) : undefined;
+
 			const response = await this.agent.post({
 				text: rt.text,
 				facets: rt.facets,
+				embed,
 			});
 
 			// return the post uri as the message id
@@ -82,7 +100,7 @@ export class BlueskyLoggingProvider implements LoggingProvider {
 			await this.agent.deletePost(messageId);
 			return true;
 		} catch (error) {
-			console.error("Bluesky logging provider: deleteLevelMessage failed:", error);
+			console.warn(`Bluesky logging provider: delete failed for post ${messageId}:`, (error as Error).message);
 			return false;
 		}
 	}
@@ -121,7 +139,7 @@ export class BlueskyLoggingProvider implements LoggingProvider {
 			await this.agent.deletePost(messageId);
 			return true;
 		} catch (error) {
-			console.error("Bluesky logging provider: deleteFeaturedMessage failed:", error);
+			console.warn(`Bluesky logging provider: featured delete failed for post ${messageId}:`, (error as Error).message);
 			return false;
 		}
 	}

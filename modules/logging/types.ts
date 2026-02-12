@@ -4,6 +4,7 @@ export type LevelInfo = {
 	author: string;
 	gameUrl: string;
 	backendUrl: string;
+	thumbnail?: Uint8Array;
 };
 
 export type AdminLevelInfo = LevelInfo & {

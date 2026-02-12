@@ -152,10 +152,20 @@ export class DiscordLoggingProvider implements LoggingProvider {
 		if (!this.channel) return null;
 
 		try {
+			const embed = this.buildEmbed(level);
+			const files: AttachmentBuilder[] = [];
+
+			if (level.thumbnail) {
+				const attachment = new AttachmentBuilder(Buffer.from(level.thumbnail), { name: "thumbnail.png" });
+				files.push(attachment);
+				embed.setImage("attachment://thumbnail.png");
+			}
+
 			const message = await this.channel.send({
 				content: "",
-				embeds: [this.buildEmbed(level)],
+				embeds: [embed],
 				components: [this.buildPublicUploadButtons(level)],
+				files,
 			});
 			await this.tryPublish(message);
 			return message.id;
@@ -169,10 +179,20 @@ export class DiscordLoggingProvider implements LoggingProvider {
 		if (!this.adminChannel) return null;
 
 		try {
+			const embed = this.buildEmbed(level);
+			const files: AttachmentBuilder[] = [];
+
+			if (level.thumbnail) {
+				const attachment = new AttachmentBuilder(Buffer.from(level.thumbnail), { name: "thumbnail.png" });
+				files.push(attachment);
+				embed.setImage("attachment://thumbnail.png");
+			}
+
 			const message = await this.adminChannel.send({
 				content: "",
-				embeds: [this.buildEmbed(level)],
+				embeds: [embed],
 				components: [this.buildAdminUploadButtons(level)],
+				files,
 			});
 			await this.tryPublish(message);
 
@@ -203,7 +223,7 @@ export class DiscordLoggingProvider implements LoggingProvider {
 			});
 			return true;
 		} catch (error) {
-			console.error("Discord logging provider: edit failed:", error);
+			console.warn(`Discord logging provider: edit failed for message ${messageId}:`, (error as Error).message);
 			return false;
 		}
 	}
@@ -220,7 +240,7 @@ export class DiscordLoggingProvider implements LoggingProvider {
 			});
 			return true;
 		} catch (error) {
-			console.error("Discord logging provider: edit failed:", error);
+			console.warn(`Discord logging provider: admin edit failed for message ${messageId}:`, (error as Error).message);
 			return false;
 		}
 	}
@@ -233,7 +253,7 @@ export class DiscordLoggingProvider implements LoggingProvider {
 			await message.delete();
 			return true;
 		} catch (error) {
-			console.error("Discord logging provider: delete failed:", error);
+			console.warn(`Discord logging provider: delete failed for message ${messageId}:`, (error as Error).message);
 			return false;
 		}
 	}
@@ -258,7 +278,7 @@ export class DiscordLoggingProvider implements LoggingProvider {
 			});
 			return true;
 		} catch (error) {
-			console.error("Discord logging provider: delete failed:", error);
+			console.warn(`Discord logging provider: admin delete failed for message ${messageId}:`, (error as Error).message);
 			return false;
 		}
 	}

@@ -1,5 +1,5 @@
 {
-	"version": "0.5.3",
+	"version": "0.6.0",
 	"tasks": {
 		"dev": "deno run --watch -P=dev --env-file=.env main.ts",
 		"start": "deno run -P --env-file=.env main.ts",
@@ -12,14 +12,16 @@
 			"net": true,
 			"ffi": true,
 			"read": true,
-			"write": true
+			"write": true,
+			"import": true
 		},
 		"dev": {
 			"env": true,
 			"net": true,
 			"ffi": true,
 			"read": true,
-			"write": true
+			"write": true,
+			"import": true
 		}
 	},
 	"lint": {
@@ -30,6 +32,7 @@
 	"imports": {
 		"@atproto/api": "npm:@atproto/api@^0.18.20",
 		"@db/sqlite": "jsr:@db/sqlite@^0.13.0",
+		"@gfx/canvas": "jsr:@gfx/canvas@^0.5.8",
 		"@mathis/turnstile-verify": "jsr:@mathis/turnstile-verify@^1.2.0",
 		"@msgpack/msgpack": "npm:@msgpack/msgpack@^3.1.3",
 		"@openai/openai": "jsr:@openai/openai@^6.17.0",

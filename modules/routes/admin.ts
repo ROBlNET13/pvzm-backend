@@ -191,16 +191,15 @@ export function registerAdminRoutes(
 			}
 
 			if (changes.length > 0) {
-				const levelInfo = {
-					id: levelId,
-					name: typedUpdatedLevel.name,
-					author: typedUpdatedLevel.author,
-					gameUrl: config.gameUrl,
-					backendUrl: config.backendUrl,
-				};
-
+				// update logging messages (fire-and-forget, don't block the response)
 				if (typedUpdatedLevel.logging_data) {
-					await deps.loggingManager.editLevelMessage(typedUpdatedLevel.logging_data, levelInfo);
+					const levelInfo = {
+						id: levelId,
+						name: typedUpdatedLevel.name,
+						author: typedUpdatedLevel.author,
+						gameUrl: config.gameUrl,
+						backendUrl: config.backendUrl,
+					};
 
 					const adminLevelInfo = {
 						...levelInfo,
@@ -211,16 +210,20 @@ export function registerAdminRoutes(
 							dbCtx.createOneTimeTokenForLevel(levelId)
 						)}&action=delete&level=${levelId}`,
 					};
-					await deps.loggingManager.editAdminLevelMessage(typedUpdatedLevel.logging_data, adminLevelInfo);
+
+					Promise.allSettled([
+						deps.loggingManager.editLevelMessage(typedUpdatedLevel.logging_data, levelInfo),
+						deps.loggingManager.editAdminLevelMessage(typedUpdatedLevel.logging_data, adminLevelInfo),
+					]).catch((err) => console.error("Warning: Failed to update logging messages for level", levelId, err));
 				}
 
-				await deps.loggingManager.sendAuditLog({
+				deps.loggingManager.sendAuditLog({
 					action: "edit",
 					levelId,
 					levelName: typedUpdatedLevel.name,
 					author: typedUpdatedLevel.author,
 					changes: changes.join("\n"),
-				});
+				}).catch((err) => console.error("Warning: Failed to send audit log for level edit", levelId, err));
 			}
 
 			// send to posthog
@@ -378,22 +381,25 @@ export function registerAdminRoutes(
 
 			const typedLevel = existingLevel as LevelRecord;
 
-			// delete logging messages if they exist
+			// delete the level from the database first (critical operation)
+			dbCtx.db.prepare("DELETE FROM favorites WHERE level_id = ?").run(levelId);
+			dbCtx.db.prepare("DELETE FROM levels WHERE id = ?").run(levelId);
+
+			// clean up logging messages (fire-and-forget, don't block the response)
 			if (typedLevel.logging_data) {
-				await deps.loggingManager.deleteLevelMessage(typedLevel.logging_data);
-				await deps.loggingManager.deleteAdminLevelMessage(typedLevel.logging_data);
-				await deps.loggingManager.deleteFeaturedMessage(typedLevel.logging_data);
+				Promise.allSettled([
+					deps.loggingManager.deleteLevelMessage(typedLevel.logging_data),
+					deps.loggingManager.deleteAdminLevelMessage(typedLevel.logging_data),
+					deps.loggingManager.deleteFeaturedMessage(typedLevel.logging_data),
+				]).catch((err) => console.error("Warning: Failed to clean up logging messages for level", levelId, err));
 			}
 
-			await deps.loggingManager.sendAuditLog({
+			deps.loggingManager.sendAuditLog({
 				action: "delete",
 				levelId,
 				levelName: typedLevel.name,
 				author: typedLevel.author,
-			});
-
-			dbCtx.db.prepare("DELETE FROM favorites WHERE level_id = ?").run(levelId);
-			dbCtx.db.prepare("DELETE FROM levels WHERE id = ?").run(levelId);
+			}).catch((err) => console.error("Warning: Failed to send audit log for level deletion", levelId, err));
 
 			try {
 				const fileExtension = `izl${typedLevel.version || 3}`;
