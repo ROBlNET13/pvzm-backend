@@ -1,782 +1,782 @@
 openapi: 3.0.3
 info:
-  title: PVZM Backend API
-  description: "API for the Plants vs. Zombies: MODDED level sharing platform. Supports level uploading, downloading, browsing, favoriting, reporting, and admin management."
-  version: 0.6.0
-  contact:
-    url: https://pvzm.net
+    title: PVZM Backend API
+    description: "API for the Plants vs. Zombies: MODDED level sharing platform. Supports level uploading, downloading, browsing, favoriting, reporting, and admin management."
+    version: 0.6.0
+    contact:
+        url: https://pvzm.net
 
 servers:
-  - url: https://backend.pvzm.net
-    description: Production
+    - url: https://backend.pvzm.net
+      description: Production
 
 tags:
-  - name: Health
-    description: Health check endpoints
-  - name: Config
-    description: Server configuration
-  - name: Levels
-    description: Public level operations
-  - name: Auth
-    description: GitHub OAuth authentication
-  - name: Admin
-    description: Admin level management
+    - name: Health
+      description: Health check endpoints
+    - name: Config
+      description: Server configuration
+    - name: Levels
+      description: Public level operations
+    - name: Auth
+      description: GitHub OAuth authentication
+    - name: Admin
+      description: Admin level management
 
 paths:
-  /api/health:
-    get:
-      tags: [Health]
-      summary: Health check
-      operationId: getHealth
-      responses:
-        "200":
-          description: Server is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [status, timestamp, version]
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  timestamp:
-                    type: string
-                    format: date-time
-                  version:
-                    type: string
-                    example: 0.6.0
+    /api/health:
+        get:
+            tags: [Health]
+            summary: Health check
+            operationId: getHealth
+            responses:
+                "200":
+                    description: Server is healthy
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [status, timestamp, version]
+                                properties:
+                                    status:
+                                        type: string
+                                        example: ok
+                                    timestamp:
+                                        type: string
+                                        format: date-time
+                                    version:
+                                        type: string
+                                        example: 0.6.0
 
-  /api/config:
-    get:
-      tags: [Config]
-      summary: Get server configuration
-      operationId: getConfig
-      responses:
-        "200":
-          description: Current server configuration
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [turnstileEnabled, turnstileSiteKey, moderationEnabled]
-                properties:
-                  turnstileEnabled:
-                    type: boolean
-                  turnstileSiteKey:
-                    type: string
-                    nullable: true
-                  moderationEnabled:
-                    type: boolean
+    /api/config:
+        get:
+            tags: [Config]
+            summary: Get server configuration
+            operationId: getConfig
+            responses:
+                "200":
+                    description: Current server configuration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [turnstileEnabled, turnstileSiteKey, moderationEnabled]
+                                properties:
+                                    turnstileEnabled:
+                                        type: boolean
+                                    turnstileSiteKey:
+                                        type: string
+                                        nullable: true
+                                    moderationEnabled:
+                                        type: boolean
 
-  /api/levels:
-    get:
-      tags: [Levels]
-      summary: List levels
-      description: Retrieve a paginated, filterable list of levels. When `sort=featured`, an author diversity algorithm is applied.
-      operationId: getLevels
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-            minimum: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 10
-            minimum: 1
-        - name: sort
-          in: query
-          schema:
-            type: string
-            enum: [plays, recent, favorites, featured]
-            default: plays
-        - name: reversed_order
-          in: query
-          schema:
-            type: string
-            enum: ["true", "false"]
-            default: "false"
-        - name: author
-          in: query
-          description: Filter by author name (partial match)
-          schema:
-            type: string
-        - name: is_water
-          in: query
-          schema:
-            type: string
-            enum: ["true", "false"]
-        - name: version
-          in: query
-          schema:
-            type: integer
-        - name: token
-          in: query
-          description: One-time token to fetch a specific level by ID. Ignores all other filters when provided.
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Paginated list of levels
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [levels, pagination]
-                properties:
-                  levels:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/LevelSummary"
-                  pagination:
-                    $ref: "#/components/schemas/Pagination"
-        "429":
-          $ref: "#/components/responses/RateLimited"
+    /api/levels:
+        get:
+            tags: [Levels]
+            summary: List levels
+            description: Retrieve a paginated, filterable list of levels. When `sort=featured`, an author diversity algorithm is applied.
+            operationId: getLevels
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      default: 1
+                      minimum: 1
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      default: 10
+                      minimum: 1
+                - name: sort
+                  in: query
+                  schema:
+                      type: string
+                      enum: [plays, recent, favorites, featured]
+                      default: plays
+                - name: reversed_order
+                  in: query
+                  schema:
+                      type: string
+                      enum: ["true", "false"]
+                      default: "false"
+                - name: author
+                  in: query
+                  description: Filter by author name (partial match)
+                  schema:
+                      type: string
+                - name: is_water
+                  in: query
+                  schema:
+                      type: string
+                      enum: ["true", "false"]
+                - name: version
+                  in: query
+                  schema:
+                      type: integer
+                - name: token
+                  in: query
+                  description: One-time token to fetch a specific level by ID. Ignores all other filters when provided.
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Paginated list of levels
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [levels, pagination]
+                                properties:
+                                    levels:
+                                        type: array
+                                        items:
+                                            $ref: "#/components/schemas/LevelSummary"
+                                    pagination:
+                                        $ref: "#/components/schemas/Pagination"
+                "429":
+                    $ref: "#/components/responses/RateLimited"
 
-    post:
-      tags: [Levels]
-      summary: Upload a level
-      description: |
-        Upload a new level in IZL3 binary format. Rate limited to 1 upload per 60 seconds per IP.
+        post:
+            tags: [Levels]
+            summary: Upload a level
+            description: |
+                Upload a new level in IZL3 binary format. Rate limited to 1 upload per 60 seconds per IP.
 
-        The request body must be sent as raw binary (Content-Type: application/octet-stream) containing the IZL3 level file.
+                The request body must be sent as raw binary (Content-Type: application/octet-stream) containing the IZL3 level file.
 
-        Validation includes: IZL3 format check, name/author content moderation (OpenAI + bad-words filter),
-        plant/zombie placement rules, and optional Turnstile CAPTCHA verification.
-      operationId: createLevel
-      parameters:
-        - name: author
-          in: query
-          required: true
-          description: Author name (max 11 characters)
-          schema:
-            type: string
-            maxLength: 11
-        - name: turnstileResponse
-          in: query
-          description: Cloudflare Turnstile CAPTCHA token (required if Turnstile is enabled)
-          schema:
-            type: string
-      responses:
-        "201":
-          description: Level created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [id, name, author, created_at, sun, is_water, version]
-                properties:
-                  id:
-                    type: integer
-                  name:
-                    type: string
-                  author:
-                    type: string
-                  created_at:
-                    type: integer
-                    description: Unix timestamp
-                  sun:
-                    type: integer
-                  is_water:
-                    type: boolean
-                  version:
-                    type: integer
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "415":
-          description: Unsupported media type (Content-Type must be application/octet-stream)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "429":
-          $ref: "#/components/responses/RateLimited"
+                Validation includes: IZL3 format check, name/author content moderation (OpenAI + bad-words filter),
+                plant/zombie placement rules, and optional Turnstile CAPTCHA verification.
+            operationId: createLevel
+            parameters:
+                - name: author
+                  in: query
+                  required: true
+                  description: Author name (max 11 characters)
+                  schema:
+                      type: string
+                      maxLength: 11
+                - name: turnstileResponse
+                  in: query
+                  description: Cloudflare Turnstile CAPTCHA token (required if Turnstile is enabled)
+                  schema:
+                      type: string
+            responses:
+                "201":
+                    description: Level created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [id, name, author, created_at, sun, is_water, version]
+                                properties:
+                                    id:
+                                        type: integer
+                                    name:
+                                        type: string
+                                    author:
+                                        type: string
+                                    created_at:
+                                        type: integer
+                                        description: Unix timestamp
+                                    sun:
+                                        type: integer
+                                    is_water:
+                                        type: boolean
+                                    version:
+                                        type: integer
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "415":
+                    description: Unsupported media type (Content-Type must be application/octet-stream)
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                "429":
+                    $ref: "#/components/responses/RateLimited"
 
-  /api/levels/{id}:
-    get:
-      tags: [Levels]
-      summary: Get a level by ID
-      operationId: getLevel
-      parameters:
-        - $ref: "#/components/parameters/LevelId"
-      responses:
-        "200":
-          description: Level details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LevelSummary"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "404":
-          $ref: "#/components/responses/NotFound"
+    /api/levels/{id}:
+        get:
+            tags: [Levels]
+            summary: Get a level by ID
+            operationId: getLevel
+            parameters:
+                - $ref: "#/components/parameters/LevelId"
+            responses:
+                "200":
+                    description: Level details
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/LevelSummary"
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "404":
+                    $ref: "#/components/responses/NotFound"
 
-  /api/levels/{id}/download:
-    get:
-      tags: [Levels]
-      summary: Download a level file
-      description: Downloads the IZL3 level file. Increments the play count. Rate limited to 5 downloads per 5 seconds per IP.
-      operationId: downloadLevel
-      parameters:
-        - $ref: "#/components/parameters/LevelId"
-      responses:
-        "200":
-          description: Level file download
-          headers:
-            Content-Disposition:
-              schema:
-                type: string
-                example: attachment; filename="MyLevel.izl3"
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "429":
-          $ref: "#/components/responses/RateLimited"
+    /api/levels/{id}/download:
+        get:
+            tags: [Levels]
+            summary: Download a level file
+            description: Downloads the IZL3 level file. Increments the play count. Rate limited to 5 downloads per 5 seconds per IP.
+            operationId: downloadLevel
+            parameters:
+                - $ref: "#/components/parameters/LevelId"
+            responses:
+                "200":
+                    description: Level file download
+                    headers:
+                        Content-Disposition:
+                            schema:
+                                type: string
+                                example: attachment; filename="MyLevel.izl3"
+                    content:
+                        application/octet-stream:
+                            schema:
+                                type: string
+                                format: binary
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "404":
+                    $ref: "#/components/responses/NotFound"
+                "429":
+                    $ref: "#/components/responses/RateLimited"
 
-  /api/levels/{id}/report:
-    post:
-      tags: [Levels]
-      summary: Report a level
-      operationId: reportLevel
-      parameters:
-        - $ref: "#/components/parameters/LevelId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [reason]
-              properties:
-                reason:
-                  type: string
-                  description: Description of why the level is being reported
-      responses:
-        "200":
-          description: Report submitted
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [success]
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-        "404":
-          $ref: "#/components/responses/NotFound"
+    /api/levels/{id}/report:
+        post:
+            tags: [Levels]
+            summary: Report a level
+            operationId: reportLevel
+            parameters:
+                - $ref: "#/components/parameters/LevelId"
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [reason]
+                            properties:
+                                reason:
+                                    type: string
+                                    description: Description of why the level is being reported
+            responses:
+                "200":
+                    description: Report submitted
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [success]
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                "404":
+                    $ref: "#/components/responses/NotFound"
 
-  /api/levels/{id}/favorite:
-    post:
-      tags: [Levels]
-      summary: Toggle favorite on a level
-      description: Toggles the favorite state for the requesting IP. Rate limited to 30 actions per 10 seconds per IP.
-      operationId: toggleFavorite
-      parameters:
-        - $ref: "#/components/parameters/LevelId"
-      responses:
-        "200":
-          description: Favorite toggled
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [success, level]
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  level:
-                    type: object
-                    required: [id, name, author, favorites]
-                    properties:
-                      id:
-                        type: integer
-                      name:
-                        type: string
-                      author:
-                        type: string
-                      favorites:
-                        type: integer
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "429":
-          $ref: "#/components/responses/RateLimited"
+    /api/levels/{id}/favorite:
+        post:
+            tags: [Levels]
+            summary: Toggle favorite on a level
+            description: Toggles the favorite state for the requesting IP. Rate limited to 30 actions per 10 seconds per IP.
+            operationId: toggleFavorite
+            parameters:
+                - $ref: "#/components/parameters/LevelId"
+            responses:
+                "200":
+                    description: Favorite toggled
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [success, level]
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    level:
+                                        type: object
+                                        required: [id, name, author, favorites]
+                                        properties:
+                                            id:
+                                                type: integer
+                                            name:
+                                                type: string
+                                            author:
+                                                type: string
+                                            favorites:
+                                                type: integer
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "404":
+                    $ref: "#/components/responses/NotFound"
+                "429":
+                    $ref: "#/components/responses/RateLimited"
 
-  # --- Auth ---
+    # --- Auth ---
 
-  /api/auth/github:
-    get:
-      tags: [Auth]
-      summary: Initiate GitHub OAuth login
-      description: Redirects the user to GitHub for OAuth authentication.
-      operationId: githubLogin
-      responses:
-        "302":
-          description: Redirect to GitHub OAuth
+    /api/auth/github:
+        get:
+            tags: [Auth]
+            summary: Initiate GitHub OAuth login
+            description: Redirects the user to GitHub for OAuth authentication.
+            operationId: githubLogin
+            responses:
+                "302":
+                    description: Redirect to GitHub OAuth
 
-  /api/auth/github/callback:
-    get:
-      tags: [Auth]
-      summary: GitHub OAuth callback
-      description: Handles the OAuth callback from GitHub. Redirects to `/admin.html` on success.
-      operationId: githubCallback
-      parameters:
-        - name: code
-          in: query
-          schema:
-            type: string
-      responses:
-        "302":
-          description: Redirect to admin page on success
+    /api/auth/github/callback:
+        get:
+            tags: [Auth]
+            summary: GitHub OAuth callback
+            description: Handles the OAuth callback from GitHub. Redirects to `/admin.html` on success.
+            operationId: githubCallback
+            parameters:
+                - name: code
+                  in: query
+                  schema:
+                      type: string
+            responses:
+                "302":
+                    description: Redirect to admin page on success
 
-  /api/auth/status:
-    get:
-      tags: [Auth]
-      summary: Check authentication status
-      operationId: getAuthStatus
-      responses:
-        "200":
-          description: Authentication status
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - type: object
-                    required: [authenticated, user]
-                    properties:
-                      authenticated:
-                        type: boolean
-                        enum: [true]
-                      user:
-                        type: object
-                        required: [username, displayName, profileUrl, avatarUrl]
-                        properties:
-                          username:
-                            type: string
-                          displayName:
-                            type: string
-                          profileUrl:
-                            type: string
-                          avatarUrl:
-                            type: string
-                  - type: object
-                    required: [authenticated]
-                    properties:
-                      authenticated:
-                        type: boolean
-                        enum: [false]
+    /api/auth/status:
+        get:
+            tags: [Auth]
+            summary: Check authentication status
+            operationId: getAuthStatus
+            responses:
+                "200":
+                    description: Authentication status
+                    content:
+                        application/json:
+                            schema:
+                                oneOf:
+                                    - type: object
+                                      required: [authenticated, user]
+                                      properties:
+                                          authenticated:
+                                              type: boolean
+                                              enum: [true]
+                                          user:
+                                              type: object
+                                              required: [username, displayName, profileUrl, avatarUrl]
+                                              properties:
+                                                  username:
+                                                      type: string
+                                                  displayName:
+                                                      type: string
+                                                  profileUrl:
+                                                      type: string
+                                                  avatarUrl:
+                                                      type: string
+                                    - type: object
+                                      required: [authenticated]
+                                      properties:
+                                          authenticated:
+                                              type: boolean
+                                              enum: [false]
 
-  /api/auth/logout:
-    get:
-      tags: [Auth]
-      summary: Logout
-      operationId: logout
-      responses:
-        "200":
-          description: Logged out successfully
+    /api/auth/logout:
+        get:
+            tags: [Auth]
+            summary: Logout
+            operationId: logout
+            responses:
+                "200":
+                    description: Logged out successfully
 
-  # --- Admin ---
+    # --- Admin ---
 
-  /api/admin/levels:
-    get:
-      tags: [Admin]
-      summary: List levels (admin)
-      description: Paginated level list with search. Requires GitHub OAuth.
-      operationId: getAdminLevels
-      security:
-        - githubOAuth: []
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 10
-        - name: q
-          in: query
-          description: Search query (searches name, author, ID)
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Admin level listing
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [levels, total, page, limit, totalPages]
-                properties:
-                  levels:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/LevelRecord"
-                  total:
-                    type: integer
-                  page:
-                    type: integer
-                  limit:
-                    type: integer
-                  totalPages:
-                    type: integer
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+    /api/admin/levels:
+        get:
+            tags: [Admin]
+            summary: List levels (admin)
+            description: Paginated level list with search. Requires GitHub OAuth.
+            operationId: getAdminLevels
+            security:
+                - githubOAuth: []
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      default: 1
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      default: 10
+                - name: q
+                  in: query
+                  description: Search query (searches name, author, ID)
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Admin level listing
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [levels, total, page, limit, totalPages]
+                                properties:
+                                    levels:
+                                        type: array
+                                        items:
+                                            $ref: "#/components/schemas/LevelRecord"
+                                    total:
+                                        type: integer
+                                    page:
+                                        type: integer
+                                    limit:
+                                        type: integer
+                                    totalPages:
+                                        type: integer
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
 
-  /api/admin/levels/{id}:
-    put:
-      tags: [Admin]
-      summary: Update a level
-      description: Update level metadata. Requires GitHub OAuth or a valid one-time token.
-      operationId: updateLevel
-      security:
-        - githubOAuth: []
-        - oneTimeToken: []
-      parameters:
-        - $ref: "#/components/parameters/LevelId"
-        - name: token
-          in: query
-          description: One-time admin token (alternative to OAuth)
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                author:
-                  type: string
-                sun:
-                  type: integer
-                is_water:
-                  type: integer
-                  enum: [0, 1]
-                difficulty:
-                  type: integer
-                favorites:
-                  type: integer
-                plays:
-                  type: integer
-                featured:
-                  type: integer
-                  enum: [0, 1]
-                featured_at:
-                  type: integer
-                  nullable: true
-      responses:
-        "200":
-          description: Level updated
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [success, level]
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  level:
-                    $ref: "#/components/schemas/LevelRecord"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
+    /api/admin/levels/{id}:
+        put:
+            tags: [Admin]
+            summary: Update a level
+            description: Update level metadata. Requires GitHub OAuth or a valid one-time token.
+            operationId: updateLevel
+            security:
+                - githubOAuth: []
+                - oneTimeToken: []
+            parameters:
+                - $ref: "#/components/parameters/LevelId"
+                - name: token
+                  in: query
+                  description: One-time admin token (alternative to OAuth)
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+                                author:
+                                    type: string
+                                sun:
+                                    type: integer
+                                is_water:
+                                    type: integer
+                                    enum: [0, 1]
+                                difficulty:
+                                    type: integer
+                                favorites:
+                                    type: integer
+                                plays:
+                                    type: integer
+                                featured:
+                                    type: integer
+                                    enum: [0, 1]
+                                featured_at:
+                                    type: integer
+                                    nullable: true
+            responses:
+                "200":
+                    description: Level updated
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [success, level]
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    level:
+                                        $ref: "#/components/schemas/LevelRecord"
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    $ref: "#/components/responses/NotFound"
 
-    delete:
-      tags: [Admin]
-      summary: Delete a level
-      description: Permanently deletes a level, its file, and all associated data. Requires GitHub OAuth or a valid one-time token.
-      operationId: deleteLevel
-      security:
-        - githubOAuth: []
-        - oneTimeToken: []
-      parameters:
-        - $ref: "#/components/parameters/LevelId"
-        - name: token
-          in: query
-          description: One-time admin token (alternative to OAuth)
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Level deleted
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [success]
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
+        delete:
+            tags: [Admin]
+            summary: Delete a level
+            description: Permanently deletes a level, its file, and all associated data. Requires GitHub OAuth or a valid one-time token.
+            operationId: deleteLevel
+            security:
+                - githubOAuth: []
+                - oneTimeToken: []
+            parameters:
+                - $ref: "#/components/parameters/LevelId"
+                - name: token
+                  in: query
+                  description: One-time admin token (alternative to OAuth)
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Level deleted
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [success]
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    $ref: "#/components/responses/NotFound"
 
-  /api/admin/levels/{id}/token:
-    post:
-      tags: [Admin]
-      summary: Generate a one-time token for a level
-      description: Creates a single-use token scoped to a specific level, allowing unauthenticated edit/delete access.
-      operationId: generateToken
-      security:
-        - githubOAuth: []
-      parameters:
-        - $ref: "#/components/parameters/LevelId"
-      responses:
-        "200":
-          description: Token generated
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [token, level_id]
-                properties:
-                  token:
-                    type: string
-                    example: token_abc123...
-                  level_id:
-                    type: integer
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
+    /api/admin/levels/{id}/token:
+        post:
+            tags: [Admin]
+            summary: Generate a one-time token for a level
+            description: Creates a single-use token scoped to a specific level, allowing unauthenticated edit/delete access.
+            operationId: generateToken
+            security:
+                - githubOAuth: []
+            parameters:
+                - $ref: "#/components/parameters/LevelId"
+            responses:
+                "200":
+                    description: Token generated
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [token, level_id]
+                                properties:
+                                    token:
+                                        type: string
+                                        example: token_abc123...
+                                    level_id:
+                                        type: integer
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    $ref: "#/components/responses/NotFound"
 
-  /api/admin/levels/{id}/feature:
-    post:
-      tags: [Admin]
-      summary: Feature a level
-      description: Marks a level as featured. Requires GitHub OAuth.
-      operationId: featureLevel
-      security:
-        - githubOAuth: []
-      parameters:
-        - $ref: "#/components/parameters/LevelId"
-      responses:
-        "200":
-          description: Level featured
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [success, level]
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  level:
-                    $ref: "#/components/schemas/LevelRecord"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
+    /api/admin/levels/{id}/feature:
+        post:
+            tags: [Admin]
+            summary: Feature a level
+            description: Marks a level as featured. Requires GitHub OAuth.
+            operationId: featureLevel
+            security:
+                - githubOAuth: []
+            parameters:
+                - $ref: "#/components/parameters/LevelId"
+            responses:
+                "200":
+                    description: Level featured
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [success, level]
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    level:
+                                        $ref: "#/components/schemas/LevelRecord"
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    $ref: "#/components/responses/NotFound"
 
-    delete:
-      tags: [Admin]
-      summary: Unfeature a level
-      description: Removes the featured status from a level. Requires GitHub OAuth.
-      operationId: unfeatureLevel
-      security:
-        - githubOAuth: []
-      parameters:
-        - $ref: "#/components/parameters/LevelId"
-      responses:
-        "200":
-          description: Level unfeatured
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [success, level]
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  level:
-                    $ref: "#/components/schemas/LevelRecord"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
+        delete:
+            tags: [Admin]
+            summary: Unfeature a level
+            description: Removes the featured status from a level. Requires GitHub OAuth.
+            operationId: unfeatureLevel
+            security:
+                - githubOAuth: []
+            parameters:
+                - $ref: "#/components/parameters/LevelId"
+            responses:
+                "200":
+                    description: Level unfeatured
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: [success, level]
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    level:
+                                        $ref: "#/components/schemas/LevelRecord"
+                "400":
+                    $ref: "#/components/responses/BadRequest"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    $ref: "#/components/responses/NotFound"
 
 components:
-  securitySchemes:
-    githubOAuth:
-      type: http
-      scheme: bearer
-      description: GitHub OAuth2 session-based authentication (via browser cookies)
-    oneTimeToken:
-      type: apiKey
-      in: query
-      name: token
-      description: Single-use token scoped to a specific level ID
+    securitySchemes:
+        githubOAuth:
+            type: http
+            scheme: bearer
+            description: GitHub OAuth2 session-based authentication (via browser cookies)
+        oneTimeToken:
+            type: apiKey
+            in: query
+            name: token
+            description: Single-use token scoped to a specific level ID
 
-  parameters:
-    LevelId:
-      name: id
-      in: path
-      required: true
-      schema:
-        type: integer
-      description: Level ID
+    parameters:
+        LevelId:
+            name: id
+            in: path
+            required: true
+            schema:
+                type: integer
+            description: Level ID
 
-  schemas:
-    LevelSummary:
-      type: object
-      required: [id, name, author, created_at, sun, is_water, favorites, plays, difficulty, version, featured, featured_at]
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        author:
-          type: string
-        created_at:
-          type: integer
-          description: Unix timestamp
-        sun:
-          type: integer
-        is_water:
-          type: boolean
-        favorites:
-          type: integer
-        plays:
-          type: integer
-        difficulty:
-          type: integer
-        version:
-          type: integer
-        featured:
-          type: integer
-          enum: [0, 1]
-        featured_at:
-          type: integer
-          nullable: true
-          description: Unix timestamp
-        thumbnail:
-          type: array
-          nullable: true
-          description: Array of plant placement tuples [plantIndex, eleLeft, eleTop, eleWidth, eleHeight, zIndex]
-          items:
-            type: array
-            items:
-              type: number
+    schemas:
+        LevelSummary:
+            type: object
+            required: [id, name, author, created_at, sun, is_water, favorites, plays, difficulty, version, featured, featured_at]
+            properties:
+                id:
+                    type: integer
+                name:
+                    type: string
+                author:
+                    type: string
+                created_at:
+                    type: integer
+                    description: Unix timestamp
+                sun:
+                    type: integer
+                is_water:
+                    type: boolean
+                favorites:
+                    type: integer
+                plays:
+                    type: integer
+                difficulty:
+                    type: integer
+                version:
+                    type: integer
+                featured:
+                    type: integer
+                    enum: [0, 1]
+                featured_at:
+                    type: integer
+                    nullable: true
+                    description: Unix timestamp
+                thumbnail:
+                    type: array
+                    nullable: true
+                    description: Array of plant placement tuples [plantIndex, eleLeft, eleTop, eleWidth, eleHeight, zIndex]
+                    items:
+                        type: array
+                        items:
+                            type: number
 
-    LevelRecord:
-      type: object
-      required: [id, name, author, sun, is_water, difficulty, favorites, plays, version, featured, featured_at, logging_data]
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        author:
-          type: string
-        sun:
-          type: integer
-        is_water:
-          type: integer
-          enum: [0, 1]
-        difficulty:
-          type: integer
-        favorites:
-          type: integer
-        plays:
-          type: integer
-        version:
-          type: integer
-        featured:
-          type: integer
-          enum: [0, 1]
-        featured_at:
-          type: integer
-          nullable: true
-        logging_data:
-          type: string
-          nullable: true
-          description: JSON string containing Discord/Bluesky message IDs for logging management
+        LevelRecord:
+            type: object
+            required: [id, name, author, sun, is_water, difficulty, favorites, plays, version, featured, featured_at, logging_data]
+            properties:
+                id:
+                    type: integer
+                name:
+                    type: string
+                author:
+                    type: string
+                sun:
+                    type: integer
+                is_water:
+                    type: integer
+                    enum: [0, 1]
+                difficulty:
+                    type: integer
+                favorites:
+                    type: integer
+                plays:
+                    type: integer
+                version:
+                    type: integer
+                featured:
+                    type: integer
+                    enum: [0, 1]
+                featured_at:
+                    type: integer
+                    nullable: true
+                logging_data:
+                    type: string
+                    nullable: true
+                    description: JSON string containing Discord/Bluesky message IDs for logging management
 
-    Pagination:
-      type: object
-      required: [total, page, limit, pages]
-      properties:
-        total:
-          type: integer
-        page:
-          type: integer
-        limit:
-          type: integer
-        pages:
-          type: integer
+        Pagination:
+            type: object
+            required: [total, page, limit, pages]
+            properties:
+                total:
+                    type: integer
+                page:
+                    type: integer
+                limit:
+                    type: integer
+                pages:
+                    type: integer
 
-    Error:
-      type: object
-      required: [error, message]
-      properties:
-        error:
-          type: string
-        message:
-          type: string
-        retryAfterSeconds:
-          type: number
-          description: Present on 429 responses
+        Error:
+            type: object
+            required: [error, message]
+            properties:
+                error:
+                    type: string
+                message:
+                    type: string
+                retryAfterSeconds:
+                    type: number
+                    description: Present on 429 responses
 
-  responses:
-    BadRequest:
-      description: Invalid input or validation failure
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
-    Unauthorized:
-      description: Authentication required
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
-    RateLimited:
-      description: Too many requests
-      headers:
-        Retry-After:
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
+    responses:
+        BadRequest:
+            description: Invalid input or validation failure
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+        NotFound:
+            description: Resource not found
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+        Unauthorized:
+            description: Authentication required
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+        RateLimited:
+            description: Too many requests
+            headers:
+                Retry-After:
+                    schema:
+                        type: integer
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"

@@ -17,11 +17,9 @@ export async function renderThumbnailCanvas(
 	thumb: number[][],
 	isWater: boolean,
 	plantImages: { [key: string]: PlantData },
-	config: ServerConfig,
+	config: ServerConfig
 ): Promise<Uint8Array> {
-	const gameUrl = config.gameUrl.endsWith("/")
-		? config.gameUrl.slice(0, -1)
-		: config.gameUrl;
+	const gameUrl = config.gameUrl.endsWith("/") ? config.gameUrl.slice(0, -1) : config.gameUrl;
 	const baseUrl = `${gameUrl}/game/`;
 
 	const canvas = createCanvas(900, 600);

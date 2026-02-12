@@ -11,16 +11,13 @@ export type PlantData = {
 };
 
 export async function getPlantImages(config: ServerConfig): Promise<{ [key: string]: PlantData }> {
-	const gameUrl = config.gameUrl.endsWith("/")
-		? config.gameUrl.slice(0, -1)
-		: config.gameUrl;
+	const gameUrl = config.gameUrl.endsWith("/") ? config.gameUrl.slice(0, -1) : config.gameUrl;
 
 	// snapshot existing keys so we can clean up after import
 	const keysBefore = new Set(Object.keys(g));
 
 	// set up dummy globals so plant files can be imported
-	const defaultGetShadow = (a: { width: number; height: number }) =>
-		"left:" + (a.width * 0.5 - 48) + "px;top:" + (a.height - 22) + "px";
+	const defaultGetShadow = (a: { width: number; height: number }) => "left:" + (a.width * 0.5 - 48) + "px;top:" + (a.height - 22) + "px";
 	g.InheritO = (_base: unknown, data: Record<string, unknown>) => {
 		return {
 			prototype: {
@@ -34,14 +31,14 @@ export async function getPlantImages(config: ServerConfig): Promise<{ [key: stri
 	g.CPlants = { prototype: { PicArr: [], getShadow: defaultGetShadow } };
 	g.$User = {
 		Visitor: {
-			TimeStep: 0
+			TimeStep: 0,
 		},
 		Browser: {
 			IE6: false,
 		},
 		Client: {
 			Mobile: false,
-		}
+		},
 	};
 	g.$Random = "";
 	g.window = g;

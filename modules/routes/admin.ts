@@ -217,13 +217,15 @@ export function registerAdminRoutes(
 					]).catch((err) => console.error("Warning: Failed to update logging messages for level", levelId, err));
 				}
 
-				deps.loggingManager.sendAuditLog({
-					action: "edit",
-					levelId,
-					levelName: typedUpdatedLevel.name,
-					author: typedUpdatedLevel.author,
-					changes: changes.join("\n"),
-				}).catch((err) => console.error("Warning: Failed to send audit log for level edit", levelId, err));
+				deps.loggingManager
+					.sendAuditLog({
+						action: "edit",
+						levelId,
+						levelName: typedUpdatedLevel.name,
+						author: typedUpdatedLevel.author,
+						changes: changes.join("\n"),
+					})
+					.catch((err) => console.error("Warning: Failed to send audit log for level edit", levelId, err));
 			}
 
 			// send to posthog
@@ -394,12 +396,14 @@ export function registerAdminRoutes(
 				]).catch((err) => console.error("Warning: Failed to clean up logging messages for level", levelId, err));
 			}
 
-			deps.loggingManager.sendAuditLog({
-				action: "delete",
-				levelId,
-				levelName: typedLevel.name,
-				author: typedLevel.author,
-			}).catch((err) => console.error("Warning: Failed to send audit log for level deletion", levelId, err));
+			deps.loggingManager
+				.sendAuditLog({
+					action: "delete",
+					levelId,
+					levelName: typedLevel.name,
+					author: typedLevel.author,
+				})
+				.catch((err) => console.error("Warning: Failed to send audit log for level deletion", levelId, err));
 
 			try {
 				const fileExtension = `izl${typedLevel.version || 3}`;
