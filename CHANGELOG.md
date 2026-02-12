@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.3
+
+- 🛠️ Simplified featured sort
+
 ## 0.6.2
 
 - 🛠️ Cache game images used for thumbnail rendering

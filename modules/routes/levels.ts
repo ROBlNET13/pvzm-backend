@@ -346,12 +346,8 @@ export function registerLevelRoutes(
 			const orderDirection = reversedOrder ? "ASC" : "DESC";
 
 			let orderClause: string;
-			let useDiversitySort = false;
 			if (sort === "featured") {
-				// recency weight: 1 point per day, quality: favorites * 10 + plays / 10
-				// this makes recency ~100x more important than in the mature formula
-				orderClause = `(created_at / 86400.0 + favorites * 10 + plays / 10.0) DESC`;
-				useDiversitySort = true;
+				orderClause = `featured_at DESC`;
 			} else {
 				const orderColumn = sort === "recent" ? "created_at" : sort === "favorites" ? "favorites" : "plays";
 				orderClause = `${orderColumn} ${orderDirection}, id ${orderDirection}`;
@@ -393,57 +389,10 @@ export function registerLevelRoutes(
 				query += " WHERE " + filters.join(" AND ");
 			}
 
-			// for featured sort with diversity, fetch more results to allow for re-ranking
-			const shouldApplyDiversity = useDiversitySort && tokenLevelId === null;
-			const fetchLimit = shouldApplyDiversity ? limit * 3 : limit;
-			const fetchOffset = shouldApplyDiversity ? offset : offset;
-
 			query += ` ORDER BY ${orderClause} LIMIT ? OFFSET ?`;
-			params.push(fetchLimit, fetchOffset);
+			params.push(limit, offset);
 
 			let levels = dbCtx.db.prepare(query).all(...params);
-
-			// apply author diversity algorithm for featured sort
-			if (shouldApplyDiversity && Array.isArray(levels) && levels.length > 0) {
-				type LevelWithScore = {
-					id: number;
-					author: string;
-					created_at: number;
-					favorites: number;
-					plays: number;
-					featured: number;
-					score: number;
-					[key: string]: unknown;
-				};
-
-				const authorCounts = new Map<string, number>();
-
-				// calculate scores and apply diversity penalties
-				const levelsWithScores = (levels as LevelWithScore[]).map((level) => {
-					// Calculate base score (same formula as SQL)
-					let baseScore: number;
-
-					baseScore = level.created_at / 86400.0 + level.favorites * 10 + level.plays / 10.0;
-
-					// Apply diversity penalty
-					const authorCount = authorCounts.get(level.author) || 0;
-					authorCounts.set(level.author, authorCount + 1);
-
-					// Penalty increases exponentially: 0, -500, -1500, -3500, -7500...
-					const diversityPenalty = authorCount === 0 ? 0 : -500 * (Math.pow(2, authorCount) - 1);
-
-					return {
-						...level,
-						score: baseScore + diversityPenalty,
-					};
-				});
-
-				// Re-sort by adjusted scores
-				levelsWithScores.sort((a, b) => b.score - a.score);
-
-				// Take only the requested limit
-				levels = levelsWithScores.slice(0, limit);
-			}
 
 			type LevelRow = {
 				id: number;
