@@ -295,7 +295,8 @@ export function registerLevelRoutes(
 						)}&action=delete&level=${levelId}`,
 					};
 
-					deps.loggingManager.sendLevelMessage(levelInfo)
+					deps.loggingManager
+						.sendLevelMessage(levelInfo)
 						.then((loggingData) => deps.loggingManager.sendAdminLevelMessage(adminLevelInfo, loggingData))
 						.then((loggingData) => {
 							if (loggingData) {
@@ -633,25 +634,27 @@ export function registerLevelRoutes(
 				console.error("Error reading level file for report:", fileError);
 			}
 
-			deps.loggingManager.sendReportMessage({
-				levelId,
-				levelName: typedLevel.name,
-				author: typedLevel.author,
-				reason,
-				reporterIp: getClientIP(req),
-				editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(dbCtx.createOneTimeTokenForLevel(levelId))}&action=edit&level=${levelId}`,
-				deleteUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
-					dbCtx.createOneTimeTokenForLevel(levelId)
-				)}&action=delete&level=${levelId}`,
-				viewUrl: `${config.gameUrl}/?izl_id=${levelId}`,
-				mentionUserIds: config.discordMentionUserIds,
-				fileAttachment: fileContent
-					? {
-							content: fileContent,
-							fileName: `${safeName}.${fileExtension}`,
-						}
-					: undefined,
-			}).catch((err) => console.error("Warning: Failed to send report message for level", levelId, err));
+			deps.loggingManager
+				.sendReportMessage({
+					levelId,
+					levelName: typedLevel.name,
+					author: typedLevel.author,
+					reason,
+					reporterIp: getClientIP(req),
+					editUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(dbCtx.createOneTimeTokenForLevel(levelId))}&action=edit&level=${levelId}`,
+					deleteUrl: `${config.backendUrl}/admin.html?token=${encodeURIComponent(
+						dbCtx.createOneTimeTokenForLevel(levelId)
+					)}&action=delete&level=${levelId}`,
+					viewUrl: `${config.gameUrl}/?izl_id=${levelId}`,
+					mentionUserIds: config.discordMentionUserIds,
+					fileAttachment: fileContent
+						? {
+								content: fileContent,
+								fileName: `${safeName}.${fileExtension}`,
+							}
+						: undefined,
+				})
+				.catch((err) => console.error("Warning: Failed to send report message for level", levelId, err));
 
 			// send to posthog
 			const clientIP = getClientIP(req);
