@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.4
+
+- 🛠️ Fix requests hanging when a logging provider fails or is slow
+
 ## 0.6.3
 
 - 🛠️ Simplified featured sort

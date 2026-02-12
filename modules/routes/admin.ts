@@ -272,15 +272,15 @@ export function registerAdminRoutes(
 
 			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId) as LevelRecord;
 
-			await deps.loggingManager.sendAuditLog({
+			deps.loggingManager.sendAuditLog({
 				action: "feature",
 				levelId,
 				levelName: updatedLevel.name,
 				author: updatedLevel.author,
-			});
+			}).catch((err) => console.error("Warning: Failed to send audit log for level feature", levelId, err));
 
 			// send featured message to logging providers (e.g., bluesky)
-			const loggingData = await deps.loggingManager.sendFeaturedMessage(
+			deps.loggingManager.sendFeaturedMessage(
 				{
 					id: levelId,
 					name: updatedLevel.name,
@@ -290,11 +290,11 @@ export function registerAdminRoutes(
 					featuredAt: now,
 				},
 				exists.logging_data
-			);
-
-			if (loggingData) {
-				dbCtx.db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(loggingData, levelId);
-			}
+			).then((loggingData) => {
+				if (loggingData) {
+					dbCtx.db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(loggingData, levelId);
+				}
+			}).catch((err) => console.error("Warning: Failed to send featured message for level", levelId, err));
 
 			// send to posthog
 			if (postHogClient) {
@@ -331,19 +331,25 @@ export function registerAdminRoutes(
 				return res.status(404).json({ error: "Level not found" });
 			}
 
-			// delete featured message from logging providers (e.g., bluesky)
-			const loggingData = await deps.loggingManager.deleteFeaturedMessage(levelRow.logging_data);
-
-			dbCtx.db.prepare("UPDATE levels SET featured = 0, featured_at = NULL, logging_data = ? WHERE id = ?").run(loggingData, levelId);
+			dbCtx.db.prepare("UPDATE levels SET featured = 0, featured_at = NULL WHERE id = ?").run(levelId);
 
 			const updatedLevel = dbCtx.db.prepare("SELECT * FROM levels WHERE id = ?").get(levelId) as LevelRecord;
 
-			await deps.loggingManager.sendAuditLog({
+			// delete featured message from logging providers (e.g., bluesky)
+			deps.loggingManager.deleteFeaturedMessage(levelRow.logging_data)
+				.then((loggingData) => {
+					if (loggingData) {
+						dbCtx.db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(loggingData, levelId);
+					}
+				})
+				.catch((err) => console.error("Warning: Failed to delete featured message for level", levelId, err));
+
+			deps.loggingManager.sendAuditLog({
 				action: "unfeature",
 				levelId,
 				levelName: updatedLevel.name,
 				author: updatedLevel.author,
-			});
+			}).catch((err) => console.error("Warning: Failed to send audit log for level unfeature", levelId, err));
 
 			// send to posthog
 			if (postHogClient) {

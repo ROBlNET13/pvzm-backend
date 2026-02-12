@@ -295,12 +295,14 @@ export function registerLevelRoutes(
 						)}&action=delete&level=${levelId}`,
 					};
 
-					let loggingData = await deps.loggingManager.sendLevelMessage(levelInfo);
-					loggingData = await deps.loggingManager.sendAdminLevelMessage(adminLevelInfo, loggingData);
-
-					if (loggingData) {
-						dbCtx.db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(loggingData, levelId);
-					}
+					deps.loggingManager.sendLevelMessage(levelInfo)
+						.then((loggingData) => deps.loggingManager.sendAdminLevelMessage(adminLevelInfo, loggingData))
+						.then((loggingData) => {
+							if (loggingData) {
+								dbCtx.db.prepare("UPDATE levels SET logging_data = ? WHERE id = ?").run(loggingData, levelId);
+							}
+						})
+						.catch((err) => console.error("Warning: Failed to send logging messages for level", levelId, err));
 				}
 
 				res.status(201).json({
@@ -631,7 +633,7 @@ export function registerLevelRoutes(
 				console.error("Error reading level file for report:", fileError);
 			}
 
-			await deps.loggingManager.sendReportMessage({
+			deps.loggingManager.sendReportMessage({
 				levelId,
 				levelName: typedLevel.name,
 				author: typedLevel.author,
@@ -649,7 +651,7 @@ export function registerLevelRoutes(
 							fileName: `${safeName}.${fileExtension}`,
 						}
 					: undefined,
-			});
+			}).catch((err) => console.error("Warning: Failed to send report message for level", levelId, err));
 
 			// send to posthog
 			const clientIP = getClientIP(req);
