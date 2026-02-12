@@ -1,4 +1,4 @@
-# PVZM Backend ![v0.6.1](https://img.shields.io/badge/version-v0.6.1-darklime)
+# PVZM Backend ![v0.6.2](https://img.shields.io/badge/version-v0.6.2-darklime)
 
 > A Deno-powered backend service for [Plants vs. Zombies: MODDED](https://github.com/roblnet13/pvz). This service provides APIs for uploading, downloading, listing, favoriting, and reporting user-created _I, Zombie_ levels.
 
@@ -73,6 +73,7 @@ The server can be configured using the following environment variables in a `.en
 | USE_TEST_UI                | Enable test UI route (`/index.html`)                                 | true                                        |
 | USE_ADMIN_UI               | Enable admin UI route (`/admin.html`)                                | true                                        |
 | GAME_URL                   | Game URL used in generated links (reports/uploads)                   | <https://pvzm.net>                          |
+| GAME_URL_SECRET            | Secret appended to game URL requests to bypass WAF/bot protection    |                                             |
 | BACKEND_URL                | Backend URL used in generated links (reports/uploads)                | <https://backend.pvzm.net>                  |
 | CORS_ENABLED               | Enable CORS                                                          | true                                        |
 | ALLOWED_ORIGINS            | Comma-separated list of allowed origins (no spaces)                  | `https://pvzm.net,https://backend.pvzm.net` |

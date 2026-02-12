@@ -31,6 +31,7 @@ export type ServerConfig = {
 	blueskyPds: string;
 
 	gameUrl: string;
+	gameUrlSecret: string;
 	backendUrl: string;
 
 	dbPath: string;
@@ -92,6 +93,7 @@ export function loadConfig(): ServerConfig {
 	const blueskyPds = Deno.env.get("BLUESKY_PDS") || "https://bsky.social";
 
 	const gameUrl = Deno.env.get("GAME_URL") || "https://pvzm.net";
+	const gameUrlSecret = Deno.env.get("GAME_URL_SECRET") || "";
 	const backendUrl = Deno.env.get("BACKEND_URL") || "https://backend.pvzm.net";
 
 	const dbPath = Deno.env.get("DB_PATH") || "./database.db";
@@ -143,6 +145,7 @@ export function loadConfig(): ServerConfig {
 		blueskyPds,
 
 		gameUrl,
+		gameUrlSecret,
 		backendUrl,
 
 		dbPath,

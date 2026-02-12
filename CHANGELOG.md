@@ -1,8 +1,13 @@
 # Changelog
 
+## 0.6.2
+
+- 🛠️ Cache game images used for thumbnail rendering
+- ⭐ Add `GAME_URL_SECRET` to bypass WAF/bot protection on game asset requests
+
 ## 0.6.1
 
-- 🛠️ Switched from `jsr:@gfx/canvas` to `npm:@napi-rs/canvas` for compatibility with aarch64
+- 🛠️ Switch from `jsr:@gfx/canvas` to `npm:@napi-rs/canvas` for compatibility with AArch64
 
 ## **0.6.0**
 

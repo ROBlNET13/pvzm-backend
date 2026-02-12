@@ -12,6 +12,8 @@ export type PlantData = {
 
 export async function getPlantImages(config: ServerConfig): Promise<{ [key: string]: PlantData }> {
 	const gameUrl = config.gameUrl.endsWith("/") ? config.gameUrl.slice(0, -1) : config.gameUrl;
+	const secret = config.gameUrlSecret;
+	const suffix = secret ? `?secret=${encodeURIComponent(secret)}` : "";
 
 	// snapshot existing keys so we can clean up after import
 	const keysBefore = new Set(Object.keys(g));
@@ -45,7 +47,7 @@ export async function getPlantImages(config: ServerConfig): Promise<{ [key: stri
 
 	try {
 		// dynamic import resolves all plant file imports via the game URL
-		await import(`${gameUrl}/game/js/CPlants.js`);
+		await import(`${gameUrl}/game/js/CPlants.js${suffix}`);
 
 		// CPlants.js sets window[plantName] for each plant.
 		// In Deno, window === globalThis, so they're on g now.

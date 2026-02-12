@@ -1,9 +1,19 @@
 import type { ServerConfig } from "./config.ts";
-import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { createCanvas, loadImage, type Image } from "@napi-rs/canvas";
 import { izombiePlantsMap } from "./levels_io.ts";
 import type { PlantData } from "./plantImages.ts";
 
 const PUMPKIN_HEAD_INDEX = izombiePlantsMap.indexOf("oPumpkinHead");
+
+const imageCache = new Map<string, Image>();
+
+async function cachedLoadImage(url: string): Promise<Image> {
+	const cached = imageCache.get(url);
+	if (cached) return cached;
+	const img = await loadImage(url);
+	imageCache.set(url, img);
+	return img;
+}
 
 export async function renderThumbnailCanvas(
 	thumb: number[][],
@@ -12,6 +22,8 @@ export async function renderThumbnailCanvas(
 	config: ServerConfig
 ): Promise<Uint8Array> {
 	const gameUrl = config.gameUrl.endsWith("/") ? config.gameUrl.slice(0, -1) : config.gameUrl;
+	const secret = config.gameUrlSecret;
+	const suffix = secret ? `?secret=${encodeURIComponent(secret)}` : "";
 	const baseUrl = `${gameUrl}/game/`;
 
 	const canvas = createCanvas(900, 600);
@@ -19,20 +31,20 @@ export async function renderThumbnailCanvas(
 
 	// draw background
 	const bgPath = isWater ? "images/interface/background4.jpg" : "images/interface/background2.jpg";
-	const bgImg = await loadImage(`${baseUrl}${bgPath}`);
+	const bgImg = await cachedLoadImage(`${baseUrl}${bgPath}${suffix}`);
 	ctx.drawImage(bgImg, -115, 0, 1400, 600);
 
 	// sort by zindex (plant[5])
 	thumb.sort((a, b) => a[5] - b[5]);
 
 	// preload all plant images + shadow
-	const shadowImg = await loadImage(`${baseUrl}images/interface/plantshadow32.png`);
+	const shadowImg = await cachedLoadImage(`${baseUrl}images/interface/plantshadow32.png${suffix}`);
 	const images = await Promise.all(
 		thumb.map((plant) => {
 			const plantName = izombiePlantsMap[plant[0]];
 			const data = plantImages[plantName];
 			const src = plant[0] !== PUMPKIN_HEAD_INDEX ? data.PicArr[1] : data.PicArr[8];
-			return loadImage(`${baseUrl}${src}`);
+			return cachedLoadImage(`${baseUrl}${src}${suffix}`);
 		})
 	);
 
