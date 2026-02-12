@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.5
+
+- 🛠️ Fix attachments in edited Discord messages
+
 ## 0.6.4
 
 - 🛠️ Fix requests hanging when a logging provider fails or is slow

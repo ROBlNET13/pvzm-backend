@@ -216,9 +216,13 @@ export class DiscordLoggingProvider implements LoggingProvider {
 
 		try {
 			const message = await this.channel.messages.fetch(messageId);
+			const embed = this.buildEmbed(level);
+			if (message.attachments.size > 0) {
+				embed.setImage("attachment://thumbnail.png");
+			}
 			await message.edit({
 				content: "",
-				embeds: [this.buildEmbed(level)],
+				embeds: [embed],
 				components: [this.buildPublicUploadButtons(level)],
 			});
 			return true;
@@ -233,9 +237,13 @@ export class DiscordLoggingProvider implements LoggingProvider {
 
 		try {
 			const message = await this.adminChannel.messages.fetch(messageId);
+			const embed = this.buildEmbed(level);
+			if (message.attachments.size > 0) {
+				embed.setImage("attachment://thumbnail.png");
+			}
 			await message.edit({
 				content: "",
-				embeds: [this.buildEmbed(level)],
+				embeds: [embed],
 				components: [this.buildAdminUploadButtons(level)],
 			});
 			return true;
