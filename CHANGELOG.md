@@ -3,7 +3,7 @@
 ## **0.6.0**
 
 - ⭐ Add thumbnails to Discord and Bluesky posts for new levels
-- 🛠️ Fixed issue where levels with no logging data couldn't be deleted
+- 🛠️ Fix issue where levels with no logging data can't be deleted
 - 📜 Create OpenAPI schema
 - 📜 Create `CHANGELOG.md`
 
