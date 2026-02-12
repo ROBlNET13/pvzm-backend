@@ -3,30 +3,19 @@
   "specifiers": {
     "jsr:@db/sqlite@0.13": "0.13.0",
     "jsr:@denosaurs/plug@1": "1.1.0",
-    "jsr:@denosaurs/plug@1.0.5": "1.0.5",
-    "jsr:@gfx/canvas@~0.5.8": "0.5.8",
     "jsr:@mathis/turnstile-verify@^1.2.0": "1.2.0",
     "jsr:@openai/openai@^6.17.0": "6.17.0",
-    "jsr:@std/assert@0.214": "0.214.0",
-    "jsr:@std/assert@0.217": "0.217.0",
-    "jsr:@std/encoding@0.214": "0.214.0",
-    "jsr:@std/encoding@0.217.0": "0.217.0",
     "jsr:@std/encoding@1": "1.0.10",
-    "jsr:@std/fmt@0.214": "0.214.0",
     "jsr:@std/fmt@1": "1.0.9",
-    "jsr:@std/fs@0.214": "0.214.0",
-    "jsr:@std/fs@0.217.0": "0.217.0",
     "jsr:@std/fs@1": "1.0.22",
     "jsr:@std/fs@^1.0.22": "1.0.22",
     "jsr:@std/internal@^1.0.12": "1.0.12",
-    "jsr:@std/path@0.214": "0.214.0",
-    "jsr:@std/path@0.217": "0.217.0",
-    "jsr:@std/path@0.217.0": "0.217.0",
     "jsr:@std/path@1": "1.1.4",
     "jsr:@std/path@1.0": "1.0.9",
     "jsr:@std/path@^1.1.4": "1.1.4",
     "npm:@atproto/api@~0.18.20": "0.18.20",
     "npm:@msgpack/msgpack@^3.1.3": "3.1.3",
+    "npm:@napi-rs/canvas@~0.1.65": "0.1.91",
     "npm:@types/cors@^2.8.19": "2.8.19",
     "npm:@types/express@^5.0.6": "5.0.6",
     "npm:@types/node@^25.2.0": "25.2.0",
@@ -48,36 +37,17 @@
     "@db/sqlite@0.13.0": {
       "integrity": "4545c635e0b3d4ddfdc0f2240f932f24b8ad0178e9c2e3a0f9403e7b18ae2fb5",
       "dependencies": [
-        "jsr:@denosaurs/plug@1",
+        "jsr:@denosaurs/plug",
         "jsr:@std/path@1.0"
-      ]
-    },
-    "@denosaurs/plug@1.0.5": {
-      "integrity": "04cd988da558adc226202d88c3a434d5fcc08146eaf4baf0cea0c2284b16d2bf",
-      "dependencies": [
-        "jsr:@std/encoding@0.214",
-        "jsr:@std/fmt@0.214",
-        "jsr:@std/fs@0.214",
-        "jsr:@std/path@0.214"
       ]
     },
     "@denosaurs/plug@1.1.0": {
       "integrity": "eb2f0b7546c7bca2000d8b0282c54d50d91cf6d75cb26a80df25a6de8c4bc044",
       "dependencies": [
-        "jsr:@std/encoding@1",
-        "jsr:@std/fmt@1",
+        "jsr:@std/encoding",
+        "jsr:@std/fmt",
         "jsr:@std/fs@1",
         "jsr:@std/path@1"
-      ]
-    },
-    "@gfx/canvas@0.5.8": {
-      "integrity": "a61c80292528e7433d428556b494a0ea496dd8e6abd4a338b8b25fc04e46ea3e",
-      "dependencies": [
-        "jsr:@denosaurs/plug@1",
-        "jsr:@denosaurs/plug@1.0.5",
-        "jsr:@std/encoding@0.217.0",
-        "jsr:@std/fs@0.217.0",
-        "jsr:@std/path@0.217.0"
       ]
     },
     "@mathis/turnstile-verify@1.2.0": {
@@ -89,40 +59,11 @@
         "npm:zod"
       ]
     },
-    "@std/assert@0.214.0": {
-      "integrity": "55d398de76a9828fd3b1aa653f4dba3eee4c6985d90c514865d2be9bd082b140"
-    },
-    "@std/assert@0.217.0": {
-      "integrity": "c98e279362ca6982d5285c3b89517b757c1e3477ee9f14eb2fdf80a45aaa9642"
-    },
-    "@std/encoding@0.214.0": {
-      "integrity": "30a8713e1db22986c7e780555ffd2fefd1d4f9374d734bb41f5970f6c3352af5"
-    },
-    "@std/encoding@0.217.0": {
-      "integrity": "b03e8ff94c98d6b6a02c02c5cf8e5d203400155516248964fc4559abc04669dc"
-    },
     "@std/encoding@1.0.10": {
       "integrity": "8783c6384a2d13abd5e9e87a7ae0520a30e9f56aeeaa3bdf910a3eaaf5c811a1"
     },
-    "@std/fmt@0.214.0": {
-      "integrity": "40382cff88a0783b347b4d69b94cf931ab8e549a733916718cb866c08efac4d4"
-    },
     "@std/fmt@1.0.9": {
       "integrity": "2487343e8899fb2be5d0e3d35013e54477ada198854e52dd05ed0422eddcabe0"
-    },
-    "@std/fs@0.214.0": {
-      "integrity": "bc880fea0be120cb1550b1ed7faf92fe071003d83f2456a1e129b39193d85bea",
-      "dependencies": [
-        "jsr:@std/assert@0.214",
-        "jsr:@std/path@0.214"
-      ]
-    },
-    "@std/fs@0.217.0": {
-      "integrity": "0bfff5f3618d68c385b28b4ffbf3a15c98293a0f1186444458b62e0111ce77b2",
-      "dependencies": [
-        "jsr:@std/assert@0.217",
-        "jsr:@std/path@0.217"
-      ]
     },
     "@std/fs@1.0.22": {
       "integrity": "de0f277a58a867147a8a01bc1b181d0dfa80bfddba8c9cf2bacd6747bcec9308",
@@ -133,18 +74,6 @@
     },
     "@std/internal@1.0.12": {
       "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
-    },
-    "@std/path@0.214.0": {
-      "integrity": "d5577c0b8d66f7e8e3586d864ebdf178bb326145a3611da5a51c961740300285",
-      "dependencies": [
-        "jsr:@std/assert@0.214"
-      ]
-    },
-    "@std/path@0.217.0": {
-      "integrity": "1217cc25534bca9a2f672d7fe7c6f356e4027df400c0e85c0ef3e4343bc67d11",
-      "dependencies": [
-        "jsr:@std/assert@0.217"
-      ]
     },
     "@std/path@1.0.9": {
       "integrity": "260a49f11edd3db93dd38350bf9cd1b4d1366afa98e81b86167b4e3dd750129e"
@@ -281,6 +210,77 @@
     },
     "@msgpack/msgpack@3.1.3": {
       "integrity": "sha512-47XIizs9XZXvuJgoaJUIE2lFoID8ugvc0jzSHP+Ptfk8nTbnR8g788wv48N03Kx0UkAv559HWRQ3yzOgzlRNUA=="
+    },
+    "@napi-rs/canvas-android-arm64@0.1.91": {
+      "integrity": "sha512-SLLzXXgSnfct4zy/BVAfweZQkYkPJsNsJ2e5DOE8DFEHC6PufyUrwb12yqeu2So2IOIDpWJJaDAxKY/xpy6MYQ==",
+      "os": ["android"],
+      "cpu": ["arm64"]
+    },
+    "@napi-rs/canvas-darwin-arm64@0.1.91": {
+      "integrity": "sha512-bzdbCjIjw3iRuVFL+uxdSoMra/l09ydGNX9gsBxO/zg+5nlppscIpj6gg+nL6VNG85zwUarDleIrUJ+FWHvmuA==",
+      "os": ["darwin"],
+      "cpu": ["arm64"]
+    },
+    "@napi-rs/canvas-darwin-x64@0.1.91": {
+      "integrity": "sha512-q3qpkpw0IsG9fAS/dmcGIhCVoNxj8ojbexZKWwz3HwxlEWsLncEQRl4arnxrwbpLc2nTNTyj4WwDn7QR5NDAaA==",
+      "os": ["darwin"],
+      "cpu": ["x64"]
+    },
+    "@napi-rs/canvas-linux-arm-gnueabihf@0.1.91": {
+      "integrity": "sha512-Io3g8wJZVhK8G+Fpg1363BE90pIPqg+ZbeehYNxPWDSzbgwU3xV0l8r/JBzODwC7XHi1RpFEk+xyUTMa2POj6w==",
+      "os": ["linux"],
+      "cpu": ["arm"]
+    },
+    "@napi-rs/canvas-linux-arm64-gnu@0.1.91": {
+      "integrity": "sha512-HBnto+0rxx1bQSl8bCWA9PyBKtlk2z/AI32r3cu4kcNO+M/5SD4b0v1MWBWZyqMQyxFjWgy3ECyDjDKMC6tY1A==",
+      "os": ["linux"],
+      "cpu": ["arm64"]
+    },
+    "@napi-rs/canvas-linux-arm64-musl@0.1.91": {
+      "integrity": "sha512-/eJtVe2Xw9A86I4kwXpxxoNagdGclu12/NSMsfoL8q05QmeRCbfjhg1PJS7ENAuAvaiUiALGrbVfeY1KU1gztQ==",
+      "os": ["linux"],
+      "cpu": ["arm64"]
+    },
+    "@napi-rs/canvas-linux-riscv64-gnu@0.1.91": {
+      "integrity": "sha512-floNK9wQuRWevUhhXRcuis7h0zirdytVxPgkonWO+kQlbvxV7gEUHGUFQyq4n55UHYFwgck1SAfJ1HuXv/+ppQ==",
+      "os": ["linux"],
+      "cpu": ["riscv64"]
+    },
+    "@napi-rs/canvas-linux-x64-gnu@0.1.91": {
+      "integrity": "sha512-c3YDqBdf7KETuZy2AxsHFMsBBX1dWT43yFfWUq+j1IELdgesWtxf/6N7csi3VPf6VA3PmnT9EhMyb+M1wfGtqw==",
+      "os": ["linux"],
+      "cpu": ["x64"]
+    },
+    "@napi-rs/canvas-linux-x64-musl@0.1.91": {
+      "integrity": "sha512-RpZ3RPIwgEcNBHSHSX98adm+4VP8SMT5FN6250s5jQbWpX/XNUX5aLMfAVJS/YnDjS1QlsCgQxFOPU0aCCWgag==",
+      "os": ["linux"],
+      "cpu": ["x64"]
+    },
+    "@napi-rs/canvas-win32-arm64-msvc@0.1.91": {
+      "integrity": "sha512-gF8MBp4X134AgVurxqlCdDA2qO0WaDdi9o6Sd5rWRVXRhWhYQ6wkdEzXNLIrmmros0Tsp2J0hQzx4ej/9O8trQ==",
+      "os": ["win32"],
+      "cpu": ["arm64"]
+    },
+    "@napi-rs/canvas-win32-x64-msvc@0.1.91": {
+      "integrity": "sha512-++gtW9EV/neKI8TshD8WFxzBYALSPag2kFRahIJV+LYsyt5kBn21b1dBhEUDHf7O+wiZmuFCeUa7QKGHnYRZBA==",
+      "os": ["win32"],
+      "cpu": ["x64"]
+    },
+    "@napi-rs/canvas@0.1.91": {
+      "integrity": "sha512-eeIe1GoB74P1B0Nkw6pV8BCQ3hfCfvyYr4BntzlCsnFXzVJiPMDnLeIx3gVB0xQMblHYnjK/0nCLvirEhOjr5g==",
+      "optionalDependencies": [
+        "@napi-rs/canvas-android-arm64",
+        "@napi-rs/canvas-darwin-arm64",
+        "@napi-rs/canvas-darwin-x64",
+        "@napi-rs/canvas-linux-arm-gnueabihf",
+        "@napi-rs/canvas-linux-arm64-gnu",
+        "@napi-rs/canvas-linux-arm64-musl",
+        "@napi-rs/canvas-linux-riscv64-gnu",
+        "@napi-rs/canvas-linux-x64-gnu",
+        "@napi-rs/canvas-linux-x64-musl",
+        "@napi-rs/canvas-win32-arm64-msvc",
+        "@napi-rs/canvas-win32-x64-msvc"
+      ]
     },
     "@posthog/core@1.19.0": {
       "integrity": "sha512-OMcdu5cJcvkle2hw0rpe+1mTOFRlerTHTtZKZFvB8z0hgzbN1WeaGZfGFY5wOq42LVTSxwdUgK1MYERyzG1Epw==",
@@ -1000,12 +1000,12 @@
   "workspace": {
     "dependencies": [
       "jsr:@db/sqlite@0.13",
-      "jsr:@gfx/canvas@~0.5.8",
       "jsr:@mathis/turnstile-verify@^1.2.0",
       "jsr:@openai/openai@^6.17.0",
       "jsr:@std/fs@^1.0.22",
       "npm:@atproto/api@~0.18.20",
       "npm:@msgpack/msgpack@^3.1.3",
+      "npm:@napi-rs/canvas@~0.1.65",
       "npm:@types/cors@^2.8.19",
       "npm:@types/express@^5.0.6",
       "npm:@types/node@^25.2.0",

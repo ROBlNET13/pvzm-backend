@@ -1,17 +1,9 @@
 import type { ServerConfig } from "./config.ts";
-import { createCanvas, Image } from "@gfx/canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { izombiePlantsMap } from "./levels_io.ts";
 import type { PlantData } from "./plantImages.ts";
 
 const PUMPKIN_HEAD_INDEX = izombiePlantsMap.indexOf("oPumpkinHead");
-
-async function loadImage(url: string): Promise<Image> {
-	const res = await fetch(url);
-	const buf = await res.arrayBuffer();
-	const img = new Image();
-	img.src = new Uint8Array(buf);
-	return img;
-}
 
 export async function renderThumbnailCanvas(
 	thumb: number[][],
@@ -67,5 +59,5 @@ export async function renderThumbnailCanvas(
 		ctx.drawImage(images[i], x, y, w, h);
 	});
 
-	return canvas.encode("png");
+	return new Uint8Array(await canvas.encode("png"));
 }

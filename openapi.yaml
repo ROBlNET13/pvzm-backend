@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
     title: PVZM Backend API
     description: "API for the Plants vs. Zombies: MODDED level sharing platform. Supports level uploading, downloading, browsing, favoriting, reporting, and admin management."
-    version: 0.6.0
+    version: 0.6.1
     contact:
         url: https://pvzm.net
 
@@ -45,7 +45,7 @@ paths:
                                         format: date-time
                                     version:
                                         type: string
-                                        example: 0.6.0
+                                        example: 0.6.1
 
     /api/config:
         get:

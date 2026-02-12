@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1
+
+- 🛠️ Switched from `jsr:@gfx/canvas` to `npm:@napi-rs/canvas` for compatibility with aarch64
+
 ## **0.6.0**
 
 - ⭐ Add thumbnails to Discord and Bluesky posts for new levels

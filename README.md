@@ -1,4 +1,4 @@
-# PVZM Backend ![v0.6.0](https://img.shields.io/badge/version-v0.6.0-darklime)
+# PVZM Backend ![v0.6.1](https://img.shields.io/badge/version-v0.6.1-darklime)
 
 > A Deno-powered backend service for [Plants vs. Zombies: MODDED](https://github.com/roblnet13/pvz). This service provides APIs for uploading, downloading, listing, favoriting, and reporting user-created _I, Zombie_ levels.
 
