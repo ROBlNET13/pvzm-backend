@@ -3,12 +3,6 @@ export type ServerConfig = {
 	corsEnabled: boolean;
 	allowedOrigins: string[];
 
-	useGithubAuth: boolean;
-	githubClientID: string;
-	githubClientSecret: string;
-	allowedUsers: string[];
-	sessionSecret: string;
-
 	useTestUI: boolean;
 	useAdminUI: boolean;
 	usePublicFolder: boolean;
@@ -49,6 +43,13 @@ export type ServerConfig = {
 	usePostHogAnalytics: boolean;
 	postHogApiKey: string;
 	postHogHost: string;
+
+	authSecret: string;
+	authAdminUserIds: string[];
+
+	useGithubAuth: boolean;
+	githubClientId: string;
+	githubClientSecret: string;
 };
 
 function splitCsv(value: string): string[] {
@@ -56,18 +57,11 @@ function splitCsv(value: string): string[] {
 	return value.split(",");
 }
 
-export function loadConfig(): ServerConfig {
+function loadConfig(): ServerConfig {
 	const port = Number(Deno.env.get("PORT") || 3000);
 	const corsEnabled = (Deno.env.get("CORS_ENABLED") ?? "true") === "true";
-	const allowedOriginsString = Deno.env.get("ALLOWED_ORIGINS") ?? "https://pvzm.net,https://backend.pvzm.net";
+	const allowedOriginsString = Deno.env.get("ALLOWED_ORIGINS") ?? "https://pvzm.net,https://backend.pvzm.net,https://docs.pvzm.net,https://staging.pvzm.net";
 	const allowedOrigins = allowedOriginsString ? splitCsv(allowedOriginsString) : [];
-
-	const useGithubAuth = (Deno.env.get("USE_GITHUB_AUTH") ?? "true") === "true";
-	const githubClientID = Deno.env.get("GITHUB_CLIENT_ID") || "";
-	const githubClientSecret = Deno.env.get("GITHUB_CLIENT_SECRET") || "";
-	const allowedUsersString = Deno.env.get("GITHUB_ALLOWED_USERS") || "";
-	const allowedUsers = allowedUsersString ? splitCsv(allowedUsersString) : [];
-	const sessionSecret = Deno.env.get("SESSION_SECRET") || "default-secret";
 
 	const useTestUI = (Deno.env.get("USE_TEST_UI") ?? "true") === "true";
 	const useAdminUI = (Deno.env.get("USE_ADMIN_UI") ?? "true") === "true";
@@ -112,16 +106,18 @@ export function loadConfig(): ServerConfig {
 	const postHogApiKey = Deno.env.get("POSTHOG_API_KEY") || "";
 	const postHogHost = Deno.env.get("POSTHOG_HOST") || "https://us.i.posthog.com";
 
+	const authSecret = Deno.env.get("AUTH_SECRET") || crypto.randomUUID();
+	const authAdminUserIdsString = Deno.env.get("AUTH_ADMIN_USER_IDS") || "";
+	const authAdminUserIds = authAdminUserIdsString ? splitCsv(authAdminUserIdsString) : [];
+
+	const useGithubAuth = (Deno.env.get("USE_GITHUB_AUTH") ?? "true") === "true";
+	const githubClientId = Deno.env.get("GITHUB_CLIENT_ID") || "";
+	const githubClientSecret = Deno.env.get("GITHUB_CLIENT_SECRET") || "";
+
 	return {
 		port,
 		corsEnabled,
 		allowedOrigins,
-
-		useGithubAuth,
-		githubClientID,
-		githubClientSecret,
-		allowedUsers,
-		sessionSecret,
 
 		useTestUI,
 		useAdminUI,
@@ -163,5 +159,14 @@ export function loadConfig(): ServerConfig {
 		usePostHogAnalytics,
 		postHogApiKey,
 		postHogHost,
+
+		authSecret,
+		authAdminUserIds,
+
+		useGithubAuth,
+		githubClientId,
+		githubClientSecret,
 	};
 }
+
+export const config = loadConfig();

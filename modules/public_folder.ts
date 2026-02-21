@@ -1,8 +1,8 @@
 import express from "express";
 
-import type { ServerConfig } from "./config.ts";
+import { config } from "./config.ts";
 
-export function setupPublicFolder(app: any, config: ServerConfig) {
+export function setupPublicFolder(app: any) {
 	if (!config.usePublicFolder) return;
 
 	try {

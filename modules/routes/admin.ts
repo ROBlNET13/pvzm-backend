@@ -1,4 +1,4 @@
-import type { ServerConfig } from "../config.ts";
+import { config } from "../config.ts";
 import type { DbContext, LevelRecord } from "../db.ts";
 import type { LoggingManager } from "../logging/index.ts";
 import { decodeLevelFromDisk, encodeIZL3FileToDisk } from "../levels_io.ts";
@@ -7,7 +7,6 @@ import { getClientIP } from "../request.ts";
 
 export function registerAdminRoutes(
 	app: any,
-	config: ServerConfig,
 	dbCtx: DbContext,
 	deps: {
 		ensureAuthenticated: any;

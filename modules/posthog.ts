@@ -1,10 +1,10 @@
 import { PostHog } from "posthog-node";
 
-import type { ServerConfig } from "./config.ts";
+import { config } from "./config.ts";
 
 export let postHogClient: PostHog | null = null;
 
-export function initPostHog(config: ServerConfig): PostHog | null {
+export function initPostHog(): PostHog | null {
 	if (!config.usePostHogAnalytics) {
 		return null;
 	}
