@@ -1,5 +1,5 @@
-import pako from "pako";
-import { decode as msgpackDecode, encode as msgpackEncode } from "@msgpack/msgpack";
+import { deflateSync, inflateSync } from "node:zlib";
+import { decode as msgpackDecode, encode as msgpackEncode } from "@std/msgpack";
 
 export interface Plant {
 	zIndex: number;
@@ -260,7 +260,7 @@ function reverseKeys(obj: any): any {
 }
 
 function decodeIZL3Bytes(deflatedMsgpack: Uint8Array): CloneLike {
-	const msgpackBytes = pako.inflate(deflatedMsgpack);
+	const msgpackBytes = inflateSync(deflatedMsgpack);
 
 	const obj = msgpackDecode(msgpackBytes);
 	const reversed = reverseKeys(obj);
@@ -275,7 +275,7 @@ function decodeIZL3Bytes(deflatedMsgpack: Uint8Array): CloneLike {
 function encodeIZL3Payload(levelData: CloneLike): Uint8Array {
 	const tinyified = tinyifyKeys(levelData);
 	const msgpackBytes = msgpackEncode(tinyified);
-	return pako.deflate(msgpackBytes, { level: 9 });
+	return deflateSync(msgpackBytes, { level: 9 });
 }
 
 export function encodeIZL3File(levelData: CloneLike): Uint8Array {
@@ -350,14 +350,12 @@ function untinyifyClone_IZL2(tinyString: string): CloneLike {
 }
 
 function decodeIZL2Bytes(bytes: Uint8Array): CloneLike {
-	const decompressed = pako.inflate(bytes);
-	const decompressedString = new TextDecoder().decode(decompressed);
+	const decompressed = inflateSync(bytes);	const decompressedString = new TextDecoder().decode(decompressed);
 	return untinyifyClone_IZL2(decompressedString);
 }
 
 function decodeIZLBytes(bytes: Uint8Array): CloneLike {
-	const decompressed = pako.inflate(bytes);
-	const decompressedString = new TextDecoder().decode(decompressed);
+	const decompressed = inflateSync(bytes);	const decompressedString = new TextDecoder().decode(decompressed);
 	const data = decompressedString.split(";");
 
 	const levelData = JSON.parse(data[0]) as Record<string, unknown>;

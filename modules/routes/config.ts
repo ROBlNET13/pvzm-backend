@@ -1,6 +1,6 @@
-import type { ServerConfig } from "../config.ts";
+import { config } from "../config.ts";
 
-export function registerConfigRoute(app: any, config: ServerConfig) {
+export function registerConfigRoute(app: any) {
 	app.get("/api/config", (_req: any, res: any) => {
 		res.json({
 			turnstileEnabled: config.useTurnstile,

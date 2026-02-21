@@ -1,8 +1,10 @@
 import cors from "cors";
 import express from "express";
 import msgpack from "express-msgpack";
+import { decode as msgpackDecode, encode as msgpackEncode } from "@std/msgpack";
+import { Buffer } from "node:buffer";
 
-import type { ServerConfig } from "./config.ts";
+import { config } from "./config.ts";
 
 export function createExpressApp(): any {
 	const app = express() as any;
@@ -13,12 +15,18 @@ export function createExpressApp(): any {
 		next();
 	});
 
-	app.use(msgpack());
+	app.use(msgpack({
+		encoder: (data: any) => {
+			const encoded = msgpackEncode(data);
+			return Buffer.from(encoded.buffer, encoded.byteOffset, encoded.byteLength);
+		},
+		decoder: msgpackDecode,
+	}));
 
 	return app;
 }
 
-export function setupCors(app: any, config: ServerConfig) {
+export function setupCors(app: any) {
 	if (config.corsEnabled) {
 		const corsOptions = {
 			origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
