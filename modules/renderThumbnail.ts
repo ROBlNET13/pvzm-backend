@@ -15,11 +15,7 @@ async function cachedLoadImage(url: string): Promise<Image> {
 	return img;
 }
 
-export async function renderThumbnailCanvas(
-	thumb: number[][],
-	isWater: boolean,
-	plantImages: { [key: string]: PlantData }
-): Promise<Uint8Array> {
+export async function renderThumbnailCanvas(thumb: number[][], isWater: boolean, plantImages: { [key: string]: PlantData }): Promise<Uint8Array> {
 	const gameUrl = config.gameUrl.endsWith("/") ? config.gameUrl.slice(0, -1) : config.gameUrl;
 	const secret = config.gameUrlSecret;
 	const suffix = secret ? `?secret=${encodeURIComponent(secret)}` : "";

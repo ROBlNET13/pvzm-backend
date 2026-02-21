@@ -350,12 +350,14 @@ function untinyifyClone_IZL2(tinyString: string): CloneLike {
 }
 
 function decodeIZL2Bytes(bytes: Uint8Array): CloneLike {
-	const decompressed = inflateSync(bytes);	const decompressedString = new TextDecoder().decode(decompressed);
+	const decompressed = inflateSync(bytes);
+	const decompressedString = new TextDecoder().decode(decompressed);
 	return untinyifyClone_IZL2(decompressedString);
 }
 
 function decodeIZLBytes(bytes: Uint8Array): CloneLike {
-	const decompressed = inflateSync(bytes);	const decompressedString = new TextDecoder().decode(decompressed);
+	const decompressed = inflateSync(bytes);
+	const decompressedString = new TextDecoder().decode(decompressed);
 	const data = decompressedString.split(";");
 
 	const levelData = JSON.parse(data[0]) as Record<string, unknown>;

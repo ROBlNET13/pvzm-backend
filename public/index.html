@@ -20,23 +20,9 @@
 					<summary>Sign Up</summary>
 					<form id="signupForm">
 						<label for="signup-username">Username</label>
-						<input
-							type="text"
-							name="username"
-							id="signup-username"
-							placeholder="username"
-							required
-							pattern="^[a-zA-Z0-9_.]+$"
-						/>
+						<input type="text" name="username" id="signup-username" placeholder="username" required pattern="^[a-zA-Z0-9_.]+$" />
 						<label for="signup-password">Password</label>
-						<input
-							type="password"
-							name="password"
-							id="signup-password"
-							placeholder="min 8 characters"
-							required
-							minlength="8"
-						/>
+						<input type="password" name="password" id="signup-password" placeholder="min 8 characters" required minlength="8" />
 						<label for="signup-turnstile">Verification</label>
 						<div id="signup-turnstile-container"></div>
 						<button type="submit">Sign Up</button>
@@ -47,21 +33,9 @@
 					<summary>Sign In</summary>
 					<form id="signinForm">
 						<label for="signin-username">Username</label>
-						<input
-							type="text"
-							name="username"
-							id="signin-username"
-							placeholder="username"
-							required
-						/>
+						<input type="text" name="username" id="signin-username" placeholder="username" required />
 						<label for="signin-password">Password</label>
-						<input
-							type="password"
-							name="password"
-							id="signin-password"
-							placeholder="password"
-							required
-						/>
+						<input type="password" name="password" id="signin-password" placeholder="password" required />
 						<label for="signin-turnstile">Verification</label>
 						<div id="signin-turnstile-container"></div>
 						<button type="submit">Sign In</button>
@@ -209,11 +183,7 @@
 				e.preventDefault();
 
 				if (config.turnstileEnabled && !signupTurnstileToken) {
-					document.getElementById("signupResponse").textContent = JSON.stringify(
-						{ error: "Please complete the CAPTCHA verification" },
-						null,
-						2,
-					);
+					document.getElementById("signupResponse").textContent = JSON.stringify({ error: "Please complete the CAPTCHA verification" }, null, 2);
 					return;
 				}
 
@@ -233,11 +203,7 @@
 							}
 						: undefined,
 				});
-				document.getElementById("signupResponse").textContent = JSON.stringify(
-					error || data,
-					null,
-					2,
-				);
+				document.getElementById("signupResponse").textContent = JSON.stringify(error || data, null, 2);
 				if (!error) {
 					refreshAuthStatus();
 					if (config.turnstileEnabled && window.turnstile && signupTurnstileWidgetId) {
@@ -251,11 +217,7 @@
 				e.preventDefault();
 
 				if (config.turnstileEnabled && !signinTurnstileToken) {
-					document.getElementById("signinResponse").textContent = JSON.stringify(
-						{ error: "Please complete the CAPTCHA verification" },
-						null,
-						2,
-					);
+					document.getElementById("signinResponse").textContent = JSON.stringify({ error: "Please complete the CAPTCHA verification" }, null, 2);
 					return;
 				}
 
@@ -272,11 +234,7 @@
 							}
 						: undefined,
 				});
-				document.getElementById("signinResponse").textContent = JSON.stringify(
-					error || data,
-					null,
-					2,
-				);
+				document.getElementById("signinResponse").textContent = JSON.stringify(error || data, null, 2);
 				if (!error) {
 					refreshAuthStatus();
 					if (config.turnstileEnabled && window.turnstile && signinTurnstileWidgetId) {
@@ -310,11 +268,7 @@
 				try {
 					const response = await fetch("/api/config");
 					config = await response.json();
-					document.getElementById("settings").textContent = JSON.stringify(
-						config,
-						null,
-						2,
-					);
+					document.getElementById("settings").textContent = JSON.stringify(config, null, 2);
 
 					if (config.turnstileEnabled && config.turnstileSiteKey) {
 						loadTurnstileWidget(config.turnstileSiteKey);
@@ -340,8 +294,7 @@
 			function loadTurnstileWidget(siteKey) {
 				if (!window.turnstile) {
 					const script = document.createElement("script");
-					script.src =
-						"https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+					script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 					script.async = true;
 					script.defer = true;
 
@@ -370,29 +323,23 @@
 					const signupContainer = document.getElementById("signup-turnstile-container");
 					if (signupContainer) {
 						signupContainer.innerHTML = "";
-						signupTurnstileWidgetId = window.turnstile.render(
-							"#signup-turnstile-container",
-							{
-								sitekey: siteKey,
-								callback: function (token) {
-									signupTurnstileToken = token;
-								},
+						signupTurnstileWidgetId = window.turnstile.render("#signup-turnstile-container", {
+							sitekey: siteKey,
+							callback: function (token) {
+								signupTurnstileToken = token;
 							},
-						);
+						});
 					}
 
 					const signinContainer = document.getElementById("signin-turnstile-container");
 					if (signinContainer) {
 						signinContainer.innerHTML = "";
-						signinTurnstileWidgetId = window.turnstile.render(
-							"#signin-turnstile-container",
-							{
-								sitekey: siteKey,
-								callback: function (token) {
-									signinTurnstileToken = token;
-								},
+						signinTurnstileWidgetId = window.turnstile.render("#signin-turnstile-container", {
+							sitekey: siteKey,
+							callback: function (token) {
+								signinTurnstileToken = token;
 							},
-						);
+						});
 					}
 				}
 			}
@@ -413,16 +360,12 @@
 						}
 
 						data.levels.forEach((level) => {
-							const levelElement = template.content
-								.cloneNode(true)
-								.querySelector(".level-item");
+							const levelElement = template.content.cloneNode(true).querySelector(".level-item");
 
 							levelElement.querySelector(".level-name").textContent = level.name;
 							levelElement.querySelector(".level-id").textContent = level.id;
 							levelElement.querySelector(".level-author").textContent = level.author;
-							levelElement.querySelector(".level-created-at").textContent = formatDate(
-								level.created_at,
-							);
+							levelElement.querySelector(".level-created-at").textContent = formatDate(level.created_at);
 							levelElement.querySelector(".level-sun").textContent = level.sun;
 							levelElement.querySelector(".level-is-water").checked = level.is_water;
 							levelElement.querySelector(".level-favorites").textContent = level.favorites;
@@ -443,8 +386,7 @@
 					}
 				} catch (error) {
 					console.error("Error loading levels:", error);
-					document.getElementById("levelsList").innerHTML =
-						"<p>Error loading levels.</p>";
+					document.getElementById("levelsList").innerHTML = "<p>Error loading levels.</p>";
 				}
 			}
 
@@ -506,11 +448,7 @@
 				try {
 					const response = await fetch(`/api/levels/${id}`);
 					const data = await response.json();
-					document.getElementById("levelDetails").textContent = JSON.stringify(
-						data,
-						null,
-						2,
-					);
+					document.getElementById("levelDetails").textContent = JSON.stringify(data, null, 2);
 
 					const getLevelForm = document.getElementById("getLevelForm");
 					if (getLevelForm) {
@@ -518,19 +456,14 @@
 					}
 				} catch (error) {
 					console.error("Error getting level details:", error);
-					document.getElementById("levelDetails").textContent = JSON.stringify(
-						{ error: error.message },
-						null,
-						2,
-					);
+					document.getElementById("levelDetails").textContent = JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
 			async function downloadLevel(id) {
 				try {
 					window.location.href = `/api/levels/${id}/download`;
-					document.getElementById("downloadResponse").textContent =
-						"Download initiated...";
+					document.getElementById("downloadResponse").textContent = "Download initiated...";
 
 					const downloadForm = document.getElementById("downloadForm");
 					if (downloadForm) {
@@ -538,11 +471,7 @@
 					}
 				} catch (error) {
 					console.error("Error downloading level:", error);
-					document.getElementById("downloadResponse").textContent = JSON.stringify(
-						{ error: error.message },
-						null,
-						2,
-					);
+					document.getElementById("downloadResponse").textContent = JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
@@ -558,11 +487,7 @@
 					});
 
 					const data = await response.json();
-					document.getElementById("favoriteResponse").textContent = JSON.stringify(
-						data,
-						null,
-						2,
-					);
+					document.getElementById("favoriteResponse").textContent = JSON.stringify(data, null, 2);
 
 					if (data.success) {
 						loadLevels();
@@ -574,11 +499,7 @@
 					}
 				} catch (error) {
 					console.error("Error favoriting level:", error);
-					document.getElementById("favoriteResponse").textContent = JSON.stringify(
-						{ error: error.message },
-						null,
-						2,
-					);
+					document.getElementById("favoriteResponse").textContent = JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 
@@ -632,11 +553,7 @@
 					reader.readAsArrayBuffer(file);
 				} catch (error) {
 					console.error("Error uploading level:", error);
-					document.getElementById("response").textContent = JSON.stringify(
-						{ error: error.message },
-						null,
-						2,
-					);
+					document.getElementById("response").textContent = JSON.stringify({ error: error.message }, null, 2);
 				}
 			}
 

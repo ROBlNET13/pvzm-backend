@@ -15,13 +15,15 @@ export function createExpressApp(): any {
 		next();
 	});
 
-	app.use(msgpack({
-		encoder: (data: any) => {
-			const encoded = msgpackEncode(data);
-			return Buffer.from(encoded.buffer, encoded.byteOffset, encoded.byteLength);
-		},
-		decoder: msgpackDecode,
-	}));
+	app.use(
+		msgpack({
+			encoder: (data: any) => {
+				const encoded = msgpackEncode(data);
+				return Buffer.from(encoded.buffer, encoded.byteOffset, encoded.byteLength);
+			},
+			decoder: msgpackDecode,
+		})
+	);
 
 	return app;
 }
