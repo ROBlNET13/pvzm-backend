@@ -13,14 +13,22 @@ servers:
 tags:
     - name: Health
       description: Health check endpoints
+      x-page-icon: heart-pulse
     - name: Config
       description: Server configuration
-    - name: Levels
-      description: Public level operations
+      x-page-icon: gear
     - name: Auth
       description: GitHub OAuth authentication
+      x-page-icon: lock
     - name: Admin
       description: Admin level management
+      x-page-icon: shield
+    - name: I, Zombie
+      x-page-icon: skull
+    - name: Levels
+      description: Public level operations
+      x-parent: I, Zombie
+      x-page-icon: layer-group
 
 paths:
     /api/health:
