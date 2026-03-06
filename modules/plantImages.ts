@@ -1,4 +1,4 @@
-import type { ServerConfig } from "./config.ts";
+import { config } from "./config.ts";
 
 // deno-lint-ignore no-explicit-any
 const g = globalThis as any;
@@ -10,7 +10,7 @@ export type PlantData = {
 	shadowStyle: string;
 };
 
-export async function getPlantImages(config: ServerConfig): Promise<{ [key: string]: PlantData }> {
+export async function getPlantImages(): Promise<{ [key: string]: PlantData }> {
 	const gameUrl = config.gameUrl.endsWith("/") ? config.gameUrl.slice(0, -1) : config.gameUrl;
 	const secret = config.gameUrlSecret;
 	const suffix = secret ? `?secret=${encodeURIComponent(secret)}` : "";

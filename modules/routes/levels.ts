@@ -6,7 +6,7 @@ import { postHogClient } from "../posthog.ts";
 import { getPlantImages, type PlantData } from "../plantImages.ts";
 import { renderThumbnailCanvas } from "../renderThumbnail.ts";
 
-import type { ServerConfig } from "../config.ts";
+import { config } from "../config.ts";
 import type { DbContext, LevelRecord } from "../db.ts";
 import type { LoggingManager } from "../logging/index.ts";
 import type { ModerationResult } from "../moderation.ts";
@@ -14,7 +14,6 @@ import type { TurnstileResponse } from "../turnstile.ts";
 
 export function registerLevelRoutes(
 	app: any,
-	config: ServerConfig,
 	dbCtx: DbContext,
 	deps: {
 		validateTurnstile: (response: string, remoteip: string) => Promise<TurnstileResponse>;
@@ -269,9 +268,9 @@ export function registerLevelRoutes(
 					let thumbnailPng: Uint8Array | undefined;
 					try {
 						if (!plantImagesCache) {
-							plantImagesCache = await getPlantImages(config);
+							plantImagesCache = await getPlantImages();
 						}
-						thumbnailPng = await renderThumbnailCanvas(thumbData, is_water, plantImagesCache, config);
+						thumbnailPng = await renderThumbnailCanvas(thumbData, is_water, plantImagesCache);
 					} catch (e) {
 						console.error("Failed to render thumbnail for logging:", e);
 					}

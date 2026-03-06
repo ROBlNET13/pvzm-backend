@@ -1,13 +1,13 @@
 import { TurnstileVerify } from "@mathis/turnstile-verify";
 
-import type { ServerConfig } from "./config.ts";
+import { config } from "./config.ts";
 
 export interface TurnstileResponse {
 	valid: boolean;
 	messages?: string[];
 }
 
-export function initTurnstile(config: ServerConfig) {
+export function initTurnstile() {
 	let turnstile: TurnstileVerify | undefined;
 	if (config.useTurnstile) {
 		if (config.turnstileSecret) {

@@ -1,9 +1,8 @@
-import { Database } from "@db/sqlite";
-
-import type { ServerConfig } from "./config.ts";
+import { DatabaseSync } from "node:sqlite";
+import { config } from "./config.ts";
 
 export type DbContext = {
-	db: Database;
+	db: DatabaseSync;
 	dataFolderPath: string;
 	recomputeFavorites: (levelId: number) => void;
 	createOneTimeTokenForLevel: (levelId: number) => string;
@@ -26,7 +25,7 @@ export type LevelRecord = {
 	logging_data: string | null;
 };
 
-function tableHasColumn(db: Database, tableName: string, columnName: string) {
+function tableHasColumn(db: DatabaseSync, tableName: string, columnName: string) {
 	try {
 		const cols = db.prepare(`PRAGMA table_info(${tableName})`).all() as any[];
 		return cols.some((c) => c?.name === columnName);
@@ -35,7 +34,7 @@ function tableHasColumn(db: Database, tableName: string, columnName: string) {
 	}
 }
 
-function recomputeFavorites(db: Database, levelId: number) {
+function recomputeFavorites(db: DatabaseSync, levelId: number) {
 	db.prepare(
 		`UPDATE levels
 		 SET favorites = (
@@ -55,8 +54,8 @@ function generateOneTimeToken(): string {
 	return `token_${base64url}`;
 }
 
-export function initDatabase(config: ServerConfig): DbContext {
-	const db = new Database(config.dbPath);
+export function initDatabase(): DbContext {
+	const db = new DatabaseSync(config.dbPath);
 
 	// levels
 	db.prepare(`
@@ -112,6 +111,75 @@ export function initDatabase(config: ServerConfig): DbContext {
 	} catch (indexError) {
 		console.error("Admin tokens index creation error:", indexError);
 	}
+
+	// better-auth tables
+	db.prepare(`
+		CREATE TABLE IF NOT EXISTS "user" (
+			id TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			email TEXT NOT NULL UNIQUE,
+			emailVerified INTEGER NOT NULL DEFAULT 0,
+			image TEXT,
+			createdAt TEXT NOT NULL,
+			updatedAt TEXT NOT NULL,
+			username TEXT UNIQUE,
+			displayUsername TEXT,
+			role TEXT DEFAULT 'user',
+			banned INTEGER DEFAULT 0,
+			banReason TEXT,
+			banExpires TEXT
+		)
+	`).run();
+
+	db.prepare(`
+		CREATE TABLE IF NOT EXISTS "session" (
+			id TEXT PRIMARY KEY,
+			userId TEXT NOT NULL REFERENCES "user"(id),
+			token TEXT NOT NULL UNIQUE,
+			expiresAt TEXT NOT NULL,
+			ipAddress TEXT,
+			userAgent TEXT,
+			createdAt TEXT NOT NULL,
+			updatedAt TEXT NOT NULL,
+			impersonatedBy TEXT
+		)
+	`).run();
+
+	db.prepare(`
+		CREATE TABLE IF NOT EXISTS "account" (
+			id TEXT PRIMARY KEY,
+			userId TEXT NOT NULL REFERENCES "user"(id),
+			accountId TEXT NOT NULL,
+			providerId TEXT NOT NULL,
+			accessToken TEXT,
+			refreshToken TEXT,
+			accessTokenExpiresAt TEXT,
+			refreshTokenExpiresAt TEXT,
+			scope TEXT,
+			idToken TEXT,
+			password TEXT,
+			createdAt TEXT NOT NULL,
+			updatedAt TEXT NOT NULL
+		)
+	`).run();
+
+	db.prepare(`
+		CREATE TABLE IF NOT EXISTS "verification" (
+			id TEXT PRIMARY KEY,
+			identifier TEXT NOT NULL,
+			value TEXT NOT NULL,
+			expiresAt TEXT NOT NULL,
+			createdAt TEXT NOT NULL,
+			updatedAt TEXT NOT NULL
+		)
+	`).run();
+
+	// better-auth indexes
+	db.prepare('CREATE INDEX IF NOT EXISTS idx_user_email ON "user"(email)').run();
+	db.prepare('CREATE INDEX IF NOT EXISTS idx_account_userId ON "account"(userId)').run();
+	db.prepare('CREATE INDEX IF NOT EXISTS idx_session_userId ON "session"(userId)').run();
+	db.prepare('CREATE INDEX IF NOT EXISTS idx_session_token ON "session"(token)').run();
+	db.prepare('CREATE INDEX IF NOT EXISTS idx_verification_identifier ON "verification"(identifier)').run();
 
 	// lightweight runtime migration: favorites
 	try {
@@ -242,8 +310,8 @@ export function initDatabase(config: ServerConfig): DbContext {
 	}
 
 	function consumeOneTimeTokenForLevel(token: string, levelId: number): boolean {
-		const changes = db.prepare("DELETE FROM admin_tokens WHERE token = ? AND level_id = ?").run(token, levelId);
-		return changes === 1;
+		const result = db.prepare("DELETE FROM admin_tokens WHERE token = ? AND level_id = ?").run(token, levelId);
+		return result.changes === 1;
 	}
 
 	return {
@@ -256,7 +324,7 @@ export function initDatabase(config: ServerConfig): DbContext {
 	};
 }
 
-export function ensureDataFolder(config: ServerConfig) {
+export function ensureDataFolder() {
 	if (!config.createDataFolder) return;
 	try {
 		Deno.mkdirSync(config.dataFolderPath, { recursive: true });

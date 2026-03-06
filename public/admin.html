@@ -1,697 +1,950 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="stylesheet" href="css/pico.green.css" />
-		<title>PVZM Admin Dashboard</title>
-		<style>
-			.hidden {
-				display: none;
-			}
-			.level-actions {
-				display: flex;
-				gap: 0.5rem;
-			}
-			.success-message {
-				color: green;
-				font-weight: bold;
-			}
-			.error-message {
-				color: red;
-				font-weight: bold;
-			}
-			.difficulty-marker {
-				display: inline-block;
-				width: 12px;
-				height: 12px;
-				border-radius: 50%;
-				margin-right: 5px;
-			}
-			/* use tailwind 400 colors */
-			.difficulty-1 {
-				background-color: oklch(74.6% 0.16 232.661); /* sky */
-			}
-			.difficulty-2 {
-				background-color: oklch(77.7% 0.152 181.912); /* teal */
-			}
-			.difficulty-3 {
-				background-color: oklch(79.2% 0.209 151.711); /* green */
-			}
-			.difficulty-4 {
-				background-color: oklch(84.1% 0.238 128.85); /* lime */
-			}
-			.difficulty-5 {
-				background-color: oklch(85.2% 0.199 91.936); /* yellow */
-			}
-			.difficulty-6 {
-				background-color: oklch(82.8% 0.189 84.429); /* amber */
-			}
-			.difficulty-7 {
-				background-color: oklch(79.2% 0.176 69.885); /* orange */
-			}
-			.difficulty-8 {
-				background-color: oklch(77.1% 0.21 39.998); /* red */
-			}
-			.difficulty-9 {
-				background-color: oklch(75.8% 0.182 2.965); /* rose */
-			}
-			.difficulty-10 {
-				background-color: oklch(74.5% 0.153 325.354); /* pink */
-			}
-			.pagination {
-				margin-top: 1rem;
-				display: flex;
-				gap: 0.5rem;
-				align-items: center;
-				justify-content: center;
-			}
-			.pagination button {
-				padding: 0.25rem 0.5rem;
-			}
-			.pagination .page-info {
-				margin: 0 0.5rem;
-			}
-			table {
-				width: 100%;
-			}
-			table td {
-				vertical-align: middle;
-			}
-			.stats {
-				display: flex;
-				gap: 1rem;
-				font-size: 0.85rem;
-			}
-			.stats div {
-				display: flex;
-				gap: 0.25rem;
-				align-items: center;
-			}
-			.stats svg {
-				width: 16px;
-				height: 16px;
-			}
-			.user-profile {
-				display: flex;
-				align-items: center;
-				gap: 0.5rem;
-			}
-			.user-avatar {
-				width: 80px;
-				height: 80px;
-				border-radius: 50%;
-				margin-right: 1rem;
-			}
-			div.x-scroll {
-				overflow-x: scroll;
-			}
-		</style>
+		<title>PVZM Admin</title>
+		<link href="css/built.css" rel="stylesheet" />
 	</head>
-
-	<body>
-		<main class="container">
-			<h1>PVZM Admin Dashboard</h1>
-			<p><a href="/index.html">Back to main page</a></p>
-
-			<!-- Authentication Section -->
-			<article id="auth-section" class="auth-section">
-				<div id="login-container" class="hidden">
-					<h2>Admin Authentication Required</h2>
-					<p>Please sign in with GitHub to access the admin dashboard.</p>
-					<a href="/api/auth/github" class="button">Sign in with GitHub</a>
-				</div>
-				<div id="user-profile" class="hidden">
-					<div class="user-profile">
-						<img id="user-avatar" class="user-avatar" src="" alt="User avatar" />
-						<div>
-							<h3 id="user-name">Username</h3>
-							<p>You are signed in as an administrator</p>
+	<body class="bg-gray-900">
+		<div id="signin" class="hidden">
+			<div class="top-1/2 left-1/2 absolute w-full max-w-sm -translate-1/2">
+				<h2 class="mb-6 font-semibold text-white text-xl text-center">PVZM Admin</h2>
+				<form id="signin-form" onsubmit="return false;" class="space-y-4">
+					<div>
+						<label for="signin-username" class="block mb-2 font-medium text-heading text-sm">Username</label>
+						<input
+							type="text"
+							id="signin-username"
+							class="block bg-neutral-secondary-medium shadow-xs px-3 py-2.5 border border-default-medium focus:border-brand rounded-base focus:ring-brand w-full text-heading placeholder:text-body text-sm"
+							placeholder="admin"
+							required
+						/>
+					</div>
+					<div>
+						<label for="signin-password" class="block mb-2 font-medium text-heading text-sm">Password</label>
+						<input
+							type="password"
+							id="signin-password"
+							class="block bg-neutral-secondary-medium shadow-xs px-3 py-2.5 border border-default-medium focus:border-brand rounded-base focus:ring-brand w-full text-heading placeholder:text-body text-sm"
+							placeholder="Password"
+							required
+						/>
+					</div>
+					<p id="signin-error" class="hidden text-fg-danger text-sm"></p>
+					<button
+						type="submit"
+						class="inline-flex box-border justify-center items-center bg-brand hover:bg-brand-strong shadow-xs px-4 py-2.5 border border-transparent rounded-base focus:outline-none focus:ring-4 focus:ring-brand-medium w-full font-medium text-white text-sm leading-5"
+					>
+						Sign in
+					</button>
+				</form>
+			</div>
+		</div>
+		<main id="admin-main" class="hidden">
+			<nav class="top-0 z-50 fixed bg-neutral-primary-soft border-default border-b w-full">
+				<div class="px-3 lg:px-5 py-3 lg:pl-3">
+					<div class="flex justify-between items-center">
+						<div class="flex justify-start rtl:justify-end items-center">
+							<button
+								data-drawer-target="top-bar-sidebar"
+								data-drawer-toggle="top-bar-sidebar"
+								aria-controls="top-bar-sidebar"
+								type="button"
+								class="sm:hidden box-border bg-transparent hover:bg-neutral-secondary-medium mx-0 -my-2 p-2 border border-transparent rounded-base focus:outline-none focus:ring-4 focus:ring-neutral-tertiary font-medium text-heading text-sm leading-5"
+							>
+								<span class="sr-only">Open sidebar</span>
+								<svg
+									class="w-6 h-6"
+									aria-hidden="true"
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h10" />
+								</svg>
+							</button>
+							<a href="/admin.html" class="flex ms-2 md:me-24">
+								<span class="self-center font-semibold dark:text-white text-lg whitespace-nowrap">PVZM</span>
+							</a>
+						</div>
+						<div class="flex items-center">
+							<div class="flex items-center ms-3">
+								<div>
+									<button
+										type="button"
+										class="flex justify-center items-center bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 w-8 h-8 font-medium text-white text-sm"
+										aria-expanded="false"
+										data-dropdown-toggle="dropdown-user"
+										id="user-avatar-btn"
+									>
+										<span class="sr-only">Open user menu</span>
+									</button>
+								</div>
+								<div class="hidden z-50 bg-neutral-primary-medium shadow-lg border border-default-medium rounded-base w-44" id="dropdown-user">
+									<div class="px-4 py-3 border-default-medium border-b" role="none">
+										<p id="user-display-name" class="font-medium text-heading text-sm" role="none"></p>
+										<p id="user-username" class="text-body text-sm truncate" role="none"></p>
+									</div>
+									<ul class="p-2 font-medium text-body text-sm" role="none">
+										<li>
+											<a
+												href="#"
+												onclick="logout()"
+												class="inline-flex items-center hover:bg-neutral-tertiary-medium p-2 rounded w-full hover:text-heading"
+												role="menuitem"
+												>Sign out</a
+											>
+										</li>
+									</ul>
+								</div>
+							</div>
 						</div>
 					</div>
-					<a href="/api/auth/logout" class="button">Sign out</a>
 				</div>
-			</article>
+			</nav>
 
-			<div id="admin-content" class="hidden">
-				<article>
-					<h2>Level Management</h2>
-					<fieldset role="group">
-						<input type="search" id="searchInput" placeholder="Search by name, author, or ID" />
-						<button id="searchButton">Search</button>
-						<button id="resetButton" class="outline secondary">Reset</button>
-					</fieldset>
+			<aside
+				id="top-bar-sidebar"
+				class="top-0 left-0 z-40 fixed w-64 h-full transition-transform -translate-x-full sm:translate-x-0"
+				aria-label="Sidebar"
+			>
+				<div class="bg-neutral-primary-soft px-3 py-4 border-default border-e h-full overflow-y-auto">
+					<a href="/admin.html" class="flex items-center mb-5 ps-2.5">
+						<span class="self-center font-semibold text-heading text-lg whitespace-nowrap">PVZM</span>
+					</a>
+					<ul class="space-y-2 font-medium">
+						<li>
+							<a href="/admin.html" class="group flex items-center bg-neutral-tertiary px-2 py-1.5 rounded-base text-fg-brand">
+								<svg
+									class="w-5 h-5 text-fg-brand transition duration-75"
+									aria-hidden="true"
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke="currentColor"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9.143 4H4.857A.857.857 0 0 0 4 4.857v4.286c0 .473.384.857.857.857h4.286A.857.857 0 0 0 10 9.143V4.857A.857.857 0 0 0 9.143 4Zm10 0h-4.286a.857.857 0 0 0-.857.857v4.286c0 .473.384.857.857.857h4.286A.857.857 0 0 0 20 9.143V4.857A.857.857 0 0 0 19.143 4Zm-10 10H4.857a.857.857 0 0 0-.857.857v4.286c0 .473.384.857.857.857h4.286a.857.857 0 0 0 .857-.857v-4.286A.857.857 0 0 0 9.143 14Zm10 0h-4.286a.857.857 0 0 0-.857.857v4.286c0 .473.384.857.857.857h4.286a.857.857 0 0 0 .857-.857v-4.286a.857.857 0 0 0-.857-.857Z"
+									/>
+								</svg>
+								<span class="ms-3">Levels</span>
+							</a>
+						</li>
+						<li>
+							<a
+								href="#"
+								onclick="logout()"
+								class="group flex items-center hover:bg-neutral-tertiary px-2 py-1.5 rounded-base text-body hover:text-fg-brand"
+							>
+								<svg
+									class="w-5 h-5 group-hover:text-fg-brand transition duration-75 shrink-0"
+									aria-hidden="true"
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke="currentColor"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"
+									/>
+								</svg>
+								<span class="flex-1 ms-3 whitespace-nowrap">Sign Out</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</aside>
 
-					<div id="levelsTableContainer" class="x-scroll">
-						<table id="levelsTable">
-							<thead>
-								<tr>
-									<th>ID</th>
-									<th>Name</th>
-									<th>Author</th>
-									<th>Date</th>
-									<th>Stats</th>
-									<th>Difficulty</th>
-									<th>Featured</th>
-									<th>Actions</th>
-								</tr>
-							</thead>
-							<tbody></tbody>
-						</table>
+			<div class="mt-14 sm:ml-64 p-4">
+				<form id="search-form" class="mx-auto mb-4 max-w-2xl" onsubmit="return false;">
+					<div class="flex -space-x-0.5 shadow-xs rounded-base">
+						<input
+							type="search"
+							id="search-input"
+							class="block bg-neutral-secondary-medium px-3 py-2.5 border border-default-medium focus:border-brand rounded-s-base focus:ring-brand w-full text-heading placeholder:text-body text-sm"
+							placeholder="Search by name, author, or ID"
+						/>
+						<button
+							type="submit"
+							id="search-btn"
+							class="inline-flex box-border items-center bg-brand hover:bg-brand-strong shadow-xs px-4 py-2.5 border border-transparent rounded-e-base focus:outline-none focus:ring-4 focus:ring-brand-medium font-medium text-white text-sm leading-5"
+						>
+							<svg
+								class="me-1.5 w-4 h-4"
+								aria-hidden="true"
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
+								<path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+							</svg>
+							Search
+						</button>
 					</div>
+				</form>
 
-					<div class="pagination">
-						<button id="prevPage">&laquo; Previous</button>
-						<span class="page-info" id="pageInfo">Page 1 of 1</span>
-						<button id="nextPage">Next &raquo;</button>
-					</div>
-				</article>
+				<div id="levels-grid" class="flex flex-wrap gap-4"></div>
 
-				<!-- Edit Modal -->
-				<dialog id="editModal">
-					<article>
-						<h3>Edit Level</h3>
-						<form id="editForm">
-							<input type="hidden" id="editLevelId" />
-
-							<div>
-								<label for="editName">Name</label>
-								<input type="text" id="editName" required />
-							</div>
-
-							<div>
-								<label for="editAuthor">Author</label>
-								<input type="text" id="editAuthor" required />
-							</div>
-
-							<div>
-								<label for="editSun">Sun</label>
-								<input type="number" id="editSun" required />
-							</div>
-
-							<div>
-								<label>
-									<input type="checkbox" id="editIsWater" role="switch" disabled />
-									Water Level
-								</label>
-							</div>
-
-							<div>
-								<label for="editDifficulty">Difficulty (1-10)</label>
-								<input type="number" id="editDifficulty" min="1" max="10" />
-							</div>
-
-							<div>
-								<label for="editFavorites">Favorites</label>
-								<input type="number" id="editFavorites" required />
-							</div>
-
-							<div>
-								<label for="editPlays">Plays</label>
-								<input type="number" id="editPlays" required />
-							</div>
-
-							<div class="grid">
-								<button type="button" id="cancelEdit" class="outline">Cancel</button>
-								<button type="submit">Save Changes</button>
-							</div>
-						</form>
-					</article>
-				</dialog>
-
-				<!-- Delete Confirmation Modal -->
-				<dialog id="deleteModal">
-					<article>
-						<h3>Confirm Deletion</h3>
-						<p>Are you sure you want to delete this level?</p>
-						<p>This action cannot be undone.</p>
-						<footer class="grid">
-							<button id="cancelDelete" class="outline">Cancel</button>
-							<button id="confirmDelete">Delete</button>
-						</footer>
-					</article>
-				</dialog>
+				<div id="empty-state" class="hidden py-20 text-body text-center">No levels found.</div>
 			</div>
 		</main>
-		<script src="js/pico.modal.js"></script>
-		<script>
-			document.addEventListener("DOMContentLoaded", async () => {
-				const urlParams = new URLSearchParams(window.location.search);
-				const oneTimeToken = (urlParams.get("token") || "").trim();
-				const tokenActionRaw = (urlParams.get("action") || "").trim();
-				const tokenAction = tokenActionRaw.toLowerCase();
-				const tokenLevelId = parseInt((urlParams.get("level") || "").trim(), 10);
-				const hasTokenFlowParams = Boolean(oneTimeToken) && (tokenAction === "edit" || tokenAction === "delete") && Number.isFinite(tokenLevelId);
 
-				function closeWindowAfterTokenAction(levelId) {
-					if (!oneTimeToken) return false;
-					if (String(levelId) !== String(tokenLevelId)) return false;
-					try {
-						window.close();
-					} catch (_err) {
-						// some browsers block window.close() unless opened by script.
-					}
-					return true;
-				}
+		<nav id="pagination-nav" aria-label="Page navigation" class="hidden bottom-4 left-1/2 sm:left-[calc(50%+var(--spacing)*32)] fixed -translate-x-1/2">
+			<ul id="pagination-list" class="flex -space-x-px text-sm"></ul>
+		</nav>
 
-				function showAuthedUI(user) {
-					document.getElementById("login-container").classList.add("hidden");
-					document.getElementById("user-profile").classList.remove("hidden");
-					document.getElementById("admin-content").classList.remove("hidden");
+		<!-- Play Modal -->
+		<div
+			id="play-modal"
+			tabindex="-1"
+			aria-hidden="true"
+			class="hidden z-50 fixed inset-0 justify-center items-center bg-black/50 w-full h-full overflow-x-hidden overflow-y-auto"
+			data-modal-target="play-modal"
+		>
+			<div class="relative w-[810px] h-[540px]">
+				<div class="relative bg-neutral-primary-soft shadow-sm border border-default rounded-base w-[810px] h-[540px] overflow-hidden">
+					<iframe id="play-iframe" width="810" height="540" scrolling="no" src=""></iframe>
+				</div>
+			</div>
+		</div>
 
-					if (user) {
-						document.getElementById("user-name").textContent = user.displayName || user.username || "Admin";
-						if (user.avatarUrl) {
-							document.getElementById("user-avatar").src = user.avatarUrl;
-						}
-					}
-				}
+		<!-- Delete Modal -->
+		<div
+			id="delete-modal"
+			tabindex="-1"
+			class="hidden z-50 fixed inset-0 justify-center items-center bg-black/50 w-full h-full overflow-x-hidden overflow-y-auto"
+			data-modal-target="delete-modal"
+		>
+			<div class="relative p-4 w-full max-w-md max-h-full">
+				<div class="relative bg-neutral-primary-soft shadow-sm p-4 md:p-6 border border-default rounded-base">
+					<button
+						type="button"
+						class="inline-flex top-3 absolute justify-center items-center bg-transparent hover:bg-neutral-tertiary ms-auto rounded-base w-9 h-9 text-body hover:text-heading text-sm end-2.5"
+						data-modal-hide="delete-modal"
+					>
+						<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+							<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6" />
+						</svg>
+						<span class="sr-only">Close modal</span>
+					</button>
+					<div class="p-4 md:p-5 text-center">
+						<svg
+							class="mx-auto mb-4 w-12 h-12 text-fg-disabled"
+							aria-hidden="true"
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							fill="none"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke="currentColor"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M12 13V8m0 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+							/>
+						</svg>
+						<h3 id="delete-modal-text" class="mb-6 text-body">Are you sure you want to delete this level?</h3>
+						<div class="flex justify-center items-center space-x-4">
+							<button
+								id="delete-confirm-btn"
+								type="button"
+								class="box-border bg-danger hover:bg-danger-strong shadow-xs px-4 py-2.5 border border-transparent rounded-base focus:outline-none focus:ring-4 focus:ring-danger-medium font-medium text-white text-sm leading-5"
+							>
+								Yes, I'm sure
+							</button>
+							<button
+								data-modal-hide="delete-modal"
+								type="button"
+								class="box-border bg-neutral-secondary-medium hover:bg-neutral-tertiary-medium shadow-xs px-4 py-2.5 border border-default-medium rounded-base focus:outline-none focus:ring-4 focus:ring-neutral-tertiary font-medium text-body hover:text-heading text-sm leading-5"
+							>
+								No, cancel
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-				function showLoginUI() {
-					document.getElementById("login-container").classList.remove("hidden");
-					document.getElementById("user-profile").classList.add("hidden");
-					// token-flow should still be able to open the requested modal.
-					if (hasTokenFlowParams) {
-						document.getElementById("admin-content").classList.remove("hidden");
-					} else {
-						document.getElementById("admin-content").classList.add("hidden");
-					}
-				}
+		<!-- Select Editor Modal -->
+		<div
+			id="select-editor-modal"
+			tabindex="-1"
+			aria-hidden="true"
+			class="hidden z-50 fixed inset-0 justify-center items-center bg-black/50 w-full h-full overflow-x-hidden overflow-y-auto"
+			data-modal-target="select-editor-modal"
+		>
+			<div class="relative p-4 w-full max-w-md max-h-full">
+				<div class="relative bg-neutral-primary-soft shadow-sm p-4 md:p-6 border border-default rounded-base">
+					<div class="flex justify-between items-center pb-4 md:pb-5 border-default border-b">
+						<h3 class="font-medium text-heading text-lg">Select Editor</h3>
+						<button
+							type="button"
+							class="inline-flex justify-center items-center bg-transparent hover:bg-neutral-tertiary ms-auto rounded-base w-9 h-9 text-body hover:text-heading text-sm"
+							data-modal-hide="select-editor-modal"
+						>
+							<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+								<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6" />
+							</svg>
+							<span class="sr-only">Close modal</span>
+						</button>
+					</div>
+					<div class="pt-4 md:pt-6">
+						<ul class="space-y-4">
+							<li>
+								<button
+									type="button"
+									id="open-metadata-editor-btn"
+									class="inline-flex items-center bg-neutral-primary-soft hover:bg-neutral-secondary-medium p-5 border-1 border-default rounded-base w-full text-body cursor-pointer"
+								>
+									<div class="flex justify-center items-center bg-brand-soft rounded w-9 h-9 text-fg-brand-strong">
+										<svg
+											class="w-5 h-5"
+											aria-hidden="true"
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											fill="none"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke="currentColor"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M10.779 17.779 4.36 19.918 6.5 13.5m4.279 4.279 8.364-8.643a3.027 3.027 0 0 0-2.14-5.165 3.03 3.03 0 0 0-2.14.886L6.5 13.5m4.279 4.279L6.499 13.5m2.14 2.14 6.213-6.504M12.75 7.04 17 11.28"
+											/>
+										</svg>
+									</div>
+									<div class="block ms-2.5 text-left">
+										<div class="w-full font-medium text-base">Metadata Editor</div>
+										<div class="w-full font-normal text-sm">Change the name, author, sun, etc.</div>
+									</div>
+									<svg
+										class="ms-3 ms-auto w-5 h-5 rtl:rotate-180"
+										aria-hidden="true"
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										fill="none"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke="currentColor"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M19 12H5m14 0-4 4m4-4-4-4"
+										/>
+									</svg>
+								</button>
+							</li>
+							<li>
+								<button
+									type="button"
+									id="open-level-editor-btn"
+									class="inline-flex justify-between items-center bg-neutral-primary-soft hover:bg-neutral-secondary-medium p-5 border-1 border-default rounded-base w-full text-body cursor-pointer"
+								>
+									<div class="flex justify-center items-center bg-brand-soft rounded w-9 h-9 text-fg-brand-strong">
+										<svg
+											class="w-5 h-5"
+											aria-hidden="true"
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											fill="none"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke="currentColor"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"
+											/>
+										</svg>
+									</div>
+									<div class="block ms-2.5 text-left">
+										<div class="w-full font-medium text-base">Level Editor</div>
+										<div class="w-full font-normal text-sm">Modify the level in-game</div>
+									</div>
+									<svg
+										class="ms-auto w-5 h-5 rtl:rotate-180"
+										aria-hidden="true"
+										xmlns="http://www.w3.org/2000/svg"
+										width="24"
+										height="24"
+										fill="none"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke="currentColor"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M19 12H5m14 0-4 4m4-4-4-4"
+										/>
+									</svg>
+								</button>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
 
-				async function validateTokenFlow() {
-					if (!hasTokenFlowParams) return false;
-					try {
-						const resp = await fetch(`${API_BASE_URL}/levels?token=${encodeURIComponent(oneTimeToken)}`);
-						if (!resp.ok) return false;
-						const data = await resp.json();
-						const levels = Array.isArray(data?.levels) ? data.levels : [];
-						if (levels.length !== 1) return false;
-						return String(levels[0].id) === String(tokenLevelId);
-					} catch (_err) {
-						return false;
-					}
-				}
-
-				async function getTokenLevel() {
-					try {
-						const resp = await fetch(`${API_BASE_URL}/levels?token=${encodeURIComponent(oneTimeToken)}`);
-						if (!resp.ok) return null;
-						const data = await resp.json();
-						const levels = Array.isArray(data?.levels) ? data.levels : [];
-						if (levels.length !== 1) return null;
-						return levels[0];
-					} catch (_err) {
-						return null;
-					}
-				}
-
-				// check authentication status
-				try {
-					const authResponse = await fetch("/api/auth/status");
-					// if github auth is disabled server-side, this route won't exist.
-					if (authResponse.status === 404) {
-						showAuthedUI({ displayName: "Auth disabled" });
-					} else {
-						const authData = await authResponse.json();
-						if (authData.authenticated) {
-							showAuthedUI(authData.user);
-						} else {
-							showLoginUI();
-						}
-					}
-				} catch (error) {
-					console.error("Error checking authentication:", error);
-					// fallback to showing login (if server is down, etc.)
-					showLoginUI();
-				}
-
-				const API_BASE_URL = "/api";
-				const PAGE_SIZE = 10;
-				let currentPage = 1;
-				let currentSearchQuery = "";
-				let totalPages = 1;
-
-				// DOM elements
-				const levelsTable = document.getElementById("levelsTable");
-				const tbody = levelsTable.querySelector("tbody");
-				const searchInput = document.getElementById("searchInput");
-				const searchButton = document.getElementById("searchButton");
-				const resetButton = document.getElementById("resetButton");
-				const prevPageButton = document.getElementById("prevPage");
-				const nextPageButton = document.getElementById("nextPage");
-				const pageInfo = document.getElementById("pageInfo");
-				const editModal = document.getElementById("editModal");
-				const editForm = document.getElementById("editForm");
-				const cancelEditButton = document.getElementById("cancelEdit");
-				const deleteModal = document.getElementById("deleteModal");
-				const confirmDeleteButton = document.getElementById("confirmDelete");
-				const cancelDeleteButton = document.getElementById("cancelDelete");
-
-				let levelIdToDelete = null;
-
-				// event listeners
-				searchButton.addEventListener("click", () => {
-					currentSearchQuery = searchInput.value.trim();
-					currentPage = 1;
-					fetchLevels();
-				});
-
-				resetButton.addEventListener("click", () => {
-					searchInput.value = "";
-					currentSearchQuery = "";
-					currentPage = 1;
-					fetchLevels();
-				});
-
-				prevPageButton.addEventListener("click", () => {
-					if (currentPage > 1) {
-						currentPage--;
-						fetchLevels();
-					}
-				});
-
-				nextPageButton.addEventListener("click", () => {
-					if (currentPage < totalPages) {
-						currentPage++;
-						fetchLevels();
-					}
-				});
-
-				cancelEditButton.addEventListener("click", () => {
-					closeModal(editModal);
-				});
-
-				cancelDeleteButton.addEventListener("click", () => {
-					closeModal(deleteModal);
-					levelIdToDelete = null;
-				});
-
-				confirmDeleteButton.addEventListener("click", async () => {
-					if (levelIdToDelete) {
-						await deleteLevel(levelIdToDelete);
-						closeModal(deleteModal);
-						levelIdToDelete = null;
-					}
-				});
-
-				editForm.addEventListener("submit", async (e) => {
-					e.preventDefault();
-					await saveChanges();
-					closeModal(editModal);
-				});
-
-				// add event delegation for edit, delete, feature, and unfeature buttons
-				tbody.addEventListener("click", async (e) => {
-					if (e.target.classList.contains("edit-btn")) {
-						const levelId = e.target.getAttribute("data-id");
-						openEditModal(levelId);
-					} else if (e.target.classList.contains("delete-btn")) {
-						const levelId = e.target.getAttribute("data-id");
-						openDeleteModal(levelId);
-					} else if (e.target.classList.contains("feature-btn")) {
-						const levelId = e.target.getAttribute("data-id");
-						await featureLevel(levelId);
-					} else if (e.target.classList.contains("unfeature-btn")) {
-						const levelId = e.target.getAttribute("data-id");
-						await unfeatureLevel(levelId);
-					}
-				});
-
-				// init
-				fetchLevels();
-
-				// token-flow init (open edit/delete modal automatically)
-				if (hasTokenFlowParams) {
-					const ok = await validateTokenFlow();
-					if (!ok) {
-						alert("Invalid token/action/level parameters.");
-					} else {
-						if (tokenAction === "delete") {
-							openDeleteModal(String(tokenLevelId));
-						} else if (tokenAction === "edit") {
-							await openEditModal(String(tokenLevelId));
-						}
-					}
-				}
-
-				// fetch levels from API
-				async function fetchLevels() {
-					// check if user is authenticated before fetching
-					try {
-						const authResponse = await fetch("/api/auth/status");
-						if (authResponse.status !== 404) {
-							const authData = await authResponse.json();
-							if (!authData.authenticated) {
-								console.log("User not authenticated, skipping level fetch");
-								return;
-							}
-						}
-					} catch (error) {
-						console.error("Error checking authentication:", error);
-						return;
-					}
-
-					try {
-						let url = `${API_BASE_URL}/admin/levels?page=${currentPage}&limit=${PAGE_SIZE}`;
-
-						if (currentSearchQuery) {
-							url += `&q=${encodeURIComponent(currentSearchQuery)}`;
-						}
-
-						const response = await fetch(url);
-						if (!response.ok) {
-							throw new Error("Failed to fetch levels");
-						}
-
-						const data = await response.json();
-						renderLevelsTable(data.levels);
-
-						// update pagination
-						totalPages = data.totalPages || 1;
-						pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-						prevPageButton.disabled = currentPage <= 1;
-						nextPageButton.disabled = currentPage >= totalPages;
-					} catch (error) {
-						console.error("Error fetching levels:", error);
-						alert("Failed to load levels. Please try again later.");
-					}
-				}
-
-				function renderLevelsTable(levels) {
-					tbody.innerHTML = "";
-
-					if (!levels || levels.length === 0) {
-						const tr = document.createElement("tr");
-						tr.innerHTML = `<td colspan="8" style="text-align: center;">No levels found</td>`;
-						tbody.appendChild(tr);
-						return;
-					}
-
-					levels.forEach((level) => {
-						const tr = document.createElement("tr");
-						const date = new Date(level.created_at * 1000);
-						const formattedDate = date.toLocaleDateString();
-
-						const difficultyClass = level.difficulty ? `difficulty-${level.difficulty}` : "";
-						const difficultyDisplay = level.difficulty
-							? `<span class="difficulty-marker ${difficultyClass}"></span>${level.difficulty}/10`
-							: "Not set";
-
-						const isFeatured = level.featured === 1;
-						const featuredDisplay = isFeatured ? "✓ Yes" : "No";
-						const featureButton = isFeatured
-							? `<button class="outline unfeature-btn" data-id="${level.id}">Unfeature</button>`
-							: `<button class="feature-btn" data-id="${level.id}">Feature</button>`;
-
-						tr.innerHTML = `
-					<td>${level.id}</td>
-					<td>${level.name}</td>
-					<td>${level.author}</td>
-					<td>${formattedDate}</td>
-					<td>
-						<div class="stats">
-							<div title="Favorites">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<path d="M7 10v12"></path>
-									<path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"></path>
-								</svg>
-								${level.favorites}
+		<!-- Metadata Editor Modal -->
+		<div
+			id="metadata-editor-modal"
+			tabindex="-1"
+			aria-hidden="true"
+			class="hidden z-50 fixed inset-0 justify-center items-center bg-black/50 w-full h-full overflow-x-hidden overflow-y-auto"
+			data-modal-target="metadata-editor-modal"
+		>
+			<div class="relative p-4 w-full max-w-md max-h-full">
+				<div class="relative bg-neutral-primary-soft shadow-sm p-4 md:p-6 border border-default rounded-base">
+					<div class="flex justify-between items-center pb-4 md:pb-5 border-default border-b">
+						<h3 class="font-medium text-heading text-lg">Level Metadata Editor</h3>
+						<button
+							type="button"
+							class="inline-flex justify-center items-center bg-transparent hover:bg-neutral-tertiary ms-auto rounded-base w-9 h-9 text-body hover:text-heading text-sm"
+							data-modal-hide="metadata-editor-modal"
+						>
+							<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+								<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6" />
+							</svg>
+							<span class="sr-only">Close modal</span>
+						</button>
+					</div>
+					<form id="metadata-form" onsubmit="return false;">
+						<div class="gap-4 grid grid-cols-2 py-4 md:py-6">
+							<div class="col-span-2 sm:col-span-1">
+								<label for="meta-name" class="block mb-2.5 font-medium text-heading text-sm">Name</label>
+								<input
+									type="text"
+									name="name"
+									id="meta-name"
+									class="block bg-neutral-secondary-medium shadow-xs px-3 py-2.5 border border-default-medium focus:border-brand rounded-base focus:ring-brand w-full text-heading placeholder:text-body text-sm"
+									placeholder="Type level name"
+									required
+								/>
 							</div>
-							<div title="Plays">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<polygon points="5 3 19 12 5 21 5 3"></polygon>
-								</svg>
-								${level.plays}
+							<div class="col-span-2 sm:col-span-1">
+								<label for="meta-author" class="block mb-2.5 font-medium text-heading text-sm">Author</label>
+								<input
+									type="text"
+									name="author"
+									id="meta-author"
+									class="block bg-neutral-secondary-medium shadow-xs px-3 py-2.5 border border-default-medium focus:border-brand rounded-base focus:ring-brand w-full text-heading placeholder:text-body text-sm"
+									placeholder="Type level author"
+									required
+								/>
+							</div>
+							<div class="col-span-2 sm:col-span-1">
+								<label for="meta-sun" class="block mb-2.5 font-medium text-heading text-sm">Sun</label>
+								<input
+									type="number"
+									name="sun"
+									id="meta-sun"
+									class="block bg-neutral-secondary-medium shadow-xs px-3 py-2.5 border border-default-medium focus:border-brand rounded-base focus:ring-brand w-full text-heading placeholder:text-body text-sm"
+									placeholder="150"
+									max="9990"
+									min="50"
+									required
+								/>
+							</div>
+							<div class="col-span-2 sm:col-span-1">
+								<label for="meta-difficulty" class="block mb-2.5 font-medium text-heading text-sm"
+									>Difficulty <span class="font-normal text-body text-xs">(Optional)</span></label
+								>
+								<input
+									type="number"
+									name="difficulty"
+									id="meta-difficulty"
+									class="block bg-neutral-secondary-medium shadow-xs px-3 py-2.5 border border-default-medium focus:border-brand rounded-base focus:ring-brand w-full text-heading placeholder:text-body text-sm"
+									placeholder="1-10"
+									max="10"
+									min="1"
+								/>
+							</div>
+							<div class="col-span-2 sm:col-span-1">
+								<label for="meta-favorites" class="block mb-2.5 font-medium text-heading text-sm">Favorites</label>
+								<input
+									type="number"
+									name="favorites"
+									id="meta-favorites"
+									class="block bg-neutral-secondary-medium shadow-xs px-3 py-2.5 border border-default-medium focus:border-brand rounded-base focus:ring-brand w-full text-heading placeholder:text-body text-sm"
+									placeholder="0"
+									min="0"
+									required
+								/>
+							</div>
+							<div class="col-span-2 sm:col-span-1">
+								<label for="meta-plays" class="block mb-2.5 font-medium text-heading text-sm">Plays</label>
+								<input
+									type="number"
+									name="plays"
+									id="meta-plays"
+									class="block bg-neutral-secondary-medium shadow-xs px-3 py-2.5 border border-default-medium focus:border-brand rounded-base focus:ring-brand w-full text-heading placeholder:text-body text-sm"
+									placeholder="0"
+									min="0"
+								/>
 							</div>
 						</div>
-					</td>
-					<td>${difficultyDisplay}</td>
-					<td>${featuredDisplay}</td>
-					<td class="level-actions">
-						<a role="button" class="outline" href="/api/levels/${level.id}/download" target="_blank" rel="noopener">Download</a>
-						${featureButton}
-						<button class="edit-btn" data-id="${level.id}">Edit</button>
-						<button class="outline delete-btn" data-id="${level.id}">Delete</button>
-					</td>
-				`;
-						tbody.appendChild(tr);
-					});
+						<div class="flex items-center space-x-4 pt-4 md:pt-6 border-default border-t">
+							<button
+								type="submit"
+								class="inline-flex box-border items-center bg-brand hover:bg-brand-strong shadow-xs px-4 py-2.5 border border-transparent rounded-base focus:outline-none focus:ring-4 focus:ring-brand-medium font-medium text-white text-sm leading-5"
+							>
+								<svg
+									class="-ms-0.5 me-1.5 w-4 h-4"
+									aria-hidden="true"
+									xmlns="http://www.w3.org/2000/svg"
+									width="24"
+									height="24"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke="currentColor"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M5 11.917 9.724 16.5 19 7.5"
+									/>
+								</svg>
+								Submit
+							</button>
+							<button
+								data-modal-hide="metadata-editor-modal"
+								type="button"
+								class="box-border bg-neutral-secondary-medium hover:bg-neutral-tertiary-medium shadow-xs px-4 py-2.5 border border-default-medium rounded-base focus:outline-none focus:ring-4 focus:ring-neutral-tertiary font-medium text-body hover:text-heading text-sm leading-5"
+							>
+								Cancel
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
+		<script type="module">
+			// --- State ---
+			let currentPage = 1;
+			let currentQuery = "";
+			let totalPages = 1;
+			let activeLevelId = null;
+			let levelsCache = {};
+
+			// --- Escape HTML to prevent XSS ---
+			function esc(str) {
+				const d = document.createElement("div");
+				d.textContent = str;
+				return d.innerHTML;
+			}
+
+			// --- Auth (better-auth client) ---
+			import { createAuthClient } from "https://esm.sh/better-auth@1.4.18/client";
+			import { usernameClient, adminClient } from "https://esm.sh/better-auth@1.4.18/client/plugins";
+
+			const authClient = createAuthClient({
+				plugins: [usernameClient(), adminClient()],
+			});
+
+			let currentUser = null;
+
+			async function checkAuth() {
+				const { data } = await authClient.getSession();
+				if (data?.user && data.user.role === "admin") {
+					currentUser = data.user;
+					showAdmin(data.user);
+					loadLevels();
+					return;
 				}
-				async function openEditModal(levelId) {
-					try {
-						let level;
-						if (oneTimeToken && String(levelId) === String(tokenLevelId)) {
-							level = await getTokenLevel();
-							if (!level) {
-								throw new Error("Failed to fetch token level details");
-							}
-						} else {
-							const response = await fetch(`${API_BASE_URL}/levels/${levelId}`);
-							if (!response.ok) {
-								throw new Error("Failed to fetch level details");
-							}
-							level = await response.json();
-						}
+				showSignin();
+			}
 
-						// fill the form
-						document.getElementById("editLevelId").value = level.id;
-						document.getElementById("editName").value = level.name;
-						document.getElementById("editAuthor").value = level.author;
-						document.getElementById("editSun").value = level.sun;
-						document.getElementById("editIsWater").checked = level.is_water === 1;
-						document.getElementById("editDifficulty").value = level.difficulty === null || level.difficulty === undefined ? "" : level.difficulty;
-						document.getElementById("editFavorites").value = level.favorites;
-						document.getElementById("editPlays").value = level.plays;
+			function showAdmin(user) {
+				document.getElementById("signin").classList.add("hidden");
+				document.getElementById("admin-main").classList.remove("hidden");
+				document.getElementById("user-display-name").textContent = user.name || user.username || "Admin";
+				document.getElementById("user-username").textContent = user.username || "";
+				const avatarBtn = document.getElementById("user-avatar-btn");
+				const initial = (user.name || user.username || "A").charAt(0).toUpperCase();
+				avatarBtn.textContent = initial;
+			}
 
-						// show the modal
-						openModal(editModal);
-					} catch (error) {
-						console.error("Error opening edit modal:", error);
-						alert("Failed to load level details.");
+			function showSignin() {
+				document.getElementById("signin").classList.remove("hidden");
+				document.getElementById("admin-main").classList.add("hidden");
+			}
+
+			async function logout() {
+				await authClient.signOut();
+				currentUser = null;
+				showSignin();
+			}
+
+			document.getElementById("signin-form").addEventListener("submit", async () => {
+				const username = document.getElementById("signin-username").value;
+				const password = document.getElementById("signin-password").value;
+				const errorEl = document.getElementById("signin-error");
+				errorEl.classList.add("hidden");
+
+				const { data, error } = await authClient.signIn.username({ username, password });
+				if (error) {
+					errorEl.textContent = error.message || "Sign in failed";
+					errorEl.classList.remove("hidden");
+					return;
+				}
+				checkAuth();
+			});
+
+			// --- Levels ---
+			async function loadLevels() {
+				const params = new URLSearchParams({ page: currentPage, limit: 12 });
+				if (currentQuery) params.set("q", currentQuery);
+
+				try {
+					const res = await fetch("/api/admin/levels?" + params);
+					if (res.status === 401) {
+						document.getElementById("signin").classList.remove("hidden");
+						document.getElementById("admin-main").classList.add("hidden");
+						return;
+					}
+					const data = await res.json();
+					totalPages = data.totalPages;
+
+					levelsCache = {};
+					data.levels.forEach((l) => (levelsCache[l.id] = l));
+
+					renderLevels(data.levels);
+					renderPagination();
+				} catch (err) {
+					console.error("Failed to load levels:", err);
+				}
+			}
+
+			function renderLevels(levels) {
+				const grid = document.getElementById("levels-grid");
+				const empty = document.getElementById("empty-state");
+
+				if (!levels.length) {
+					grid.innerHTML = "";
+					empty.classList.remove("hidden");
+					return;
+				}
+				empty.classList.add("hidden");
+
+				grid.innerHTML = levels
+					.map((level) => {
+						const isFeatured = level.featured === 1;
+						return `
+					<div class="bg-neutral-primary-medium border border-default-medium rounded-base w-85 min-h-90 overflow-hidden" data-level-id="${level.id}">
+						<div class="flex justify-center items-center bg-neutral-secondary-medium shadow-md/20 w-full aspect-3/2 text-body text-xs">
+							ID: ${level.id}
+						</div>
+						<div class="relative">
+							<button
+								type="button"
+								class="float-right box-border bg-brand hover:bg-brand-strong shadow-xs mx-2 px-4 py-2.5 border border-transparent rounded-base focus:outline-none focus:ring-4 focus:ring-brand-medium font-medium text-white text-sm leading-5"
+								onclick="openEditModal(${level.id})"
+							>
+								Edit
+							</button>
+							<h1 class="mx-4 mt-3 font-semibold text-white text-xl">${esc(level.name)}</h1>
+							<h2 class="mx-4 text-body text-sm">By ${esc(level.author)}</h2>
+						</div>
+						<div class="inline-flex box-border items-center gap-2 mt-2">
+							<span class="inline-flex box-border items-center bg-brand-softer ml-4 px-1.5 py-0.5 border border-brand-subtle rounded-full font-medium text-fg-brand-strong text-xs">
+								<svg class="-ms-0.5 me-0.5 pb-0.5 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+									<path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+								</svg>
+								${level.favorites} Favorites
+							</span>
+							<span class="inline-flex box-border items-center bg-neutral-primary-soft px-1.5 py-0.5 border border-default rounded-full font-medium text-heading text-xs">
+								<svg class="-ms-0.5 me-0.5 pb-0.5 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+									<path fill-rule="evenodd" d="M13 11.15V4a1 1 0 1 0-2 0v7.15L8.78 8.374a1 1 0 1 0-1.56 1.25l4 5a1 1 0 0 0 1.56 0l4-5a1 1 0 1 0-1.56-1.25L13 11.15Z" clip-rule="evenodd"/>
+									<path fill-rule="evenodd" d="M9.657 15.874 7.358 13H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2.358l-2.3 2.874a3 3 0 0 1-4.685 0ZM17 16a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" clip-rule="evenodd"/>
+								</svg>
+								${level.plays} Downloads
+							</span>
+							${isFeatured ? `<span class="inline-flex box-border items-center bg-yellow-500/10 px-1.5 py-0.5 border border-yellow-500/30 rounded-full font-medium text-yellow-400 text-xs">Featured</span>` : ""}
+						</div>
+
+						<div class="bottom-0 left-0 bg-neutral-primary-medium mt-auto border-default border-t w-full h-16">
+							<div class="grid grid-cols-3 mx-auto max-w-lg h-full">
+								<button
+									type="button"
+									class="group inline-flex flex-col justify-center items-center hover:bg-brand/10 px-5 font-medium"
+									onclick="openPlayModal(${level.id})"
+								>
+									<svg class="mb-1 w-6 h-6 text-body group-hover:text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+										<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 18V6l8 6-8 6Z"/>
+									</svg>
+									<span class="text-body group-hover:text-fg-brand text-sm">Play</span>
+								</button>
+								<button
+									type="button"
+									class="group inline-flex flex-col justify-center items-center hover:bg-yellow-500/10 px-5 font-medium"
+									onclick="toggleFeature(${level.id})"
+								>
+									${
+										isFeatured
+											? `
+									<svg class="mb-1 w-6 h-6 text-yellow-400 group-hover:text-fg-yellow" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+										<path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+									</svg>
+									`
+											: `
+									<svg class="mb-1 w-6 h-6 text-body group-hover:text-fg-yellow" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+										<path stroke="currentColor" stroke-width="2" d="M11.083 5.104c.35-.8 1.485-.8 1.834 0l1.752 4.022a1 1 0 0 0 .84.597l4.463.342c.9.069 1.255 1.2.556 1.771l-3.33 2.723a1 1 0 0 0-.337 1.016l1.03 4.119c.214.858-.71 1.552-1.474 1.106l-3.913-2.281a1 1 0 0 0-1.008 0L7.583 20.8c-.764.446-1.688-.248-1.474-1.106l1.03-4.119A1 1 0 0 0 6.8 14.56l-3.33-2.723c-.698-.571-.342-1.702.557-1.771l4.462-.342a1 1 0 0 0 .84-.597l1.753-4.022Z"/>
+									</svg>
+									`
+									}
+									<span class="text-body group-hover:text-fg-yellow text-sm">${isFeatured ? "Unfeature" : "Feature"}</span>
+								</button>
+								<button
+									type="button"
+									class="group inline-flex flex-col justify-center items-center hover:bg-danger/20 px-5 font-medium"
+									onclick="openDeleteModal(${level.id})"
+								>
+									<svg class="mb-1 w-6 h-6 text-body group-hover:text-fg-danger" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+										<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+									</svg>
+									<span class="text-body group-hover:text-fg-danger text-sm">Delete</span>
+								</button>
+							</div>
+						</div>
+					</div>`;
+					})
+					.join("");
+			}
+
+			// --- Pagination ---
+			function renderPagination() {
+				const nav = document.getElementById("pagination-nav");
+				const list = document.getElementById("pagination-list");
+
+				if (totalPages <= 1) {
+					nav.classList.add("hidden");
+					return;
+				}
+				nav.classList.remove("hidden");
+
+				const pageBtnClass =
+					"box-border flex justify-center items-center bg-neutral-secondary-medium hover:bg-neutral-tertiary-medium border border-default-medium focus:outline-none h-9 font-medium text-body hover:text-heading text-sm cursor-pointer";
+				const activeClass =
+					"box-border flex justify-center items-center bg-neutral-tertiary-medium border border-default-medium focus:outline-none w-9 h-9 font-medium text-fg-brand hover:text-fg-brand text-sm";
+
+				let html = `<li><button class="${pageBtnClass} px-3 rounded-s-base" ${currentPage <= 1 ? "disabled" : ""} onclick="goToPage(${currentPage - 1})">Previous</button></li>`;
+
+				const maxVisible = 5;
+				let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+				let end = Math.min(totalPages, start + maxVisible - 1);
+				if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+
+				for (let i = start; i <= end; i++) {
+					if (i === currentPage) {
+						html += `<li><button class="${activeClass}" aria-current="page">${i}</button></li>`;
+					} else {
+						html += `<li><button class="${pageBtnClass} w-9" onclick="goToPage(${i})">${i}</button></li>`;
 					}
 				}
 
-				async function saveChanges() {
-					try {
-						const levelId = document.getElementById("editLevelId").value;
-						const name = document.getElementById("editName").value.trim();
-						const author = document.getElementById("editAuthor").value.trim();
-						const sun = parseInt(document.getElementById("editSun").value);
-						const is_water = document.getElementById("editIsWater").checked ? 1 : 0;
-						const difficultyInput = document.getElementById("editDifficulty").value;
-						const difficulty = difficultyInput ? parseInt(difficultyInput) : null;
-						const favorites = parseInt(document.getElementById("editFavorites").value);
-						const plays = parseInt(document.getElementById("editPlays").value);
+				html += `<li><button class="${pageBtnClass} px-3 rounded-e-base" ${currentPage >= totalPages ? "disabled" : ""} onclick="goToPage(${currentPage + 1})">Next</button></li>`;
 
-						let url = `${API_BASE_URL}/admin/levels/${levelId}`;
-						const usingOneTimeToken = oneTimeToken && String(levelId) === String(tokenLevelId);
-						if (usingOneTimeToken) {
-							url += `?token=${encodeURIComponent(oneTimeToken)}`;
-						}
+				list.innerHTML = html;
+			}
 
-						const response = await fetch(url, {
-							method: "PUT",
-							headers: {
-								"Content-Type": "application/json",
-							},
-							body: JSON.stringify({
-								name,
-								author,
-								sun,
-								is_water,
-								difficulty,
-								favorites,
-								plays,
-							}),
-						});
+			function goToPage(page) {
+				if (page < 1 || page > totalPages) return;
+				currentPage = page;
+				loadLevels();
+				window.scrollTo({ top: 0, behavior: "smooth" });
+			}
 
-						if (!response.ok) {
-							const errorData = await response.json();
-							throw new Error(errorData.message || "Failed to update level");
-						}
+			// --- Search ---
+			document.getElementById("search-form").addEventListener("submit", () => {
+				currentQuery = document.getElementById("search-input").value.trim();
+				currentPage = 1;
+				loadLevels();
+			});
 
-						if (usingOneTimeToken) {
-							closeWindowAfterTokenAction(levelId);
-							return;
-						}
-
-						fetchLevels(); // refresh the table
-					} catch (error) {
-						console.error("Error saving changes:", error);
-						alert(`Failed to save changes: ${error.message}`);
-					}
+			document.getElementById("search-input").addEventListener("keydown", (e) => {
+				if (e.key === "Enter") {
+					e.preventDefault();
+					document.getElementById("search-form").dispatchEvent(new Event("submit"));
 				}
+			});
 
-				function openDeleteModal(levelId) {
-					levelIdToDelete = levelId;
-					openModal(deleteModal);
-				}
+			// --- Modal helpers ---
+			function showModal(id) {
+				const el = document.getElementById(id);
+				el.classList.remove("hidden");
+				el.classList.add("flex");
+			}
 
-				async function deleteLevel(levelId) {
-					try {
-						let url = `${API_BASE_URL}/admin/levels/${levelId}`;
-						const usingOneTimeToken = oneTimeToken && String(levelId) === String(tokenLevelId);
-						if (usingOneTimeToken) {
-							url += `?token=${encodeURIComponent(oneTimeToken)}`;
-						}
+			function hideModal(id) {
+				const el = document.getElementById(id);
+				el.classList.remove("flex");
+				el.classList.add("hidden");
+			}
 
-						const response = await fetch(url, {
-							method: "DELETE",
-						});
-
-						if (!response.ok) {
-							const errorData = await response.json();
-							throw new Error(errorData.message || "Failed to delete level");
-						}
-
-						if (usingOneTimeToken) {
-							closeWindowAfterTokenAction(levelId);
-							return;
-						}
-
-						fetchLevels(); // refresh the table
-					} catch (error) {
-						console.error("Error deleting level:", error);
-						alert(`Failed to delete level: ${error.message}`);
-					}
-				}
-
-				async function featureLevel(levelId) {
-					try {
-						const response = await fetch(`${API_BASE_URL}/admin/levels/${levelId}/feature`, {
-							method: "POST",
-						});
-
-						if (!response.ok) {
-							const errorData = await response.json();
-							throw new Error(errorData.message || "Failed to feature level");
-						}
-
-						fetchLevels(); // refresh the table
-					} catch (error) {
-						console.error("Error featuring level:", error);
-						alert(`Failed to feature level: ${error.message}`);
-					}
-				}
-
-				async function unfeatureLevel(levelId) {
-					try {
-						const response = await fetch(`${API_BASE_URL}/admin/levels/${levelId}/feature`, {
-							method: "DELETE",
-						});
-
-						if (!response.ok) {
-							const errorData = await response.json();
-							throw new Error(errorData.message || "Failed to unfeature level");
-						}
-
-						fetchLevels(); // refresh the table
-					} catch (error) {
-						console.error("Error unfeaturing level:", error);
-						alert(`Failed to unfeature level: ${error.message}`);
+			// Wire up all data-modal-hide buttons
+			document.addEventListener("click", (e) => {
+				const hideBtn = e.target.closest("[data-modal-hide]");
+				if (hideBtn) {
+					hideModal(hideBtn.dataset.modalHide);
+					// Clear play iframe when closing play modal
+					if (hideBtn.dataset.modalHide === "play-modal") {
+						document.getElementById("play-iframe").src = "";
 					}
 				}
 			});
+
+			// Close modals on backdrop click
+			document.querySelectorAll("[data-modal-target]").forEach((modal) => {
+				modal.addEventListener("click", (e) => {
+					if (e.target === modal) {
+						hideModal(modal.id);
+						if (modal.id === "play-modal") {
+							document.getElementById("play-iframe").src = "";
+						}
+					}
+				});
+			});
+
+			// --- Play Modal ---
+			function openPlayModal(levelId) {
+				document.getElementById("play-iframe").src = `https://pvzm.net?izl_id=${levelId}&partner=${location.hostname}`;
+				showModal("play-modal");
+			}
+
+			// --- Edit Modal ---
+			function openEditModal(levelId) {
+				activeLevelId = levelId;
+				showModal("select-editor-modal");
+			}
+
+			document.getElementById("open-metadata-editor-btn").addEventListener("click", () => {
+				hideModal("select-editor-modal");
+				const level = levelsCache[activeLevelId];
+				if (!level) return;
+				document.getElementById("meta-name").value = level.name;
+				document.getElementById("meta-author").value = level.author;
+				document.getElementById("meta-sun").value = level.sun;
+				document.getElementById("meta-difficulty").value = level.difficulty || "";
+				document.getElementById("meta-favorites").value = level.favorites;
+				document.getElementById("meta-plays").value = level.plays;
+				showModal("metadata-editor-modal");
+			});
+
+			document.getElementById("open-level-editor-btn").addEventListener("click", () => {
+				hideModal("select-editor-modal");
+				document.getElementById("play-iframe").src = `https://pvzm.net?izl_edit_id=${activeLevelId}&partner=${location.hostname}`;
+				showModal("play-modal");
+			});
+
+			// --- Metadata Submit ---
+			document.getElementById("metadata-form").addEventListener("submit", async () => {
+				const body = {
+					name: document.getElementById("meta-name").value,
+					author: document.getElementById("meta-author").value,
+					sun: parseInt(document.getElementById("meta-sun").value),
+					difficulty: parseInt(document.getElementById("meta-difficulty").value) || 0,
+					favorites: parseInt(document.getElementById("meta-favorites").value),
+					plays: parseInt(document.getElementById("meta-plays").value) || 0,
+				};
+
+				try {
+					const res = await fetch(`/api/admin/levels/${activeLevelId}`, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(body),
+					});
+					const data = await res.json();
+					if (data.success) {
+						hideModal("metadata-editor-modal");
+						loadLevels();
+					} else {
+						alert(data.message || "Failed to update level");
+					}
+				} catch (err) {
+					alert("Failed to update level");
+				}
+			});
+
+			// --- Delete Modal ---
+			function openDeleteModal(levelId) {
+				activeLevelId = levelId;
+				const level = levelsCache[levelId];
+				document.getElementById("delete-modal-text").innerHTML =
+					`Are you sure you want to delete <b>${esc(level?.name || "this level")}</b> by <b>${esc(level?.author || "unknown")}</b>?`;
+				showModal("delete-modal");
+			}
+
+			document.getElementById("delete-confirm-btn").addEventListener("click", async () => {
+				try {
+					const res = await fetch(`/api/admin/levels/${activeLevelId}`, { method: "DELETE" });
+					const data = await res.json();
+					if (data.success) {
+						hideModal("delete-modal");
+						loadLevels();
+					} else {
+						alert(data.message || "Failed to delete level");
+					}
+				} catch (err) {
+					alert("Failed to delete level");
+				}
+			});
+
+			// --- Feature/Unfeature ---
+			async function toggleFeature(levelId) {
+				const level = levelsCache[levelId];
+				const isFeatured = level?.featured === 1;
+				const method = isFeatured ? "DELETE" : "POST";
+
+				try {
+					const res = await fetch(`/api/admin/levels/${levelId}/feature`, { method });
+					const data = await res.json();
+					if (data.success) {
+						loadLevels();
+					} else {
+						alert(data.message || "Failed to toggle feature");
+					}
+				} catch (err) {
+					alert("Failed to toggle feature");
+				}
+			}
+
+			// --- Expose to inline onclick handlers (module scope is not global) ---
+			window.logout = logout;
+			window.openEditModal = openEditModal;
+			window.openPlayModal = openPlayModal;
+			window.openDeleteModal = openDeleteModal;
+			window.toggleFeature = toggleFeature;
+			window.goToPage = goToPage;
+
+			// --- Init ---
+			checkAuth();
 		</script>
 	</body>
 </html>

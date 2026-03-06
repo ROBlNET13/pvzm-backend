@@ -1,8 +1,8 @@
 import denoJson from "../../deno.json" with { type: "json" };
 
-import type { ServerConfig } from "../config.ts";
+import { config } from "../config.ts";
 
-export function registerRootRoute(app: any, config: ServerConfig) {
+export function registerRootRoute(app: any) {
 	app.get("/", (_req: any, res: any) => {
 		if (config.useTestUI) {
 			res.redirect("/index.html");

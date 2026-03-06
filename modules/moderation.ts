@@ -1,7 +1,7 @@
 import OpenAI from "@openai/openai";
 import { Filter } from "bad-words";
 
-import type { ServerConfig } from "./config.ts";
+import { config } from "./config.ts";
 
 const filter = new Filter();
 
@@ -20,7 +20,7 @@ export interface ModerationResult {
 	error?: string;
 }
 
-export function initModeration(config: ServerConfig) {
+export function initModeration() {
 	let openai: OpenAI | undefined;
 	if (config.useOpenAIModeration) {
 		if (config.openAiApiKey) {

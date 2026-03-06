@@ -1,6 +1,6 @@
 import { createExpressApp, setupBodyParsers, setupCors } from "./modules/app_middleware.ts";
-import { ensureAuthenticated, ensureAuthenticatedOrConsumeTokenForLevelParam, setupGithubAuth, setupSession } from "./modules/auth.ts";
-import { loadConfig } from "./modules/config.ts";
+import { ensureAuthenticated, ensureAuthenticatedOrConsumeTokenForLevelParam, setupAuth } from "./modules/auth.ts";
+import { config } from "./modules/config.ts";
 import { ensureDataFolder, initDatabase } from "./modules/db.ts";
 import { DiscordLoggingProvider, BlueskyLoggingProvider, LoggingManager } from "./modules/logging/index.ts";
 import { initModeration } from "./modules/moderation.ts";
@@ -12,22 +12,18 @@ import { registerRootRoute } from "./modules/routes/root.ts";
 import { initTurnstile } from "./modules/turnstile.ts";
 import { initPostHog, shutdownPostHog } from "./modules/posthog.ts";
 
-const config = loadConfig();
-
 const app = createExpressApp();
-setupCors(app, config);
+setupCors(app);
+setupAuth(app);
 setupBodyParsers(app);
 
-setupSession(app, config);
-setupGithubAuth(app, config);
+setupPublicFolder(app);
+ensureDataFolder();
 
-setupPublicFolder(app, config);
-ensureDataFolder(config);
-
-const dbCtx = initDatabase(config);
-const validateTurnstile = initTurnstile(config);
-const moderateContent = initModeration(config);
-const postHogClient = initPostHog(config);
+const dbCtx = initDatabase();
+const validateTurnstile = initTurnstile();
+const moderateContent = initModeration();
+const postHogClient = initPostHog();
 
 async function startServer() {
 	// initialize logging providers
@@ -59,17 +55,17 @@ async function startServer() {
 
 	await loggingManager.initAll();
 
-	registerRootRoute(app, config);
-	registerConfigRoute(app, config);
-	registerLevelRoutes(app, config, dbCtx, {
+	registerRootRoute(app);
+	registerConfigRoute(app);
+	registerLevelRoutes(app, dbCtx, {
 		validateTurnstile,
 		moderateContent,
 		loggingManager,
 	});
 
-	const ensureAuth = ensureAuthenticated(config);
-	const ensureAuthOrToken = ensureAuthenticatedOrConsumeTokenForLevelParam(config, dbCtx.consumeOneTimeTokenForLevel);
-	registerAdminRoutes(app, config, dbCtx, {
+	const ensureAuth = ensureAuthenticated();
+	const ensureAuthOrToken = ensureAuthenticatedOrConsumeTokenForLevelParam(dbCtx.consumeOneTimeTokenForLevel);
+	registerAdminRoutes(app, dbCtx, {
 		ensureAuthenticated: ensureAuth,
 		ensureAuthenticatedOrConsumeTokenForLevelParam: ensureAuthOrToken,
 		loggingManager,

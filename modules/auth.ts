@@ -1,120 +1,134 @@
-import session from "express-session";
-import memorystore from "memorystore";
-import passport from "passport";
-import { Strategy as GitHubStrategy } from "passport-github2";
+import { betterAuth } from "better-auth";
+import { username, admin, openAPI, captcha } from "better-auth/plugins";
+import { config } from "./config.ts";
+import { DatabaseSync } from "node:sqlite";
+import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 
-import type { ServerConfig } from "./config.ts";
+const VALID_USERNAME_RE = /^[a-zA-Z0-9_.]+$/;
+const EMAIL_DOMAIN = "noemail.local";
 
-export function setupSession(app: any, config: ServerConfig) {
-	const MemoryStore = (memorystore as any)(session);
-	const maxAgeMs = 24 * 60 * 60 * 1000;
+export const auth = betterAuth({
+	appName: "Plants vs. Zombies: MODDED",
+	baseURL: config.backendUrl,
+	trustedOrigins: config.allowedOrigins,
+	advanced: {
+		disableOriginCheck: !config.corsEnabled,
+	},
+	secret: config.authSecret,
+	database: new DatabaseSync(config.dbPath),
 
-	app.use(
-		session({
-			secret: config.sessionSecret,
-			resave: false,
-			saveUninitialized: false,
-			store: new MemoryStore({
-				checkPeriod: maxAgeMs,
-			}),
-			cookie: {
-				secure: "auto" as any,
-				sameSite: "lax",
-				maxAge: maxAgeMs,
-			},
-		})
-	);
-}
+	session: {
+		cookieCache: {
+			enabled: true,
+			maxAge: 5 * 60,
+		},
+	},
 
-export function setupGithubAuth(app: any, config: ServerConfig) {
-	if (!config.useGithubAuth) return;
+	logger: {
+		level: "debug",
+	},
 
-	app.use(passport.initialize());
-	app.use(passport.session());
-
-	passport.use(
-		new GitHubStrategy(
-			{
-				clientID: config.githubClientID,
-				clientSecret: config.githubClientSecret,
-				callbackURL: `/api/auth/github/callback`,
-				scope: ["user:email"],
-			},
-			function (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any, info?: any) => void) {
-				if (config.allowedUsers.includes(profile.username)) {
-					return done(null, profile);
-				}
-				return done(null, false, { message: "Unauthorized user" });
-			}
-		)
-	);
-
-	passport.serializeUser(function (user: any, done: (error: any, id?: any) => void) {
-		done(null, user);
-	});
-
-	passport.deserializeUser(function (obj: any, done: (error: any, user?: any) => void) {
-		done(null, obj);
-	});
-
-	app.get("/api/auth/github", passport.authenticate("github", { session: true }));
-
-	app.get(
-		"/api/auth/github/callback",
-		passport.authenticate("github", {
-			successRedirect: "/admin.html",
-			failureRedirect: "/auth-error.html",
-		})
-	);
-
-	app.get("/api/auth/status", (req: any, res: any) => {
-		if (req.isAuthenticated()) {
-			res.json({
-				authenticated: true,
-				user: {
-					username: req.user.username,
-					displayName: req.user.displayName || req.user.username,
-					profileUrl: req.user.profileUrl,
-					avatarUrl: req.user.photos?.[0]?.value,
+	emailAndPassword: {
+		enabled: true,
+	},
+	databaseHooks: {
+		user: {
+			create: {
+				before: async (user) => {
+					const name = (user as any).username;
+					if (!name || typeof name !== "string") {
+						throw new Error("Username is required");
+					}
+					if (!VALID_USERNAME_RE.test(name)) {
+						throw new Error("Username can only contain letters, numbers, underscores, and periods");
+					}
+					// enforce email matches username@noemail.local
+					if (user.email !== `${name}@${EMAIL_DOMAIN}`) {
+						throw new Error("Invalid email format");
+					}
+					return { data: user };
 				},
-			});
-		} else {
-			res.json({ authenticated: false });
-		}
-	});
+			},
+		},
+	},
+	...(config.githubClientId &&
+		config.githubClientSecret && {
+			socialProviders: {
+				github: {
+					clientId: config.githubClientId,
+					clientSecret: config.githubClientSecret,
+				},
+			},
+		}),
+	plugins: [
+		username({
+			usernameValidator: (username) => {
+				return VALID_USERNAME_RE.test(username);
+			},
+		}),
+		admin({
+			...(config.authAdminUserIds.length > 0 && { adminUserIds: config.authAdminUserIds }),
+		}),
+		openAPI({ disableDefaultReference: true }),
+		...(config.useTurnstile
+			? [
+					captcha({
+						provider: "cloudflare-turnstile" as const,
+						secretKey: config.turnstileSecret!,
+					}),
+				]
+			: []),
+	],
+});
 
-	app.get("/api/auth/logout", (req: any, res: any) => {
-		req.logout(function (err: Error) {
-			if (err) {
-				console.error("Error during logout:", err);
-				return res.status(500).json({ error: "Failed to logout" });
+export function setupAuth(app: any) {
+	const handler = toNodeHandler(auth);
+	app.all("/api/auth/*splat", async (req: any, res: any, next: any) => {
+		try {
+			await handler(req, res);
+		} catch (error: any) {
+			// Handle UNIQUE constraint errors for better user feedback
+			if (error?.message?.includes("UNIQUE constraint failed: user.username")) {
+				return res.status(400).json({
+					error: "Username already exists",
+					code: "USERNAME_TAKEN",
+				});
 			}
-			res.redirect("/");
-		});
+			if (error?.message?.includes("UNIQUE constraint failed: user.email")) {
+				return res.status(400).json({
+					error: "Email already exists",
+					code: "EMAIL_TAKEN",
+				});
+			}
+			// Pass other errors to Express error handler
+			next(error);
+		}
 	});
 }
 
-export function ensureAuthenticated(config: ServerConfig) {
-	return function (req: any, res: any, next: () => void) {
-		if (!config.useGithubAuth) {
-			return next();
-		}
+async function getSessionFromRequest(req: any) {
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+	});
+	return session;
+}
 
-		if (req.isAuthenticated()) {
-			return next();
+export function ensureAuthenticated() {
+	return async function (req: any, res: any, next: () => void) {
+		const session = await getSessionFromRequest(req);
+		if (!session?.user || (session.user as any).role !== "admin") {
+			return res.status(401).json({ error: "Unauthorized" });
 		}
-
-		res.status(401).json({ error: "Unauthorized" });
+		req.user = session.user;
+		return next();
 	};
 }
 
-export function ensureAuthenticatedOrConsumeTokenForLevelParam(config: ServerConfig, consumeOneTimeTokenForLevel: (token: string, levelId: number) => boolean) {
-	return function (req: any, res: any, next: () => void) {
-		if (!config.useGithubAuth) {
-			return next();
-		}
-
-		if (req.isAuthenticated && req.isAuthenticated()) {
+export function ensureAuthenticatedOrConsumeTokenForLevelParam(consumeOneTimeTokenForLevel: (token: string, levelId: number) => boolean) {
+	return async function (req: any, res: any, next: () => void) {
+		const session = await getSessionFromRequest(req);
+		if (session?.user && (session.user as any).role === "admin") {
+			req.user = session.user;
 			return next();
 		}
 

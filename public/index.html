@@ -12,6 +12,39 @@
 			<h1>PVZM Backend</h1>
 			<p><a href="/admin.html">Admin Dashboard</a></p>
 			<article>
+				<h3>Auth Demo</h3>
+				<div id="auth-status">
+					<p>Not signed in</p>
+				</div>
+				<details>
+					<summary>Sign Up</summary>
+					<form id="signupForm">
+						<label for="signup-username">Username</label>
+						<input type="text" name="username" id="signup-username" placeholder="username" required pattern="^[a-zA-Z0-9_.]+$" />
+						<label for="signup-password">Password</label>
+						<input type="password" name="password" id="signup-password" placeholder="min 8 characters" required minlength="8" />
+						<label for="signup-turnstile">Verification</label>
+						<div id="signup-turnstile-container"></div>
+						<button type="submit">Sign Up</button>
+					</form>
+					<pre id="signupResponse"></pre>
+				</details>
+				<details>
+					<summary>Sign In</summary>
+					<form id="signinForm">
+						<label for="signin-username">Username</label>
+						<input type="text" name="username" id="signin-username" placeholder="username" required />
+						<label for="signin-password">Password</label>
+						<input type="password" name="password" id="signin-password" placeholder="password" required />
+						<label for="signin-turnstile">Verification</label>
+						<div id="signin-turnstile-container"></div>
+						<button type="submit">Sign In</button>
+					</form>
+					<pre id="signinResponse"></pre>
+				</details>
+				<button id="signoutBtn" style="display: none">Sign Out</button>
+			</article>
+			<article>
 				<code>GET /api/config</code>
 				<h3>Server Settings</h3>
 				<pre id="settings">{}</pre>
@@ -123,10 +156,109 @@
 				</footer>
 			</article>
 		</main>
+		<script type="module">
+			import { createAuthClient } from "https://esm.sh/better-auth@1.4.18/client";
+			import { usernameClient } from "https://esm.sh/better-auth@1.4.18/client/plugins";
+
+			const authClient = createAuthClient({
+				plugins: [usernameClient()],
+			});
+
+			const EMAIL_DOMAIN = "noemail.local";
+
+			async function refreshAuthStatus() {
+				const statusEl = document.getElementById("auth-status");
+				const signoutBtn = document.getElementById("signoutBtn");
+				const { data } = await authClient.getSession();
+				if (data?.user) {
+					statusEl.innerHTML = `<p>Signed in as <strong>${data.user.name || data.user.username || "?"}</strong> (role: ${data.user.role || "user"})</p>`;
+					signoutBtn.style.display = "";
+				} else {
+					statusEl.innerHTML = "<p>Not signed in</p>";
+					signoutBtn.style.display = "none";
+				}
+			}
+
+			document.getElementById("signupForm").addEventListener("submit", async (e) => {
+				e.preventDefault();
+
+				if (config.turnstileEnabled && !signupTurnstileToken) {
+					document.getElementById("signupResponse").textContent = JSON.stringify({ error: "Please complete the CAPTCHA verification" }, null, 2);
+					return;
+				}
+
+				const username = document.getElementById("signup-username").value;
+				const password = document.getElementById("signup-password").value;
+				const email = `${username}@${EMAIL_DOMAIN}`;
+				const { data, error } = await authClient.signUp.email({
+					email,
+					password,
+					name: username,
+					username,
+					fetchOptions: signupTurnstileToken
+						? {
+								headers: {
+									"x-captcha-response": signupTurnstileToken,
+								},
+							}
+						: undefined,
+				});
+				document.getElementById("signupResponse").textContent = JSON.stringify(error || data, null, 2);
+				if (!error) {
+					refreshAuthStatus();
+					if (config.turnstileEnabled && window.turnstile && signupTurnstileWidgetId) {
+						window.turnstile.reset(signupTurnstileWidgetId);
+						signupTurnstileToken = null;
+					}
+				}
+			});
+
+			document.getElementById("signinForm").addEventListener("submit", async (e) => {
+				e.preventDefault();
+
+				if (config.turnstileEnabled && !signinTurnstileToken) {
+					document.getElementById("signinResponse").textContent = JSON.stringify({ error: "Please complete the CAPTCHA verification" }, null, 2);
+					return;
+				}
+
+				const username = document.getElementById("signin-username").value;
+				const password = document.getElementById("signin-password").value;
+				const { data, error } = await authClient.signIn.username({
+					username,
+					password,
+					fetchOptions: signinTurnstileToken
+						? {
+								headers: {
+									"x-captcha-response": signinTurnstileToken,
+								},
+							}
+						: undefined,
+				});
+				document.getElementById("signinResponse").textContent = JSON.stringify(error || data, null, 2);
+				if (!error) {
+					refreshAuthStatus();
+					if (config.turnstileEnabled && window.turnstile && signinTurnstileWidgetId) {
+						window.turnstile.reset(signinTurnstileWidgetId);
+						signinTurnstileToken = null;
+					}
+				}
+			});
+
+			document.getElementById("signoutBtn").addEventListener("click", async () => {
+				await authClient.signOut();
+				refreshAuthStatus();
+			});
+
+			refreshAuthStatus();
+		</script>
 		<script>
 			let turnstileToken = null;
+			let signupTurnstileToken = null;
+			let signinTurnstileToken = null;
 			let config = {};
 			let turnstileWidgetId = null;
+			let signupTurnstileWidgetId = null;
+			let signinTurnstileWidgetId = null;
 
 			function formatDate(timestamp) {
 				return new Date(timestamp * 1000).toLocaleString();
@@ -144,6 +276,14 @@
 						const turnstileContainer = document.getElementById("turnstile-container");
 						if (turnstileContainer) {
 							turnstileContainer.closest("label").style.display = "none";
+						}
+						const signupContainer = document.getElementById("signup-turnstile-container");
+						if (signupContainer) {
+							signupContainer.closest("label").style.display = "none";
+						}
+						const signinContainer = document.getElementById("signin-turnstile-container");
+						if (signinContainer) {
+							signinContainer.closest("label").style.display = "none";
 						}
 					}
 				} catch (error) {
@@ -179,6 +319,28 @@
 							turnstileToken = token;
 						},
 					});
+
+					const signupContainer = document.getElementById("signup-turnstile-container");
+					if (signupContainer) {
+						signupContainer.innerHTML = "";
+						signupTurnstileWidgetId = window.turnstile.render("#signup-turnstile-container", {
+							sitekey: siteKey,
+							callback: function (token) {
+								signupTurnstileToken = token;
+							},
+						});
+					}
+
+					const signinContainer = document.getElementById("signin-turnstile-container");
+					if (signinContainer) {
+						signinContainer.innerHTML = "";
+						signinTurnstileWidgetId = window.turnstile.render("#signin-turnstile-container", {
+							sitekey: siteKey,
+							callback: function (token) {
+								signinTurnstileToken = token;
+							},
+						});
+					}
 				}
 			}
 
